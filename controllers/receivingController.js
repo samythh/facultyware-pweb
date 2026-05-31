@@ -9,6 +9,7 @@
 //   inventories, items.
 
 const pool = require("../lib/db");
+const PDFDocument = require("pdfkit");
 
 const PAGE_SIZE = 10;
 
@@ -158,14 +159,79 @@ const verifyStore = async (req, res, next) => {
  * Konfirmasi penerimaan final -> auto-update stok.
  */
 const confirm = async (req, res, next) => {
+  const id = req.params.po_id;
+  const conn = await pool.getConnection();
   try {
-    // TODO: dalam transaksi:
-    //   1) set status inventory_purchases = 'completed'
-    //   2) insert inventory_transactions (type='in') per item
-    //   3) update/insert inventories.quantity
-    res.send("TODO: confirm");
+    await conn.beginTransaction();
+
+    // Kunci baris PO selama transaksi.
+    const [poRows] = await conn.query(
+      "SELECT id, purchase_number, status FROM inventory_purchases WHERE id = ? FOR UPDATE",
+      [id]
+    );
+    if (poRows.length === 0) {
+      await conn.rollback();
+      return res.status(404).render("error", {
+        message: "Purchase order tidak ditemukan.",
+        error: { status: 404, stack: "" },
+      });
+    }
+    const po = poRows[0];
+
+    // Idempoten: kalau sudah 'completed', jangan tambah stok dua kali.
+    if (po.status === "completed") {
+      await conn.rollback();
+      return res.redirect(`/receiving/${id}/detail`);
+    }
+
+    const [items] = await conn.query(
+      "SELECT item_id, quantity FROM inventory_purchase_items WHERE inventory_purchase_id = ?",
+      [id]
+    );
+
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+    for (const it of items) {
+      // 1) Catat transaksi barang masuk (type='in'), referensi = No PO.
+      await conn.query(
+        `INSERT INTO inventory_transactions
+           (item_id, type, quantity, transaction_date, reference, notes, created_at, updated_at)
+         VALUES (?, 'in', ?, ?, ?, 'Penerimaan barang dikonfirmasi', NOW(), NOW())`,
+        [it.item_id, it.quantity, today, po.purchase_number]
+      );
+
+      // 2) Tambah stok: update kalau baris stok ada, kalau tidak buat baru.
+      const [inv] = await conn.query(
+        "SELECT id FROM inventories WHERE item_id = ? LIMIT 1",
+        [it.item_id]
+      );
+      if (inv.length > 0) {
+        await conn.query(
+          "UPDATE inventories SET quantity = quantity + ?, updated_at = NOW() WHERE item_id = ?",
+          [it.quantity, it.item_id]
+        );
+      } else {
+        await conn.query(
+          "INSERT INTO inventories (item_id, quantity, created_at, updated_at) VALUES (?, ?, NOW(), NOW())",
+          [it.item_id, it.quantity]
+        );
+      }
+    }
+
+    // 3) Tandai PO selesai.
+    await conn.query(
+      "UPDATE inventory_purchases SET status = 'completed', updated_at = NOW() WHERE id = ?",
+      [id]
+    );
+
+    await conn.commit();
+    res.redirect(`/receiving/${id}/detail`);
   } catch (err) {
+    await conn.rollback();
     next(err);
+  } finally {
+    conn.release();
   }
 };
 
@@ -174,12 +240,61 @@ const confirm = async (req, res, next) => {
  * Catat retur barang ke vendor.
  */
 const retur = async (req, res, next) => {
+  const poId = req.body.po_id;
+  const itemId = req.body.item_id;
+  const qty = parseInt(req.body.quantity, 10);
+  const reason = (req.body.notes || "").trim();
+
+  // Validasi dasar.
+  if (!poId || !itemId || !Number.isInteger(qty) || qty <= 0) {
+    return res.status(400).render("error", {
+      message: "Data retur tidak valid (item & jumlah wajib diisi).",
+      error: { status: 400, stack: "" },
+    });
+  }
+
+  const conn = await pool.getConnection();
   try {
-    // TODO: insert inventory_transactions (type='out'/'adjustment') sebagai retur,
-    //       sesuaikan inventories.quantity, catat alasan di notes.
-    res.send("TODO: retur");
+    await conn.beginTransaction();
+
+    const [poRows] = await conn.query(
+      "SELECT purchase_number FROM inventory_purchases WHERE id = ?",
+      [poId]
+    );
+    if (poRows.length === 0) {
+      await conn.rollback();
+      return res.status(404).render("error", {
+        message: "Purchase order tidak ditemukan.",
+        error: { status: 404, stack: "" },
+      });
+    }
+    const purchaseNumber = poRows[0].purchase_number;
+
+    // Catat transaksi keluar (retur ke vendor).
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const notes = reason ? `Retur ke vendor: ${reason}` : "Retur ke vendor";
+
+    await conn.query(
+      `INSERT INTO inventory_transactions
+         (item_id, type, quantity, transaction_date, reference, notes, created_at, updated_at)
+       VALUES (?, 'out', ?, ?, ?, ?, NOW(), NOW())`,
+      [itemId, qty, today, purchaseNumber, notes]
+    );
+
+    // Kurangi stok (jaga agar tidak negatif).
+    await conn.query(
+      "UPDATE inventories SET quantity = GREATEST(quantity - ?, 0), updated_at = NOW() WHERE item_id = ?",
+      [qty, itemId]
+    );
+
+    await conn.commit();
+    res.redirect(`/receiving/${poId}/detail`);
   } catch (err) {
+    await conn.rollback();
     next(err);
+  } finally {
+    conn.release();
   }
 };
 
@@ -206,7 +321,7 @@ const detail = async (req, res, next) => {
 
     // Qty diterima dihitung dari transaksi masuk (type='in') yang mereferensikan No PO.
     const [items] = await pool.query(
-      `SELECT ipi.id, it.name, it.unit,
+      `SELECT ipi.id, it.id AS item_id, it.name, it.unit,
               ipi.quantity AS ordered_qty,
               ipi.price,
               COALESCE(SUM(CASE WHEN t.type = 'in' THEN t.quantity END), 0) AS received_qty
@@ -218,7 +333,7 @@ const detail = async (req, res, next) => {
              AND t.reference = p.purchase_number
              AND t.type = 'in'
        WHERE ipi.inventory_purchase_id = ?
-       GROUP BY ipi.id, it.name, it.unit, ipi.quantity, ipi.price
+       GROUP BY ipi.id, it.id, it.name, it.unit, ipi.quantity, ipi.price
        ORDER BY ipi.id`,
       [id]
     );
@@ -247,12 +362,30 @@ const detail = async (req, res, next) => {
       totalValue_label: fmtRp(totalValue),
     };
 
+    // Riwayat retur (transaksi keluar 'out' yang mereferensikan No PO ini).
+    let returns = [];
+    if (po) {
+      const [rows] = await pool.query(
+        `SELECT t.quantity, t.transaction_date, t.notes, it.name, it.unit
+         FROM inventory_transactions t
+         JOIN items it ON it.id = t.item_id
+         WHERE t.reference = ? AND t.type = 'out'
+         ORDER BY t.id DESC`,
+        [po.purchase_number]
+      );
+      returns = rows.map((r) => ({
+        ...r,
+        transaction_date: fmtDate(r.transaction_date),
+      }));
+    }
+
     res.render("receiving/detail", {
       title: "Detail Penerimaan",
       user: req.session.username,
       po,
       items,
       summary,
+      returns,
     });
   } catch (err) {
     next(err);
@@ -265,9 +398,118 @@ const detail = async (req, res, next) => {
  */
 const exportPDF = async (req, res, next) => {
   try {
-    // TODO: ambil data, buat PDFDocument, pipe ke res dengan
-    //       Content-Type: application/pdf + Content-Disposition attachment.
-    res.send("TODO: exportPDF");
+    const id = req.params.id;
+
+    const [poRows] = await pool.query(
+      `SELECT id, purchase_number, supplier, purchase_date, status
+       FROM inventory_purchases WHERE id = ?`,
+      [id]
+    );
+    if (poRows.length === 0) {
+      return res.status(404).render("error", {
+        message: "Purchase order tidak ditemukan.",
+        error: { status: 404, stack: "" },
+      });
+    }
+    const po = poRows[0];
+
+    const [items] = await pool.query(
+      `SELECT it.name, it.unit,
+              ipi.quantity AS ordered_qty,
+              ipi.price,
+              COALESCE(SUM(CASE WHEN t.type = 'in' THEN t.quantity END), 0) AS received_qty
+       FROM inventory_purchase_items ipi
+       JOIN items it ON it.id = ipi.item_id
+       JOIN inventory_purchases p ON p.id = ipi.inventory_purchase_id
+       LEFT JOIN inventory_transactions t
+              ON t.item_id = ipi.item_id
+             AND t.reference = p.purchase_number
+             AND t.type = 'in'
+       WHERE ipi.inventory_purchase_id = ?
+       GROUP BY ipi.id, it.name, it.unit, ipi.quantity, ipi.price
+       ORDER BY ipi.id`,
+      [id]
+    );
+
+    const doc = new PDFDocument({ size: "A4", margin: 50 });
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="Laporan-Penerimaan-${po.purchase_number}.pdf"`
+    );
+    doc.pipe(res);
+
+    // Judul
+    doc.font("Helvetica-Bold").fontSize(16).text("Laporan Penerimaan Barang", { align: "center" });
+    doc.font("Helvetica").fontSize(10).fillColor("#666")
+      .text("FacultyWare - Sistem Informasi Pengadaan Barang Fakultas", { align: "center" });
+    doc.fillColor("#000").moveDown(1.2);
+
+    // Info PO
+    const infoY = doc.y;
+    doc.fontSize(10).font("Helvetica-Bold").text("No PO", 50, infoY);
+    doc.font("Helvetica").text(`: ${po.purchase_number}`, 140, infoY);
+    doc.font("Helvetica-Bold").text("Pemasok", 50, infoY + 16);
+    doc.font("Helvetica").text(`: ${po.supplier || "-"}`, 140, infoY + 16);
+    doc.font("Helvetica-Bold").text("Tanggal", 50, infoY + 32);
+    doc.font("Helvetica").text(`: ${fmtDate(po.purchase_date)}`, 140, infoY + 32);
+    doc.font("Helvetica-Bold").text("Status", 50, infoY + 48);
+    doc.font("Helvetica").text(`: ${STATUS_LABEL[po.status] || po.status}`, 140, infoY + 48);
+    doc.moveDown(4);
+
+    // Tabel
+    const colX = { no: 50, name: 80, ordered: 285, received: 350, price: 415, subtotal: 490 };
+    const drawRow = (y, c, opts = {}) => {
+      doc.font(opts.bold ? "Helvetica-Bold" : "Helvetica").fontSize(9);
+      doc.text(c.no, colX.no, y, { width: 25 });
+      doc.text(c.name, colX.name, y, { width: 200 });
+      doc.text(c.ordered, colX.ordered, y, { width: 55, align: "right" });
+      doc.text(c.received, colX.received, y, { width: 55, align: "right" });
+      doc.text(c.price, colX.price, y, { width: 65, align: "right" });
+      doc.text(c.subtotal, colX.subtotal, y, { width: 65, align: "right" });
+    };
+
+    let y = doc.y;
+    drawRow(y, { no: "No", name: "Nama Barang", ordered: "Dipesan", received: "Diterima", price: "Harga", subtotal: "Subtotal" }, { bold: true });
+    y += 14;
+    doc.moveTo(50, y).lineTo(555, y).strokeColor("#cccccc").stroke();
+    y += 6;
+
+    let totalValue = 0;
+    items.forEach((it, idx) => {
+      const ordered = Number(it.ordered_qty);
+      const received = Number(it.received_qty);
+      const price = Number(it.price) || 0;
+      const subtotal = price * ordered;
+      totalValue += subtotal;
+
+      if (y > 760) {
+        doc.addPage();
+        y = 50;
+      }
+      drawRow(y, {
+        no: String(idx + 1),
+        name: `${it.name} (${it.unit})`,
+        ordered: String(ordered),
+        received: String(received),
+        price: fmtRp(price),
+        subtotal: fmtRp(subtotal),
+      });
+      y += 16;
+    });
+
+    y += 4;
+    doc.moveTo(50, y).lineTo(555, y).strokeColor("#cccccc").stroke();
+    y += 8;
+    doc.font("Helvetica-Bold").fontSize(10);
+    doc.text("Total Nilai PO", colX.name, y, { width: 200 });
+    doc.text(fmtRp(totalValue), colX.price, y, { width: 130, align: "right" });
+
+    // Tanda tangan / footer
+    doc.font("Helvetica").fontSize(9).fillColor("#666")
+      .text(`Dicetak: ${fmtDate(new Date())}`, 50, 790, { align: "left" });
+
+    doc.end();
   } catch (err) {
     next(err);
   }

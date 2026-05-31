@@ -63,6 +63,20 @@
       /* Tabel angka */
       .num { text-align: right; font-variant-numeric: tabular-nums; }
       .totals-row td { font-weight: 700; border-top: 2px solid var(--color-border); }
+
+      /* Accordion (lipat/buka isi kartu) — desain kartu tetap, hanya tambah panah di kanan */
+      .accordion-toggle { grid-column: 2; grid-row: 1 / span 2; align-self: start; justify-self: end; display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border: 0; border-radius: .5rem; background: transparent; color: var(--color-muted-foreground); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+      .accordion-toggle:hover { background: var(--color-muted); color: var(--color-foreground); }
+      .accordion-toggle svg { width: 1.15rem; height: 1.15rem; transition: transform .22s var(--ease-out, ease); }
+      .card.is-collapsed .accordion-toggle svg { transform: rotate(-90deg); }
+      /* Lipat/buka mulus: animasikan tinggi via grid-template-rows (0fr <-> 1fr) + fade */
+      .accordion-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .28s var(--ease-out, ease); }
+      .accordion-body > * { min-height: 0; transition: opacity .2s ease; }
+      .card.is-collapsed .accordion-body { grid-template-rows: 0fr; }
+      .card.is-collapsed .accordion-body > * { opacity: 0; }
+      @media (prefers-reduced-motion: reduce) {
+        .accordion-body, .accordion-body > *, .accordion-toggle svg { transition: none; }
+      }
     </style>
   </head>
   <body>
@@ -93,10 +107,12 @@
               </h1>
             </div>
             <div class="flex items-center justify-end gap-2">
-              <button type="button" class="btn"
-                onclick="document.getElementById('dialog-confirm').showModal()">
-                Konfirmasi Final
-              </button>
+              <% if (po && po.status !== 'completed') { %>
+                <button type="button" class="btn"
+                  onclick="document.getElementById('dialog-confirm').showModal()">
+                  Konfirmasi Final
+                </button>
+              <% } %>
               <button type="button" class="btn-outline"
                 onclick="document.getElementById('dialog-retur').showModal()">
                 Catat Retur
@@ -150,8 +166,12 @@
             <header>
               <h2>Rincian Barang</h2>
               <p>Perbandingan jumlah dipesan dengan jumlah diterima beserta nilainya.</p>
+              <button type="button" class="accordion-toggle" data-slot="card-action" aria-expanded="true" aria-label="Tampilkan atau sembunyikan rincian">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
             </header>
-            <section class="overflow-x-auto">
+            <section class="accordion-body">
+              <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead>
                   <tr class="text-muted-foreground text-left">
@@ -199,8 +219,49 @@
                   </tfoot>
                 <% } %>
               </table>
+              </div>
             </section>
           </div>
+
+          <!-- Riwayat Retur -->
+          <% if (typeof returns !== 'undefined' && returns.length > 0) { %>
+          <div class="card">
+            <header>
+              <h2>Riwayat Retur</h2>
+              <p>Barang yang dikembalikan ke vendor.</p>
+              <button type="button" class="accordion-toggle" data-slot="card-action" aria-expanded="true" aria-label="Tampilkan atau sembunyikan riwayat retur">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </header>
+            <section class="accordion-body">
+              <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-muted-foreground text-left">
+                    <th class="px-3 py-2 font-medium">Tanggal</th>
+                    <th class="px-3 py-2 font-medium">Nama Barang</th>
+                    <th class="px-3 py-2 font-medium num">Jumlah</th>
+                    <th class="px-3 py-2 font-medium">Alasan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% returns.forEach(function (r) { %>
+                    <tr class="border-t">
+                      <td class="px-3 py-2"><%= r.transaction_date %></td>
+                      <td class="px-3 py-2">
+                        <%= r.name %>
+                        <span class="text-muted-foreground">(<%= r.unit %>)</span>
+                      </td>
+                      <td class="px-3 py-2 num"><%= r.quantity %></td>
+                      <td class="px-3 py-2"><%= r.notes %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+              </div>
+            </section>
+          </div>
+          <% } %>
         </div>
       </div>
     </main>
@@ -234,8 +295,18 @@
         <form method="post" action="/receiving/retur" class="form grid gap-4">
           <input type="hidden" name="po_id" value="<%= po ? po.id : '' %>" />
           <div class="grid gap-2">
+            <label for="retur-item">Barang yang Diretur</label>
+            <select id="retur-item" name="item_id" class="select" required>
+              <% if (typeof items !== 'undefined' && items.length > 0) { %>
+                <% items.forEach(function (item) { %>
+                  <option value="<%= item.item_id %>"><%= item.name %> (<%= item.unit %>)</option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
+          <div class="grid gap-2">
             <label for="retur-qty">Jumlah Retur</label>
-            <input type="number" min="1" id="retur-qty" name="quantity" class="input" />
+            <input type="number" min="1" id="retur-qty" name="quantity" class="input" required />
           </div>
           <div class="grid gap-2">
             <label for="retur-notes">Alasan Retur</label>
@@ -254,5 +325,18 @@
     </dialog>
 
     <div id="toaster" class="toaster"></div>
+
+    <script>
+      (() => {
+        document.querySelectorAll(".accordion-toggle").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const card = btn.closest(".card");
+            if (!card) return;
+            const collapsed = card.classList.toggle("is-collapsed");
+            btn.setAttribute("aria-expanded", String(!collapsed));
+          });
+        });
+      })();
+    </script>
   </body>
 </html>
