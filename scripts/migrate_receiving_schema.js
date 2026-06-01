@@ -57,9 +57,12 @@ async function main() {
   }
 
   // 2) Kolom hasil verifikasi per item (semua nullable -> aman bagi modul lain).
+  // received_quantity = jumlah DITERIMA BAIK.
+  // received_defective = jumlah CACAT (bisa diretur).
+  // received_note = catatan per item.
   const cols = [
     ["received_quantity", "int(11) DEFAULT NULL"],
-    ["received_condition", "enum('baik','cacat') DEFAULT NULL"],
+    ["received_defective", "int(11) DEFAULT NULL"],
     ["received_note", "varchar(255) DEFAULT NULL"],
   ];
   for (const [name, def] of cols) {
@@ -71,6 +74,15 @@ async function main() {
       );
       console.log(`+ kolom inventory_purchase_items.${name} ditambahkan`);
     }
+  }
+
+  // 3) Bersihkan kolom usang: received_condition (enum kondisi) digantikan
+  //    pemisahan jumlah baik/cacat, jadi tidak dipakai lagi.
+  if (await columnExists("inventory_purchase_items", "received_condition")) {
+    await pool.query(
+      "ALTER TABLE inventory_purchase_items DROP COLUMN received_condition"
+    );
+    console.log("- kolom usang inventory_purchase_items.received_condition di-DROP");
   }
 
   console.log("Migration skema penerimaan selesai.");

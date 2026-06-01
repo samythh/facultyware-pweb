@@ -178,24 +178,25 @@ const verifyStore = async (req, res, next) => {
       [poId]
     );
 
-    // Simpan hasil verifikasi per item.
+    // Simpan hasil verifikasi per item: pisah jumlah BAIK & CACAT.
     for (const item of items) {
-      const rawQty = pickField(req.body, "received_qty", item.id);
-      let receivedQty = parseInt(rawQty, 10);
-      if (!Number.isInteger(receivedQty) || receivedQty < 0) {
-        receivedQty = item.quantity; // default: sama dengan jumlah dipesan
+      let goodQty = parseInt(pickField(req.body, "good_qty", item.id), 10);
+      if (!Number.isInteger(goodQty) || goodQty < 0) {
+        goodQty = item.quantity; // default: semua dianggap baik = jumlah dipesan
       }
 
-      const rawCond = pickField(req.body, "condition", item.id);
-      const condition = rawCond === "cacat" ? "cacat" : "baik";
+      let defectiveQty = parseInt(pickField(req.body, "defective_qty", item.id), 10);
+      if (!Number.isInteger(defectiveQty) || defectiveQty < 0) {
+        defectiveQty = 0;
+      }
 
       const note = (pickField(req.body, "notes", item.id) || "").toString().trim() || null;
 
       await conn.query(
         `UPDATE inventory_purchase_items
-            SET received_quantity = ?, received_condition = ?, received_note = ?, updated_at = NOW()
+            SET received_quantity = ?, received_defective = ?, received_note = ?, updated_at = NOW()
           WHERE id = ? AND inventory_purchase_id = ?`,
-        [receivedQty, condition, note, item.id, poId]
+        [goodQty, defectiveQty, note, item.id, poId]
       );
     }
 
@@ -250,45 +251,39 @@ const confirm = async (req, res, next) => {
       return res.redirect(`/receiving/${id}/detail`);
     }
 
-    // Pakai jumlah hasil verifikasi bila sudah diisi; jika belum, pakai jumlah dipesan.
-    const [items] = await conn.query(
-      `SELECT item_id, COALESCE(received_quantity, quantity) AS quantity
+    // Model buku besar: semua barang FISIK yang datang (baik + cacat) masuk stok.
+    // Barang cacat yang dikirim balik nanti dikeluarkan lewat retur, sehingga
+    // stok selalu = Σmasuk − Σkeluar. Jika belum diverifikasi, pakai jumlah dipesan.
+    const [rawItems] = await conn.query(
+      `SELECT item_id, quantity, received_quantity, received_defective
          FROM inventory_purchase_items
         WHERE inventory_purchase_id = ?`,
       [id]
     );
+    const items = rawItems.map((it) => {
+      const verified = it.received_quantity != null || it.received_defective != null;
+      const physical = verified
+        ? Number(it.received_quantity || 0) + Number(it.received_defective || 0)
+        : Number(it.quantity);
+      return { item_id: it.item_id, quantity: physical };
+    });
 
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
     for (const it of items) {
-      // 1) Catat transaksi barang masuk (type='in'), referensi = No PO.
+      // Catat transaksi barang masuk (type='in'), referensi = No PO.
+      // CATATAN: modul Penerimaan (B9) HANYA mencatat transaksi; pembaruan
+      // angka stok (tabel inventories) adalah tanggung jawab modul Stok Opname (B11).
       await conn.query(
         `INSERT INTO inventory_transactions
            (item_id, type, quantity, transaction_date, reference, notes, created_at, updated_at)
          VALUES (?, 'in', ?, ?, ?, 'Penerimaan barang dikonfirmasi', NOW(), NOW())`,
         [it.item_id, it.quantity, today, po.purchase_number]
       );
-
-      // 2) Tambah stok: update kalau baris stok ada, kalau tidak buat baru.
-      const [inv] = await conn.query(
-        "SELECT id FROM inventories WHERE item_id = ? LIMIT 1",
-        [it.item_id]
-      );
-      if (inv.length > 0) {
-        await conn.query(
-          "UPDATE inventories SET quantity = quantity + ?, updated_at = NOW() WHERE item_id = ?",
-          [it.quantity, it.item_id]
-        );
-      } else {
-        await conn.query(
-          "INSERT INTO inventories (item_id, quantity, created_at, updated_at) VALUES (?, ?, NOW(), NOW())",
-          [it.item_id, it.quantity]
-        );
-      }
     }
 
-    // 3) Tandai PO selesai.
+    // Tandai PO selesai.
     await conn.query(
       "UPDATE inventory_purchases SET status = 'completed', updated_at = NOW() WHERE id = ?",
       [id]
@@ -308,11 +303,21 @@ const confirm = async (req, res, next) => {
  * POST /receiving/retur
  * Catat retur barang ke vendor.
  */
+// Label alasan retur (value dropdown -> teks tampilan).
+const RETUR_REASON_LABEL = {
+  cacat: "Barang cacat / rusak",
+  salah_kirim: "Salah kirim / tidak sesuai spesifikasi",
+  kelebihan: "Kelebihan kirim",
+  kedaluwarsa: "Kedaluwarsa",
+  lainnya: "Lainnya",
+};
+
 const retur = async (req, res, next) => {
   const poId = req.body.po_id;
   const itemId = req.body.item_id;
   const qty = parseInt(req.body.quantity, 10);
-  const reason = (req.body.notes || "").trim();
+  const reasonLabel = RETUR_REASON_LABEL[req.body.reason] || "Lainnya";
+  const detail = (req.body.notes || "").trim();
 
   // Validasi dasar.
   if (!poId || !itemId || !Number.isInteger(qty) || qty <= 0) {
@@ -342,7 +347,7 @@ const retur = async (req, res, next) => {
     // Catat transaksi keluar (retur ke vendor).
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-    const notes = reason ? `Retur ke vendor: ${reason}` : "Retur ke vendor";
+    const notes = detail ? `${reasonLabel} - ${detail}` : reasonLabel;
 
     await conn.query(
       `INSERT INTO inventory_transactions
@@ -351,11 +356,66 @@ const retur = async (req, res, next) => {
       [itemId, qty, today, purchaseNumber, notes]
     );
 
-    // Kurangi stok (jaga agar tidak negatif).
-    await conn.query(
-      "UPDATE inventories SET quantity = GREATEST(quantity - ?, 0), updated_at = NOW() WHERE item_id = ?",
-      [qty, itemId]
+    // Pembaruan angka stok (inventories) diserahkan ke modul Stok Opname (B11).
+
+    await conn.commit();
+    res.redirect(`/receiving/${poId}/detail`);
+  } catch (err) {
+    await conn.rollback();
+    next(err);
+  } finally {
+    conn.release();
+  }
+};
+
+/**
+ * POST /receiving/replacement
+ * Catat barang ganti (replacement) dari vendor saat tiba -> tambah stok.
+ * Reuse inventory_transactions type 'in' dengan referensi No PO yang sama.
+ */
+const replacement = async (req, res, next) => {
+  const poId = req.body.po_id;
+  const itemId = req.body.item_id;
+  const qty = parseInt(req.body.quantity, 10);
+  const detail = (req.body.notes || "").trim();
+
+  if (!poId || !itemId || !Number.isInteger(qty) || qty <= 0) {
+    return res.status(400).render("error", {
+      message: "Data barang ganti tidak valid (item & jumlah wajib diisi).",
+      error: { status: 400, stack: "" },
+    });
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const [poRows] = await conn.query(
+      "SELECT purchase_number FROM inventory_purchases WHERE id = ?",
+      [poId]
     );
+    if (poRows.length === 0) {
+      await conn.rollback();
+      return res.status(404).render("error", {
+        message: "Purchase order tidak ditemukan.",
+        error: { status: 404, stack: "" },
+      });
+    }
+    const purchaseNumber = poRows[0].purchase_number;
+
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    // Awalan "Barang ganti" dipakai untuk membedakan dari transaksi konfirmasi.
+    const notes = detail ? `Barang ganti - ${detail}` : "Barang ganti dari vendor";
+
+    await conn.query(
+      `INSERT INTO inventory_transactions
+         (item_id, type, quantity, transaction_date, reference, notes, created_at, updated_at)
+       VALUES (?, 'in', ?, ?, ?, ?, NOW(), NOW())`,
+      [itemId, qty, today, purchaseNumber, notes]
+    );
+
+    // Pembaruan angka stok (inventories) diserahkan ke modul Stok Opname (B11).
 
     await conn.commit();
     res.redirect(`/receiving/${poId}/detail`);
@@ -393,8 +453,8 @@ const detail = async (req, res, next) => {
       `SELECT ipi.id, it.id AS item_id, it.name, it.unit,
               ipi.quantity AS ordered_qty,
               ipi.price,
-              ipi.received_quantity AS verified_qty,
-              ipi.received_condition,
+              ipi.received_quantity AS verified_good,
+              ipi.received_defective AS verified_defective,
               ipi.received_note,
               COALESCE(SUM(CASE WHEN t.type = 'in' THEN t.quantity END), 0) AS received_qty
        FROM inventory_purchase_items ipi
@@ -406,31 +466,44 @@ const detail = async (req, res, next) => {
              AND t.type = 'in'
        WHERE ipi.inventory_purchase_id = ?
        GROUP BY ipi.id, it.id, it.name, it.unit, ipi.quantity, ipi.price,
-                ipi.received_quantity, ipi.received_condition, ipi.received_note
+                ipi.received_quantity, ipi.received_defective, ipi.received_note
        ORDER BY ipi.id`,
       [id]
     );
 
     let totalOrdered = 0;
-    let totalReceived = 0;
+    let totalGood = 0;
+    let totalDefective = 0;
     let totalValue = 0;
     items.forEach((i) => {
       i.ordered_qty = Number(i.ordered_qty);
       i.received_qty = Number(i.received_qty);
       i.price = Number(i.price) || 0;
+
+      // Hasil verifikasi (bisa null bila item belum diverifikasi).
+      i.verified_good = i.verified_good == null ? null : Number(i.verified_good);
+      i.verified_defective = i.verified_defective == null ? null : Number(i.verified_defective);
+      i.is_verified = i.verified_good != null || i.verified_defective != null;
+      const good = i.verified_good || 0;
+      const defective = i.verified_defective || 0;
+      i.total_received = good + defective; // total fisik yang datang
+      i.diff = i.is_verified ? i.total_received - i.ordered_qty : null;
+
       i.line_total = i.price * i.ordered_qty;
-      i.diff = i.received_qty - i.ordered_qty;
       i.price_label = fmtRp(i.price);
       i.line_total_label = fmtRp(i.line_total);
+
       totalOrdered += i.ordered_qty;
-      totalReceived += i.received_qty;
+      totalGood += good;
+      totalDefective += defective;
       totalValue += i.line_total;
     });
 
     const summary = {
       itemCount: items.length,
       totalOrdered,
-      totalReceived,
+      totalGood,
+      totalDefective,
       totalValue,
       totalValue_label: fmtRp(totalValue),
     };
@@ -447,6 +520,23 @@ const detail = async (req, res, next) => {
         [po.purchase_number]
       );
       returns = rows.map((r) => ({
+        ...r,
+        transaction_date: fmtDate(r.transaction_date),
+      }));
+    }
+
+    // Riwayat barang ganti (transaksi 'in' bertanda "Barang ganti", referensi No PO ini).
+    let replacements = [];
+    if (po) {
+      const [rows] = await pool.query(
+        `SELECT t.quantity, t.transaction_date, t.notes, it.name, it.unit
+         FROM inventory_transactions t
+         JOIN items it ON it.id = t.item_id
+         WHERE t.reference = ? AND t.type = 'in' AND t.notes LIKE 'Barang ganti%'
+         ORDER BY t.id DESC`,
+        [po.purchase_number]
+      );
+      replacements = rows.map((r) => ({
         ...r,
         transaction_date: fmtDate(r.transaction_date),
       }));
@@ -474,6 +564,7 @@ const detail = async (req, res, next) => {
       items,
       summary,
       returns,
+      replacements,
       attachments,
     });
   } catch (err) {
@@ -502,20 +593,18 @@ const exportPDF = async (req, res, next) => {
     }
     const po = poRows[0];
 
+    // "Diterima" pada laporan = barang yang diterima saat PENERIMAAN AWAL
+    // (baik + cacat dari verifikasi), BUKAN penjumlahan semua transaksi masuk
+    // (barang ganti yang datang belakangan tidak ikut dihitung di sini).
     const [items] = await pool.query(
       `SELECT it.name, it.unit,
               ipi.quantity AS ordered_qty,
               ipi.price,
-              COALESCE(SUM(CASE WHEN t.type = 'in' THEN t.quantity END), 0) AS received_qty
+              ipi.received_quantity,
+              ipi.received_defective
        FROM inventory_purchase_items ipi
        JOIN items it ON it.id = ipi.item_id
-       JOIN inventory_purchases p ON p.id = ipi.inventory_purchase_id
-       LEFT JOIN inventory_transactions t
-              ON t.item_id = ipi.item_id
-             AND t.reference = p.purchase_number
-             AND t.type = 'in'
        WHERE ipi.inventory_purchase_id = ?
-       GROUP BY ipi.id, it.name, it.unit, ipi.quantity, ipi.price
        ORDER BY ipi.id`,
       [id]
     );
@@ -567,7 +656,12 @@ const exportPDF = async (req, res, next) => {
     let totalValue = 0;
     items.forEach((it, idx) => {
       const ordered = Number(it.ordered_qty);
-      const received = Number(it.received_qty);
+      // Diterima awal = baik + cacat (hasil verifikasi). Bila belum diverifikasi,
+      // anggap diterima penuh sesuai jumlah dipesan.
+      const verified = it.received_quantity != null || it.received_defective != null;
+      const received = verified
+        ? Number(it.received_quantity || 0) + Number(it.received_defective || 0)
+        : ordered;
       const price = Number(it.price) || 0;
       const subtotal = price * ordered;
       totalValue += subtotal;
@@ -657,6 +751,7 @@ module.exports = {
   verifyStore,
   confirm,
   retur,
+  replacement,
   detail,
   exportPDF,
   apiList,

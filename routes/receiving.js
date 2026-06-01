@@ -34,6 +34,9 @@ router.post("/:po_id/confirm", can, receivingController.confirm);
 // POST /receiving/retur -> catat retur barang ke vendor
 router.post("/retur", can, receivingController.retur);
 
+// POST /receiving/replacement -> catat barang ganti (replacement) dari vendor
+router.post("/replacement", can, receivingController.replacement);
+
 // GET /receiving/:id/detail -> detail penerimaan
 router.get("/:id/detail", can, receivingController.detail);
 

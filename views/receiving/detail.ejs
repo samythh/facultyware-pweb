@@ -135,6 +135,10 @@
                 onclick="document.getElementById('dialog-retur').showModal()">
                 Catat Retur
               </button>
+              <button type="button" class="btn-outline"
+                onclick="document.getElementById('dialog-replacement').showModal()">
+                Catat Barang Ganti
+              </button>
               <a class="btn-outline" href="/receiving/<%= po ? po.id : '0' %>/export">
                 Export PDF
               </a>
@@ -195,9 +199,9 @@
                   <tr class="text-muted-foreground text-left">
                     <th class="px-3 py-2 font-medium">Nama Barang</th>
                     <th class="px-3 py-2 font-medium num">Qty Dipesan</th>
-                    <th class="px-3 py-2 font-medium num">Qty Diterima</th>
+                    <th class="px-3 py-2 font-medium num">Diterima Baik</th>
+                    <th class="px-3 py-2 font-medium num">Cacat</th>
                     <th class="px-3 py-2 font-medium num">Selisih</th>
-                    <th class="px-3 py-2 font-medium">Kondisi</th>
                     <th class="px-3 py-2 font-medium num">Harga Satuan</th>
                     <th class="px-3 py-2 font-medium num">Subtotal</th>
                   </tr>
@@ -211,23 +215,29 @@
                           <span class="text-muted-foreground">(<%= item.unit %>)</span>
                         </td>
                         <td class="px-3 py-2 num"><%= item.ordered_qty %></td>
-                        <td class="px-3 py-2 num"><%= item.received_qty %></td>
-                        <td class="px-3 py-2 num"><%= item.diff %></td>
-                        <td class="px-3 py-2">
-                          <% if (item.received_condition) { %>
-                            <span class="cond-pill cond-<%= item.received_condition %>">
-                              <%= item.received_condition === 'cacat' ? 'Cacat' : 'Baik' %>
-                            </span>
-                          <% } else { %>
-                            <span class="cond-empty">Belum diverifikasi</span>
-                          <% } %>
-                          <% if (item.received_note) { %>
-                            <span class="item-note"><%= item.received_note %></span>
-                          <% } %>
-                        </td>
+                        <% if (item.is_verified) { %>
+                          <td class="px-3 py-2 num"><%= item.verified_good || 0 %></td>
+                          <td class="px-3 py-2 num">
+                            <% if (item.verified_defective > 0) { %>
+                              <span class="cond-pill cond-cacat"><%= item.verified_defective %></span>
+                            <% } else { %>
+                              0
+                            <% } %>
+                          </td>
+                          <td class="px-3 py-2 num"><%= item.diff %></td>
+                        <% } else { %>
+                          <td class="px-3 py-2 num cond-empty" colspan="3">Belum diverifikasi</td>
+                        <% } %>
                         <td class="px-3 py-2 num"><%= item.price_label %></td>
                         <td class="px-3 py-2 num"><%= item.line_total_label %></td>
                       </tr>
+                      <% if (item.received_note) { %>
+                        <tr>
+                          <td class="px-3 pb-2 pt-0 text-muted-foreground" colspan="7" style="font-size:.72rem">
+                            Catatan <%= item.name %>: <%= item.received_note %>
+                          </td>
+                        </tr>
+                      <% } %>
                     <% }) %>
                   <% } else { %>
                     <tr class="border-t">
@@ -242,9 +252,9 @@
                     <tr class="totals-row">
                       <td class="px-3 py-2">Total</td>
                       <td class="px-3 py-2 num"><%= summary.totalOrdered %></td>
-                      <td class="px-3 py-2 num"><%= summary.totalReceived %></td>
+                      <td class="px-3 py-2 num"><%= summary.totalGood %></td>
+                      <td class="px-3 py-2 num"><%= summary.totalDefective %></td>
                       <td class="px-3 py-2 num"></td>
-                      <td class="px-3 py-2"></td>
                       <td class="px-3 py-2 num"></td>
                       <td class="px-3 py-2 num"><%= summary.totalValue_label %></td>
                     </tr>
@@ -326,6 +336,46 @@
             </section>
           </div>
           <% } %>
+
+          <!-- Riwayat Barang Ganti -->
+          <% if (typeof replacements !== 'undefined' && replacements.length > 0) { %>
+          <div class="card">
+            <header>
+              <h2>Riwayat Barang Ganti</h2>
+              <p>Barang pengganti dari vendor yang sudah diterima (menambah stok).</p>
+              <button type="button" class="accordion-toggle" data-slot="card-action" aria-expanded="true" aria-label="Tampilkan atau sembunyikan riwayat barang ganti">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </header>
+            <section class="accordion-body">
+              <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-muted-foreground text-left">
+                    <th class="px-3 py-2 font-medium">Tanggal</th>
+                    <th class="px-3 py-2 font-medium">Nama Barang</th>
+                    <th class="px-3 py-2 font-medium num">Jumlah</th>
+                    <th class="px-3 py-2 font-medium">Catatan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% replacements.forEach(function (r) { %>
+                    <tr class="border-t">
+                      <td class="px-3 py-2"><%= r.transaction_date %></td>
+                      <td class="px-3 py-2">
+                        <%= r.name %>
+                        <span class="text-muted-foreground">(<%= r.unit %>)</span>
+                      </td>
+                      <td class="px-3 py-2 num"><%= r.quantity %></td>
+                      <td class="px-3 py-2"><%= r.notes %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+              </div>
+            </section>
+          </div>
+          <% } %>
         </div>
       </div>
     </main>
@@ -373,9 +423,19 @@
             <input type="number" min="1" id="retur-qty" name="quantity" class="input" required />
           </div>
           <div class="grid gap-2">
-            <label for="retur-notes">Alasan Retur</label>
+            <label for="retur-reason">Alasan Retur</label>
+            <select id="retur-reason" name="reason" class="select" required>
+              <option value="cacat">Barang cacat / rusak</option>
+              <option value="salah_kirim">Salah kirim / tidak sesuai spesifikasi</option>
+              <option value="kelebihan">Kelebihan kirim</option>
+              <option value="kedaluwarsa">Kedaluwarsa</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div class="grid gap-2">
+            <label for="retur-notes">Catatan (opsional)</label>
             <textarea id="retur-notes" name="notes" class="input"
-              placeholder="Contoh: barang cacat atau tidak sesuai spesifikasi"></textarea>
+              placeholder="Rincian tambahan, mis. 5 unit ujung pena kering"></textarea>
           </div>
           <footer class="flex items-center justify-end gap-2">
             <button type="button" class="btn-outline"
@@ -383,6 +443,45 @@
               Batal
             </button>
             <button type="submit" class="btn">Simpan Retur</button>
+          </footer>
+        </form>
+      </article>
+    </dialog>
+
+    <!-- Modal: Catat Barang Ganti -->
+    <dialog id="dialog-replacement" class="dialog" aria-labelledby="dialog-replacement-title">
+      <article>
+        <header>
+          <h2 id="dialog-replacement-title">Catat Barang Ganti</h2>
+          <p>Catat barang pengganti dari vendor yang sudah tiba. Stok akan bertambah.</p>
+        </header>
+        <form method="post" action="/receiving/replacement" class="form grid gap-4">
+          <input type="hidden" name="po_id" value="<%= po ? po.id : '' %>" />
+          <div class="grid gap-2">
+            <label for="repl-item">Barang Pengganti</label>
+            <select id="repl-item" name="item_id" class="select" required>
+              <% if (typeof items !== 'undefined' && items.length > 0) { %>
+                <% items.forEach(function (item) { %>
+                  <option value="<%= item.item_id %>"><%= item.name %> (<%= item.unit %>)</option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
+          <div class="grid gap-2">
+            <label for="repl-qty">Jumlah Diterima</label>
+            <input type="number" min="1" id="repl-qty" name="quantity" class="input" required />
+          </div>
+          <div class="grid gap-2">
+            <label for="repl-notes">Catatan (opsional)</label>
+            <textarea id="repl-notes" name="notes" class="input"
+              placeholder="mis. ganti 30 unit yang sebelumnya cacat"></textarea>
+          </div>
+          <footer class="flex items-center justify-end gap-2">
+            <button type="button" class="btn-outline"
+              onclick="document.getElementById('dialog-replacement').close()">
+              Batal
+            </button>
+            <button type="submit" class="btn">Simpan Barang Ganti</button>
           </footer>
         </form>
       </article>
