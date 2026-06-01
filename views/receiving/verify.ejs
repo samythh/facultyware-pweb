@@ -69,9 +69,10 @@
       .dropzone-or { display: flex; align-items: center; gap: .75rem; width: 180px; color: var(--color-muted-foreground); font-size: .7rem; letter-spacing: .1em; }
       .dropzone-or::before, .dropzone-or::after { content: ""; flex: 1; height: 1px; background: var(--color-border); }
       .dropzone-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1.5rem; margin-top: .4rem; font-size: .75rem; color: var(--color-muted-foreground); }
-      .dropzone-file { display: none; align-items: center; gap: .5rem; margin-top: .5rem; font-size: .82rem; color: var(--color-foreground); }
-      .dropzone-file.is-active { display: flex; }
-      .dropzone-file svg { color: var(--color-primary); flex: none; }
+      .dropzone-files { list-style: none; margin: .25rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .4rem; }
+      .dropzone-files li { display: flex; align-items: center; gap: .5rem; font-size: .82rem; color: var(--color-foreground); padding: .4rem .6rem; border: 1px solid var(--color-border); border-radius: .5rem; background: var(--color-background); }
+      .dropzone-files svg { color: var(--color-primary); flex: none; }
+      .dropzone-files .file-size { margin-left: auto; font-size: .72rem; color: var(--color-muted-foreground); }
     </style>
   </head>
   <body>
@@ -200,7 +201,7 @@
               <div class="grid gap-2">
                 <label for="bukti">Bukti foto atau surat jalan</label>
                 <div class="dropzone" id="dropzone">
-                  <input type="file" id="bukti" name="bukti" accept=".jpg,.jpeg,.png,.pdf" />
+                  <input type="file" id="bukti" name="bukti" accept=".jpg,.jpeg,.png,.pdf" multiple />
                   <span class="dropzone-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
                   </span>
@@ -209,13 +210,10 @@
                   <button type="button" class="btn-outline" id="bukti-browse">Pilih Berkas</button>
                 </div>
                 <div class="dropzone-meta">
-                  <span>Format: JPG, JPEG, PNG, atau PDF</span>
-                  <span>Ukuran maksimal: 5 MB</span>
+                  <span>Format: JPG, JPEG, PNG, atau PDF (bisa lebih dari satu)</span>
+                  <span>Maks. 5 berkas &middot; 5 MB / berkas</span>
                 </div>
-                <p class="dropzone-file" id="bukti-file">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                  <span id="bukti-file-name"></span>
-                </p>
+                <ul class="dropzone-files" id="bukti-files"></ul>
               </div>
             </section>
             <footer class="flex items-center justify-end gap-2">
@@ -234,9 +232,14 @@
         const dz = document.getElementById("dropzone");
         const input = document.getElementById("bukti");
         const browse = document.getElementById("bukti-browse");
-        const fileBox = document.getElementById("bukti-file");
-        const fileName = document.getElementById("bukti-file-name");
+        const fileList = document.getElementById("bukti-files");
         if (!dz || !input) return;
+
+        const MAX_FILES = 5;
+        const fmtSize = (b) =>
+          b < 1024 * 1024
+            ? (b / 1024).toFixed(0) + " KB"
+            : (b / (1024 * 1024)).toFixed(1) + " MB";
 
         // Klik area atau tombol "Pilih Berkas" membuka dialog file.
         dz.addEventListener("click", (e) => {
@@ -250,16 +253,23 @@
           });
         }
 
-        const showFile = () => {
-          if (input.files && input.files.length) {
-            fileName.textContent = input.files[0].name;
-            fileBox.classList.add("is-active");
-          } else {
-            fileBox.classList.remove("is-active");
-          }
+        const fileIcon =
+          '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+
+        const showFiles = () => {
+          fileList.innerHTML = "";
+          const files = Array.from(input.files || []).slice(0, MAX_FILES);
+          files.forEach((f) => {
+            const li = document.createElement("li");
+            li.innerHTML =
+              fileIcon +
+              '<span>' + f.name + '</span>' +
+              '<span class="file-size">' + fmtSize(f.size) + '</span>';
+            fileList.appendChild(li);
+          });
         };
 
-        input.addEventListener("change", showFile);
+        input.addEventListener("change", showFiles);
 
         ["dragenter", "dragover"].forEach((evt) =>
           dz.addEventListener(evt, (e) => {
@@ -276,7 +286,7 @@
         dz.addEventListener("drop", (e) => {
           if (e.dataTransfer && e.dataTransfer.files.length) {
             input.files = e.dataTransfer.files;
-            showFile();
+            showFiles();
           }
         });
       })();

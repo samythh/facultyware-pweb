@@ -20,11 +20,11 @@ router.get("/", can, receivingController.index);
 // GET /receiving/:po_id/verify -> form verifikasi
 router.get("/:po_id/verify", can, receivingController.verifyForm);
 
-// POST /receiving/:po_id/verify -> simpan verifikasi (dengan upload bukti)
+// POST /receiving/:po_id/verify -> simpan verifikasi (dengan upload bukti, maks 5 berkas)
 router.post(
   "/:po_id/verify",
   can,
-  upload.single("bukti"),
+  upload.array("bukti", 5),
   receivingController.verifyStore
 );
 

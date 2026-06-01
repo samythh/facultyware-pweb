@@ -64,6 +64,24 @@
       .num { text-align: right; font-variant-numeric: tabular-nums; }
       .totals-row td { font-weight: 700; border-top: 2px solid var(--color-border); }
 
+      /* Pil kondisi hasil verifikasi */
+      .cond-pill { display: inline-flex; align-items: center; gap: .3rem; padding: .15rem .55rem; border-radius: 9999px; font-size: .72rem; font-weight: 600; line-height: 1.3; }
+      .cond-baik { background: color-mix(in oklab, oklch(55% 0.14 150) 16%, transparent); color: oklch(45% 0.13 150); }
+      .cond-cacat { background: color-mix(in oklab, oklch(60% 0.2 25) 16%, transparent); color: oklch(50% 0.19 25); }
+      .cond-empty { color: var(--color-muted-foreground); font-size: .8rem; }
+      .item-note { display: block; margin-top: .2rem; font-size: .72rem; color: var(--color-muted-foreground); }
+
+      /* Galeri bukti penerimaan */
+      .proof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .85rem; }
+      .proof-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--color-border); border-radius: .65rem; background: var(--color-background); transition: border-color .15s ease; }
+      .proof-card:hover { border-color: var(--color-primary); }
+      .proof-thumb { display: flex; align-items: center; justify-content: center; height: 120px; background: var(--color-muted); overflow: hidden; }
+      .proof-thumb img { width: 100%; height: 100%; object-fit: cover; }
+      .proof-thumb svg { color: var(--color-muted-foreground); }
+      .proof-meta { padding: .5rem .65rem; font-size: .75rem; }
+      .proof-name { display: block; font-weight: 500; color: var(--color-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .proof-date { color: var(--color-muted-foreground); font-size: .68rem; }
+
       /* Accordion (lipat/buka isi kartu) — desain kartu tetap, hanya tambah panah di kanan */
       .accordion-toggle { grid-column: 2; grid-row: 1 / span 2; align-self: start; justify-self: end; display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border: 0; border-radius: .5rem; background: transparent; color: var(--color-muted-foreground); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
       .accordion-toggle:hover { background: var(--color-muted); color: var(--color-foreground); }
@@ -179,6 +197,7 @@
                     <th class="px-3 py-2 font-medium num">Qty Dipesan</th>
                     <th class="px-3 py-2 font-medium num">Qty Diterima</th>
                     <th class="px-3 py-2 font-medium num">Selisih</th>
+                    <th class="px-3 py-2 font-medium">Kondisi</th>
                     <th class="px-3 py-2 font-medium num">Harga Satuan</th>
                     <th class="px-3 py-2 font-medium num">Subtotal</th>
                   </tr>
@@ -194,13 +213,25 @@
                         <td class="px-3 py-2 num"><%= item.ordered_qty %></td>
                         <td class="px-3 py-2 num"><%= item.received_qty %></td>
                         <td class="px-3 py-2 num"><%= item.diff %></td>
+                        <td class="px-3 py-2">
+                          <% if (item.received_condition) { %>
+                            <span class="cond-pill cond-<%= item.received_condition %>">
+                              <%= item.received_condition === 'cacat' ? 'Cacat' : 'Baik' %>
+                            </span>
+                          <% } else { %>
+                            <span class="cond-empty">Belum diverifikasi</span>
+                          <% } %>
+                          <% if (item.received_note) { %>
+                            <span class="item-note"><%= item.received_note %></span>
+                          <% } %>
+                        </td>
                         <td class="px-3 py-2 num"><%= item.price_label %></td>
                         <td class="px-3 py-2 num"><%= item.line_total_label %></td>
                       </tr>
                     <% }) %>
                   <% } else { %>
                     <tr class="border-t">
-                      <td class="px-3 py-8 text-center text-muted-foreground" colspan="6">
+                      <td class="px-3 py-8 text-center text-muted-foreground" colspan="7">
                         Belum ada hasil verifikasi yang tercatat.
                       </td>
                     </tr>
@@ -213,6 +244,7 @@
                       <td class="px-3 py-2 num"><%= summary.totalOrdered %></td>
                       <td class="px-3 py-2 num"><%= summary.totalReceived %></td>
                       <td class="px-3 py-2 num"></td>
+                      <td class="px-3 py-2"></td>
                       <td class="px-3 py-2 num"></td>
                       <td class="px-3 py-2 num"><%= summary.totalValue_label %></td>
                     </tr>
@@ -222,6 +254,38 @@
               </div>
             </section>
           </div>
+
+          <!-- Bukti Penerimaan -->
+          <% if (typeof attachments !== 'undefined' && attachments.length > 0) { %>
+          <div class="card">
+            <header>
+              <h2>Bukti Penerimaan</h2>
+              <p>Foto / surat jalan yang diunggah saat verifikasi.</p>
+              <button type="button" class="accordion-toggle" data-slot="card-action" aria-expanded="true" aria-label="Tampilkan atau sembunyikan bukti">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </header>
+            <section class="accordion-body">
+              <div class="proof-grid">
+                <% attachments.forEach(function (a) { %>
+                  <a class="proof-card" href="<%= a.url %>" target="_blank" rel="noopener" title="<%= a.original_name %>">
+                    <span class="proof-thumb">
+                      <% if (a.is_pdf) { %>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12h4"/><path d="M10 16h4"/></svg>
+                      <% } else { %>
+                        <img src="<%= a.url %>" alt="<%= a.original_name %>" loading="lazy" />
+                      <% } %>
+                    </span>
+                    <span class="proof-meta">
+                      <span class="proof-name"><%= a.original_name || a.file_path %></span>
+                      <span class="proof-date"><%= a.created_label %></span>
+                    </span>
+                  </a>
+                <% }) %>
+              </div>
+            </section>
+          </div>
+          <% } %>
 
           <!-- Riwayat Retur -->
           <% if (typeof returns !== 'undefined' && returns.length > 0) { %>

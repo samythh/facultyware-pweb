@@ -139,18 +139,84 @@ const verifyForm = async (req, res, next) => {
   }
 };
 
+// Ambil nilai field array dari form (mis. name="received_qty[12]").
+// Tahan untuk dua bentuk hasil parser: nested object atau key flat.
+function pickField(body, group, id) {
+  const nested = body[group];
+  if (nested && typeof nested === "object" && nested[id] != null) {
+    return nested[id];
+  }
+  return body[`${group}[${id}]`];
+}
+
 /**
  * POST /receiving/:po_id/verify
- * Simpan hasil verifikasi (qty diterima, kondisi, keterangan) + upload bukti.
- * Pakai middleware upload (req.file tersedia di sini).
+ * Simpan hasil verifikasi (qty diterima, kondisi, keterangan) per item
+ * + simpan path tiap bukti (req.files dari upload.array).
  */
 const verifyStore = async (req, res, next) => {
+  const poId = req.params.po_id;
+  const conn = await pool.getConnection();
   try {
-    // TODO: validasi input, simpan qty diterima & kondisi per item,
-    //       simpan path bukti (req.file?.filename), update status PO.
-    res.send("TODO: verifyStore");
+    await conn.beginTransaction();
+
+    // Pastikan PO ada (dan ambil daftar item miliknya).
+    const [poRows] = await conn.query(
+      "SELECT id FROM inventory_purchases WHERE id = ?",
+      [poId]
+    );
+    if (poRows.length === 0) {
+      await conn.rollback();
+      return res.status(404).render("error", {
+        message: "Purchase order tidak ditemukan.",
+        error: { status: 404, stack: "" },
+      });
+    }
+
+    const [items] = await conn.query(
+      "SELECT id, quantity FROM inventory_purchase_items WHERE inventory_purchase_id = ?",
+      [poId]
+    );
+
+    // Simpan hasil verifikasi per item.
+    for (const item of items) {
+      const rawQty = pickField(req.body, "received_qty", item.id);
+      let receivedQty = parseInt(rawQty, 10);
+      if (!Number.isInteger(receivedQty) || receivedQty < 0) {
+        receivedQty = item.quantity; // default: sama dengan jumlah dipesan
+      }
+
+      const rawCond = pickField(req.body, "condition", item.id);
+      const condition = rawCond === "cacat" ? "cacat" : "baik";
+
+      const note = (pickField(req.body, "notes", item.id) || "").toString().trim() || null;
+
+      await conn.query(
+        `UPDATE inventory_purchase_items
+            SET received_quantity = ?, received_condition = ?, received_note = ?, updated_at = NOW()
+          WHERE id = ? AND inventory_purchase_id = ?`,
+        [receivedQty, condition, note, item.id, poId]
+      );
+    }
+
+    // Simpan tiap berkas bukti (jika ada).
+    const files = Array.isArray(req.files) ? req.files : [];
+    for (const f of files) {
+      await conn.query(
+        `INSERT INTO inventory_receiving_attachments
+           (inventory_purchase_id, file_path, original_name, mime_type, size, created_at)
+         VALUES (?, ?, ?, ?, ?, NOW())`,
+        [poId, f.filename, f.originalname, f.mimetype, f.size]
+      );
+    }
+
+    await conn.commit();
+    res.redirect(`/receiving/${poId}/detail`);
   } catch (err) {
+    await conn.rollback();
     next(err);
+  } finally {
+    conn.release();
   }
 };
 
@@ -184,8 +250,11 @@ const confirm = async (req, res, next) => {
       return res.redirect(`/receiving/${id}/detail`);
     }
 
+    // Pakai jumlah hasil verifikasi bila sudah diisi; jika belum, pakai jumlah dipesan.
     const [items] = await conn.query(
-      "SELECT item_id, quantity FROM inventory_purchase_items WHERE inventory_purchase_id = ?",
+      `SELECT item_id, COALESCE(received_quantity, quantity) AS quantity
+         FROM inventory_purchase_items
+        WHERE inventory_purchase_id = ?`,
       [id]
     );
 
@@ -324,6 +393,9 @@ const detail = async (req, res, next) => {
       `SELECT ipi.id, it.id AS item_id, it.name, it.unit,
               ipi.quantity AS ordered_qty,
               ipi.price,
+              ipi.received_quantity AS verified_qty,
+              ipi.received_condition,
+              ipi.received_note,
               COALESCE(SUM(CASE WHEN t.type = 'in' THEN t.quantity END), 0) AS received_qty
        FROM inventory_purchase_items ipi
        JOIN items it ON it.id = ipi.item_id
@@ -333,7 +405,8 @@ const detail = async (req, res, next) => {
              AND t.reference = p.purchase_number
              AND t.type = 'in'
        WHERE ipi.inventory_purchase_id = ?
-       GROUP BY ipi.id, it.id, it.name, it.unit, ipi.quantity, ipi.price
+       GROUP BY ipi.id, it.id, it.name, it.unit, ipi.quantity, ipi.price,
+                ipi.received_quantity, ipi.received_condition, ipi.received_note
        ORDER BY ipi.id`,
       [id]
     );
@@ -379,6 +452,21 @@ const detail = async (req, res, next) => {
       }));
     }
 
+    // Bukti penerimaan yang diunggah saat verifikasi.
+    const [attRows] = await pool.query(
+      `SELECT id, file_path, original_name, mime_type, created_at
+         FROM inventory_receiving_attachments
+        WHERE inventory_purchase_id = ?
+        ORDER BY id DESC`,
+      [id]
+    );
+    const attachments = attRows.map((a) => ({
+      ...a,
+      url: `/assets/uploads/receiving/${a.file_path}`,
+      is_pdf: a.mime_type === "application/pdf",
+      created_label: fmtDate(a.created_at),
+    }));
+
     res.render("receiving/detail", {
       title: "Detail Penerimaan",
       user: req.session.username,
@@ -386,6 +474,7 @@ const detail = async (req, res, next) => {
       items,
       summary,
       returns,
+      attachments,
     });
   } catch (err) {
     next(err);
