@@ -59,15 +59,7 @@ async function main() {
     );
     const [[row]] = await pool.query("SELECT id FROM items WHERE code = ?", [it.code]);
     itemId[it.code] = row.id;
-
-    // Pastikan ada baris stok awal untuk tiap item.
-    const [inv] = await pool.query("SELECT id FROM inventories WHERE item_id = ?", [row.id]);
-    if (inv.length === 0) {
-      await pool.query(
-        "INSERT INTO inventories (item_id, quantity, created_at, updated_at) VALUES (?, 0, NOW(), NOW())",
-        [row.id]
-      );
-    }
+    // Tabel inventories (stok) milik modul Stok Opname (B11) — tidak disentuh seed Penerimaan.
   }
 
   // 2) Upsert purchases + isi ulang purchase_items & transaksi dummy.
@@ -101,7 +93,8 @@ async function main() {
     // Reset transaksi dummy untuk PO ini.
     await pool.query("DELETE FROM inventory_transactions WHERE reference = ?", [po.purchase_number]);
 
-    // PO 'completed' dianggap sudah diterima -> catat transaksi masuk (stok bertambah).
+    // PO 'completed' dianggap sudah diterima -> catat transaksi masuk.
+    // (Angka stok di inventories diurus modul Stok Opname B11, bukan di sini.)
     if (po.status === "completed") {
       for (const line of po.items) {
         await pool.query(
@@ -109,10 +102,6 @@ async function main() {
              (item_id, type, quantity, transaction_date, reference, notes, created_at, updated_at)
            VALUES (?, 'in', ?, ?, ?, 'Penerimaan barang (seed dummy)', NOW(), NOW())`,
           [itemId[line.code], line.quantity, po.purchase_date, po.purchase_number]
-        );
-        await pool.query(
-          "UPDATE inventories SET quantity = quantity + ?, updated_at = NOW() WHERE item_id = ?",
-          [line.quantity, itemId[line.code]]
         );
       }
     }
