@@ -1,0 +1,140 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main id="content">
+  <%- include('../partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto">
+      
+      <!-- Top Title and Create Button -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight">Permintaan Pengadaan Barang</h1>
+          <p class="text-sm text-muted-foreground">Kelola permohonan pengadaan barang inventaris baru.</p>
+        </div>
+        <a href="/procurement/create" class="btn shrink-0" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Buat Permintaan
+        </a>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="card p-4 bg-card rounded-xl border shadow-sm mb-6">
+        <form action="/procurement" method="GET" class="flex gap-2" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+          <div class="relative flex-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" name="search" value="<%= search %>" placeholder="Cari berdasarkan judul permintaan..." class="input w-full" style="padding-left: 2.5rem !important;" />
+          </div>
+          <button type="submit" class="btn-outline">Cari</button>
+          <% if (search) { %>
+            <a href="/procurement" class="btn-ghost" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Clear</a>
+          <% } %>
+        </form>
+      </div>
+
+      <!-- Table Card -->
+      <div class="card bg-card rounded-xl border shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-muted/50 border-b">
+                <th class="p-4 font-semibold text-muted-foreground w-[180px]">No. Permintaan</th>
+                <th class="p-4 font-semibold text-muted-foreground">Judul</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[120px]">Status</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[150px]">Tanggal Dibuat</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[100px] text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <% if (procurements.length === 0) { %>
+                <tr>
+                  <td colspan="5" class="p-8 text-center text-muted-foreground">
+                    Tidak ada data permintaan pengadaan ditemukan.
+                  </td>
+                </tr>
+              <% } else { %>
+                <% procurements.forEach(item => { %>
+                  <tr class="hover:bg-muted/30 transition-colors">
+                    <td class="p-4 font-mono font-medium text-primary">
+                      <%= item.request_number %>
+                    </td>
+                    <td class="p-4">
+                      <%= item.title %>
+                    </td>
+                    <td class="p-4">
+                      <% if (item.status === 'draft') { %>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
+                          Draft
+                        </span>
+                      <% } else if (item.status === 'submitted') { %>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-900/50">
+                          Submitted
+                        </span>
+                      <% } else if (item.status === 'approved') { %>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-900/50">
+                          Approved
+                        </span>
+                      <% } else if (item.status === 'rejected') { %>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-900/50">
+                          Rejected
+                        </span>
+                      <% } %>
+                    </td>
+                    <td class="p-4 text-muted-foreground">
+                      <%= item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-' %>
+                    </td>
+                    <td class="p-4 text-right">
+                      <a href="/procurement/<%= item.id %>" class="btn-xs-outline inline-flex items-center" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+                        Detail
+                      </a>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Footer -->
+        <div class="p-4 border-t flex items-center justify-between gap-4">
+          <span class="text-xs text-muted-foreground">
+            Halaman <%= currentPage %> dari <%= totalPages %>
+          </span>
+          <div class="flex gap-1" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+            <% if (currentPage > 1) { %>
+              <a href="/procurement?page=<%= currentPage - 1 %>&search=<%= search %>" class="btn-xs-outline">Sebelumnya</a>
+            <% } else { %>
+              <button type="button" onclick="if(window.showToast){window.showToast('Info', 'Anda sudah berada di halaman pertama.', 'info')}else{alert('Anda sudah berada di halaman pertama.')}" class="btn-xs-outline select-none">Sebelumnya</button>
+            <% } %>
+
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <% if (i === currentPage) { %>
+                <button type="button" class="btn-xs font-semibold select-none"><%= i %></button>
+              <% } else { %>
+                <a href="/procurement?page=<%= i %>&search=<%= search %>" class="btn-xs-outline">
+                  <%= i %>
+                </a>
+              <% } %>
+            <% } %>
+
+            <% if (currentPage < totalPages) { %>
+              <a href="/procurement?page=<%= currentPage + 1 %>&search=<%= search %>" class="btn-xs-outline">Berikutnya</a>
+            <% } else { %>
+              <button type="button" onclick="if(window.showToast){window.showToast('Info', 'Anda sudah berada di halaman terakhir.', 'info')}else{alert('Anda sudah berada di halaman terakhir.')}" class="btn-xs-outline select-none">Berikutnya</button>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>
