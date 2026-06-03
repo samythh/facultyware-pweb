@@ -20,30 +20,31 @@ const login = async (req, res, next) => {
   const { username, password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
+    const [rows] = await db.query("SELECT * FROM users WHERE email = ? OR name = ?", [
+      username, username
     ]);
 
     if (rows.length === 0) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Invalid username/email or password",
       });
     }
 
     const user = rows[0];
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
+    // Attempt bcrypt compare, fallback to plain text compare if not hashed
+    const isMatch = await bcrypt.compare(password, user.password).catch(() => false);
+    
+    if (!isMatch && password !== user.password) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Invalid username/email or password",
       });
     }
 
     // Set session
     req.session.userId = user.id;
-    req.session.username = user.username;
+    req.session.username = user.name; // using name since username column doesn't exist
 
     res.redirect("/home");
   } catch (err) {

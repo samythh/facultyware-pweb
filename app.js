@@ -28,6 +28,10 @@ const sessionStore = new MySQLStore({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  // TAMBAHKAN BLOK INI: Mengubah nama tabel session default agar tidak bentrok
+  schema: {
+    tableName: 'express_sessions'
+  }
 });
 
 app.use(session({
@@ -43,6 +47,7 @@ app.use(session({
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/approval', require('./routes/approval'));
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);

@@ -84,8 +84,8 @@
             <div class="flex items-center gap-4">
                 <div class="hidden md:flex gap-6 items-center">
                     <nav class="flex gap-4">
-                        <a class="text-primary font-bold border-b-2 border-primary transition-all duration-200" href="/wadek/inbox">Inbox</a>
-                        <a class="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">Archive</a>
+                        <a class="<%= tab === 'inbox' ? 'text-primary font-bold border-b-2 border-primary' : 'text-on-surface-variant font-medium hover:text-primary' %> transition-all duration-200" href="/approval">Inbox</a>
+                        <a class="<%= tab === 'history' ? 'text-primary font-bold border-b-2 border-primary' : 'text-on-surface-variant font-medium hover:text-primary' %> transition-colors" href="/approval/history">Archive</a>
                     </nav>
                 </div>
                 <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center overflow-hidden">
@@ -94,15 +94,33 @@
             </div>
         </div>
         <div class="md:hidden flex px-4 pb-2 gap-4 border-t border-outline-variant/30 pt-2 bg-surface-container-lowest">
-            <a class="font-label-caps text-label-caps text-primary border-b-2 border-primary py-1" href="/wadek/inbox">INBOX</a>
-            <a class="font-label-caps text-label-caps text-on-surface-variant py-1" href="#">ARCHIVE</a>
+            <a class="font-label-caps text-label-caps <%= tab === 'inbox' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant' %> py-1" href="/approval">INBOX</a>
+            <a class="font-label-caps text-label-caps <%= tab === 'history' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant' %> py-1" href="/approval/history">ARCHIVE</a>
         </div>
     </header>
 
     <main class="flex-grow max-w-container-max mx-auto w-full px-4 md:px-margin-desktop py-8">
-        <section class="mb-8">
-            <h2 class="font-headline-md text-headline-md text-on-surface mb-1">Inbox Wakil Dekan</h2>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">Review and approve procurement requests for the Faculty of Engineering.</p>
+        <section class="mb-8 flex justify-between items-end">
+            <div>
+                <h2 class="font-headline-md text-headline-md text-on-surface mb-1"><%= title %></h2>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                    <% if (tab === 'history') { %>
+                        Riwayat keputusan persetujuan pengadaan barang.
+                    <% } else { %>
+                        Review and approve procurement requests for the Faculty of Engineering.
+                    <% } %>
+                </p>
+            </div>
+            <% if (tab === 'history') { %>
+                <div class="flex gap-2">
+                    <a href="/approval/rekap/export?format=pdf" class="px-4 py-2 bg-primary text-on-primary rounded text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">picture_as_pdf</span> PDF
+                    </a>
+                    <a href="/approval/rekap/export?format=excel" class="px-4 py-2 bg-[#1e7145] text-white rounded text-sm font-semibold hover:bg-[#1e7145]/90 transition-colors flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">table_view</span> Excel
+                    </a>
+                </div>
+            <% } %>
         </section>
 
         <div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden shadow-sm card-accent-bar">
@@ -122,7 +140,7 @@
                         
                         <% if (procurements && procurements.length > 0) { %>
                             <% procurements.forEach(proc => { %>
-                                <tr onclick="window.location.href='/wadek/detail/<%= proc.id %>'" class="hover:bg-surface-container-low transition-colors duration-200 cursor-pointer group">
+                                <tr onclick="window.location.href='/approval/<%= proc.id %>'" class="hover:bg-surface-container-low transition-colors duration-200 cursor-pointer group">
                                     <td class="px-6 py-5 font-data-mono text-data-mono tabular-nums text-on-surface">#<%= proc.request_number %></td>
                                     <td class="px-6 py-5 font-body-sm text-body-sm text-on-surface">
                                         <%= new Date(proc.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) %>

@@ -65,7 +65,7 @@
     
     <!-- Top Navigation -->
     <header class="sticky top-0 z-40 w-full bg-background border-b border-outline-variant px-margin-mobile py-4 flex items-center gap-4">
-        <a href="/wadek/inbox" aria-label="Go back" class="flex items-center justify-center w-10 h-10 hover:bg-surface-container-low transition-colors rounded-full">
+        <a href="/approval" aria-label="Go back" class="flex items-center justify-center w-10 h-10 hover:bg-surface-container-low transition-colors rounded-full">
             <span class="material-symbols-outlined text-primary">arrow_back</span>
         </a>
         <h1 class="serif-heading font-headline-md text-headline-md text-primary">Detail Request #<%= procurement.request_number %></h1>
@@ -135,13 +135,11 @@
         <!-- Action CTAs (Hanya render jika status = submitted) -->
         <% if (procurement.status === 'submitted') { %>
         <div class="flex flex-col gap-3 py-4">
-            <!-- Form untuk Approve -->
-            <form action="/wadek/approve/<%= procurement.id %>" method="POST" class="w-full">
-                <button type="submit" class="w-full bg-primary text-on-primary font-body-md py-4 transition-all active:scale-[0.98] flex items-center justify-center gap-2 hover:shadow-lg hover:brightness-110">
-                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-                    Setujui Permintaan
-                </button>
-            </form>
+            <!-- Tombol Trigger Modal Approve -->
+            <button class="w-full bg-primary text-on-primary font-body-md py-4 transition-all active:scale-[0.98] flex items-center justify-center gap-2 hover:shadow-lg hover:brightness-110" onclick="toggleApproveModal(true)">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                Setujui Permintaan
+            </button>
 
             <!-- Tombol Trigger Modal Reject -->
             <button class="w-full border border-outline text-on-surface-variant font-body-md py-4 hover:border-error hover:text-error transition-all active:scale-[0.98] flex items-center justify-center gap-2 hover:bg-error/5 hover:shadow-sm" onclick="toggleModal(true)">
@@ -151,6 +149,32 @@
         </div>
         <% } %>
     </main>
+
+    <!-- Modal: Konfirmasi Approve -->
+    <div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-margin-mobile" id="approveModal">
+        <div class="bg-background w-full max-w-md border border-outline-variant p-6 space-y-6 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="serif-heading font-headline-md text-headline-md text-primary">Konfirmasi Persetujuan</h3>
+                <button class="text-on-surface-variant hover:text-on-surface" onclick="toggleApproveModal(false)">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <p class="font-body-md text-body-md text-on-surface">Yakin setujui permintaan ini?</p>
+
+            <!-- Form untuk Approve -->
+            <form action="/approval/<%= procurement.id %>/approve" method="POST">
+                <div class="flex flex-col gap-3">
+                    <button type="submit" class="w-full bg-primary text-on-primary font-body-md py-3 transition-all hover:bg-primary/90 active:scale-95">
+                        Ya, Setujui
+                    </button>
+                    <button type="button" class="w-full py-2 font-body-md text-on-surface-variant hover:underline transition-all" onclick="toggleApproveModal(false)">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Modal: Catatan Penolakan -->
     <div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-margin-mobile" id="rejectionModal">
@@ -163,7 +187,7 @@
             </div>
             
             <!-- Form Reject dengan Input Notes -->
-            <form action="/wadek/reject/<%= procurement.id %>" method="POST">
+            <form action="/approval/<%= procurement.id %>/reject" method="POST">
                 <div class="space-y-2 mb-6">
                     <label class="font-label-caps text-label-caps text-on-surface-variant uppercase" for="rejectionNote">Catatan Penolakan</label>
                     <textarea name="notes" id="rejectionNote" required class="w-full border border-outline-variant bg-surface-container-lowest p-3 font-body-md focus:border-primary focus:ring-0 outline-none resize-none transition-all" placeholder="Masukkan alasan penolakan secara mendetail..." rows="5"></textarea>
@@ -207,14 +231,35 @@
             }
         }
 
-        // Close modal on escape key
+        function toggleApproveModal(show) {
+            const modal = document.getElementById('approveModal');
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Close modals on escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') toggleModal(false);
+            if (e.key === 'Escape') {
+                toggleModal(false);
+                toggleApproveModal(false);
+            }
         });
 
-        // Close modal on background click
+        // Close rejection modal on background click
         document.getElementById('rejectionModal').addEventListener('click', (e) => {
             if (e.target.id === 'rejectionModal') toggleModal(false);
+        });
+
+        // Close approve modal on background click
+        document.getElementById('approveModal').addEventListener('click', (e) => {
+            if (e.target.id === 'approveModal') toggleApproveModal(false);
         });
     </script>
 </body>
