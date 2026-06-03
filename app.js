@@ -52,12 +52,21 @@ app.use(session({
   }
 }));
 
+// Helper izin untuk view EJS
+app.use((req, res, next) => {
+  res.locals.can = (perm) => {
+    return req.session && req.session.permissions && req.session.permissions.includes(perm);
+  };
+  next();
+});
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/receiving', receivingRouter);
 app.use('/api/receiving', receivingRouter.apiRouter);
 app.use('/purchase', require('./routes/purchase'));
 app.use('/procurement', require('./routes/inventoryProcurement'));
+app.use('/approval', require('./routes/approval'));
 
 // top-level dashboard and API routes (per tutorial)
 // TODO: Add checkPermission middleware for production

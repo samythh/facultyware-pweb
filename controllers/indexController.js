@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+
 const db = require("../lib/db");
 
 const index = (req, res) => {
@@ -13,7 +14,13 @@ const loginPage = (req, res) => {
   if (req.session.userId) {
     return res.redirect("/home");
   }
-  res.render("login", { title: "Login", error: null });
+  
+  let errorMsg = null;
+  if (req.query.expired === '1') {
+    errorMsg = "Anda belum login atau sesi Anda telah habis. Silakan login kembali.";
+  }
+
+  res.render("login", { title: "Login", error: errorMsg });
 };
 
 const login = async (req, res, next) => {
@@ -23,8 +30,8 @@ const login = async (req, res, next) => {
   const { password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [
-      identifier,
+    const [rows] = await db.query("SELECT * FROM users WHERE email = ? OR name = ?", [
+      identifier, identifier
     ]);
 
     if (rows.length === 0) {
@@ -35,9 +42,10 @@ const login = async (req, res, next) => {
     }
 
     const user = rows[0];
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
+    // Attempt bcrypt compare, fallback to plain text compare if not hashed
+    const isMatch = await bcrypt.compare(password, user.password).catch(() => false);
+    
+    if (!isMatch && password !== user.password) {
       return res.render("login", {
         title: "Login",
         error: "Email atau kata sandi salah.",
@@ -46,7 +54,19 @@ const login = async (req, res, next) => {
 
     // Set session
     req.session.userId = user.id;
-    req.session.username = user.name;
+    req.session.username = user.name; // kolom username tidak ada, pakai name
+
+    // Muat permission user ke session (RBAC)
+    const permQuery = `
+      SELECT DISTINCT p.name
+      FROM permissions p
+      JOIN role_has_permissions rhp ON rhp.permission_id = p.id
+      JOIN model_has_roles mhr ON mhr.role_id = rhp.role_id
+      WHERE mhr.model_type = 'App\\\\Models\\\\User'
+        AND mhr.model_id = ?
+    `;
+    const [perms] = await db.query(permQuery, [user.id]);
+    req.session.permissions = perms.map(p => p.name);
 
     res.redirect("/home");
   } catch (err) {
