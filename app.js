@@ -28,6 +28,10 @@ const sessionStore = new MySQLStore({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  createDatabaseTable: true,
+  schema: {
+    tableName: 'sessions_node'
+  }
 });
 
 app.use(session({
@@ -43,6 +47,8 @@ app.use(session({
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/procurement', require('./routes/inventoryProcurement'));
+app.get('/api/procurement', require('./middlewares/auth').isAuthenticated, require('./middlewares/acl').checkPermission('manage_procurement'), require('./controllers/inventoryProcurementController').apiList);
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);

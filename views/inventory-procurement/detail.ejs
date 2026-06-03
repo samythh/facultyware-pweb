@@ -1,0 +1,436 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main id="content">
+  <%- include('../partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto">
+
+      <!-- Breadcrumb & Back Link -->
+      <div class="mb-6 flex flex-col gap-2">
+        <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+          <a href="/procurement" class="hover:text-foreground">Permintaan Pengadaan</a>
+          <span>/</span>
+          <span class="text-foreground"><%= procurement.request_number %></span>
+        </div>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight">Detail Permintaan Pengadaan</h1>
+            <p class="text-sm text-muted-foreground">Detail dan perkembangan berkas permintaan barang.</p>
+          </div>
+          <div class="flex gap-2">
+            <a href="/procurement/<%= procurement.id %>/export" class="btn-outline inline-flex items-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Ekspor PDF
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tracking Status Timeline Stepper -->
+      <div class="card p-6 bg-card rounded-xl border shadow-sm mb-6">
+        <h3 class="text-sm font-semibold text-center text-muted-foreground uppercase tracking-wider mb-6">Status Perkembangan Pengajuan</h3>
+        
+        <div class="flex items-center justify-between w-full max-w-lg mx-auto my-6">
+          <!-- Step 1: Draft -->
+          <div class="flex flex-col items-center">
+            <div class="size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow">✓</div>
+            <span class="text-xs font-semibold mt-2 text-foreground">Draft</span>
+          </div>
+          
+          <!-- Connector 1 -->
+          <div class="flex-1 h-1 bg-muted relative mx-2">
+            <div class="absolute left-0 top-0 bottom-0 bg-primary transition-all duration-300" style="width: <%= (procurement.status !== 'draft') ? '100%' : '0%' %>"></div>
+          </div>
+          
+          <!-- Step 2: Submitted -->
+          <div class="flex flex-col items-center">
+            <div class="size-8 rounded-full flex items-center justify-center font-bold text-sm shadow <%= (procurement.status !== 'draft') ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground' %>">
+              <%= (procurement.status !== 'draft') ? '✓' : '2' %>
+            </div>
+            <span class="text-xs font-semibold mt-2 <%= (procurement.status !== 'draft') ? 'text-foreground' : 'text-muted-foreground' %>">Submitted</span>
+          </div>
+          
+          <!-- Connector 2 -->
+          <div class="flex-1 h-1 bg-muted relative mx-2">
+            <div class="absolute left-0 top-0 bottom-0 bg-primary transition-all duration-300" style="width: <%= (procurement.status === 'approved') ? '100%' : '0%' %>"></div>
+          </div>
+          
+          <!-- Step 3: Approved / Rejected -->
+          <div class="flex flex-col items-center">
+            <% if (procurement.status === 'approved') { %>
+              <div class="size-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow">✓</div>
+              <span class="text-xs font-semibold mt-2 text-emerald-600">Approved</span>
+            <% } else if (procurement.status === 'rejected') { %>
+              <div class="size-8 rounded-full bg-rose-600 text-white flex items-center justify-center font-bold text-sm shadow">✗</div>
+              <span class="text-xs font-semibold mt-2 text-rose-600">Rejected</span>
+            <% } else { %>
+              <div class="size-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold text-sm shadow">3</div>
+              <span class="text-xs font-semibold mt-2 text-muted-foreground">Approved</span>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout Details -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Left Side: Items Table -->
+        <div class="card p-6 bg-card rounded-xl border shadow-sm md:col-span-2 space-y-4">
+          <h3 class="text-base font-semibold">Daftar Barang Permintaan</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b text-muted-foreground font-semibold">
+                  <th class="pb-3 w-[60px]">No</th>
+                  <th class="pb-3">Nama Barang</th>
+                  <th class="pb-3 text-right w-[150px]">Jumlah (Quantity)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                <% items.forEach((item, index) => { %>
+                  <tr class="hover:bg-muted/10">
+                    <td class="py-3 font-medium text-muted-foreground"><%= index + 1 %></td>
+                    <td class="py-3"><%= item.item_name %></td>
+                    <td class="py-3 text-right font-medium"><%= item.quantity %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right Side: Details Info -->
+        <div class="space-y-6">
+          <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
+            <h3 class="text-base font-semibold">Informasi Pengajuan</h3>
+            <div class="space-y-3 text-sm">
+              <div>
+                <span class="text-xs text-muted-foreground block">Nomor Permintaan</span>
+                <span class="font-mono font-medium text-primary"><%= procurement.request_number %></span>
+              </div>
+              <div>
+                <span class="text-xs text-muted-foreground block">Judul Permintaan</span>
+                <span class="font-medium"><%= procurement.title %></span>
+              </div>
+              <div>
+                <span class="text-xs text-muted-foreground block">Status</span>
+                <span class="capitalize font-semibold text-foreground"><%= procurement.status %></span>
+              </div>
+              <div>
+                <span class="text-xs text-muted-foreground block">Tanggal Dibuat</span>
+                <span><%= procurement.created_at ? new Date(procurement.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' %></span>
+              </div>
+            </div>
+
+            <!-- Conditional Actions for Draft status -->
+            <% if (procurement.status === 'draft') { %>
+              <div class="border-t pt-4 flex flex-col gap-2">
+                <button type="button" onclick="window.openConfirmSubmitModal()" class="btn w-full justify-center">Kirim ke Wadir</button>
+                <div class="flex gap-2">
+                  <button type="button" onclick="window.openEditModal()" class="btn-secondary flex-1 justify-center">Edit</button>
+                  <button type="button" onclick="window.openDeleteModal()" class="btn-outline flex-1 text-destructive hover:bg-destructive/10 justify-center">Hapus</button>
+                </div>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <dialog id="edit-modal" class="dialog">
+    <div class="w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh]">
+      <header class="p-4 border-b flex justify-between items-center">
+        <h2 class="font-semibold text-lg">Edit Permintaan Pengadaan</h2>
+        <p class="text-sm text-muted-foreground">Ubah judul dan barang permintaan pengadaan.</p>
+        <form method="dialog">
+          <button type="submit" class="btn-xs-icon-ghost">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </form>
+      </header>
+      <div id="modal-error-alert" class="m-4 bg-destructive/15 text-destructive text-sm p-3 rounded-lg border border-destructive/20 hidden"></div>
+      <form id="edit-form" class="flex-1 overflow-y-auto p-4 space-y-4" onsubmit="window.submitEdit(event)">
+        <section class="space-y-4">
+          <div class="grid gap-2">
+            <label for="edit-title" class="text-sm font-medium">Judul Permintaan <span class="text-destructive">*</span></label>
+            <input type="text" id="edit-title" name="title" class="input w-full" value="<%= procurement.title %>" required />
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center gap-4">
+              <label class="text-sm font-medium">Barang Permintaan <span class="text-destructive">*</span></label>
+              <button type="button" onclick="window.addEditRow()" class="btn-xs-outline">Tambah Barang</button>
+            </div>
+            <table class="w-full text-left text-sm" id="edit-items-table">
+              <thead>
+                <tr class="border-b text-muted-foreground">
+                  <th class="pb-2 w-[40px]">No</th>
+                  <th class="pb-2">Nama Barang</th>
+                  <th class="pb-2 w-[120px]">Quantity</th>
+                  <th class="pb-2 w-[50px] text-right"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y" id="edit-items-tbody">
+                <!-- rows populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <footer class="p-4 border-t flex justify-end gap-2 bg-muted/20">
+          <button type="button" onclick="window.closeEditModal()" class="btn-outline">Batal</button>
+          <button type="submit" class="btn">Simpan</button>
+        </footer>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- DELETE CONFIRMATION MODAL -->
+  <dialog id="delete-modal" class="dialog">
+    <div class="w-full max-w-sm space-y-4">
+      <header>
+        <h2 class="font-semibold text-lg text-destructive">Konfirmasi Hapus</h2>
+        <p class="text-sm text-muted-foreground">Apakah Anda yakin ingin menghapus berkas draf permintaan pengadaan ini? Tindakan ini tidak dapat dibatalkan.</p>
+      </header>
+      <footer class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="window.closeDeleteModal()" class="btn-outline">Batal</button>
+        <button type="button" onclick="window.submitDelete()" class="btn bg-destructive hover:bg-destructive/90 text-white">Hapus Berkas</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <!-- CONFIRM SUBMIT MODAL -->
+  <dialog id="confirm-submit-modal" class="dialog">
+    <div class="w-full max-w-sm space-y-4">
+      <header>
+        <h2 class="font-semibold text-lg">Konfirmasi Pengajuan</h2>
+        <p class="text-sm text-muted-foreground">Apakah Anda yakin ingin mengirim permintaan ini ke Wakil Direktur? Berkas tidak akan dapat diubah setelah dikirim.</p>
+      </header>
+      <footer class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="window.closeConfirmSubmitModal()" class="btn-outline">Batal</button>
+        <button type="button" onclick="window.executeSubmitToWadir()" class="btn">Kirim Sekarang</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <script>
+    (() => {
+      // Confirm Submit Modal handlers
+      window.openConfirmSubmitModal = function() {
+        const modal = document.getElementById('confirm-submit-modal');
+        if (modal) {
+          modal.showModal();
+        }
+      };
+
+      window.closeConfirmSubmitModal = function() {
+        const modal = document.getElementById('confirm-submit-modal');
+        if (modal) {
+          modal.close();
+        }
+      };
+
+      // AJAX Actions
+      window.executeSubmitToWadir = async function() {
+        window.closeConfirmSubmitModal();
+        try {
+          const response = await fetch('/procurement/<%= procurement.id %>/submit', { method: 'POST' });
+          const result = await response.json();
+          if(result.success) {
+            if (window.showToast) {
+              window.showToast('Sukses', result.message, 'success');
+            } else {
+              alert(result.message);
+            }
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            if (window.showToast) {
+              window.showToast('Gagal', result.message || 'Gagal mengirim permintaan.', 'error');
+            } else {
+              alert(result.message || 'Gagal mengirim permintaan.');
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          if (window.showToast) {
+            window.showToast('Error', 'Terjadi kesalahan jaringan.', 'error');
+          } else {
+            alert('Terjadi kesalahan jaringan.');
+          }
+        }
+      };
+
+      // Modal Delete logic
+      window.openDeleteModal = function() {
+        const modal = document.getElementById('delete-modal');
+        if (modal) {
+          modal.showModal();
+        }
+      };
+
+      window.closeDeleteModal = function() {
+        const modal = document.getElementById('delete-modal');
+        if (modal) {
+          modal.close();
+        }
+      };
+
+      window.submitDelete = async function() {
+        window.closeDeleteModal();
+        try {
+          const response = await fetch('/procurement/<%= procurement.id %>/delete', { method: 'POST' });
+          const result = await response.json();
+          if(result.success) {
+            if (window.showToast) {
+              window.showToast('Sukses', result.message, 'success');
+            } else {
+              alert(result.message);
+            }
+            setTimeout(() => {
+              window.location.href = '/procurement';
+            }, 1000);
+          } else {
+            if (window.showToast) {
+              window.showToast('Gagal', result.message || 'Gagal menghapus draf.', 'error');
+            } else {
+              alert(result.message || 'Gagal menghapus draf.');
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          if (window.showToast) {
+            window.showToast('Error', 'Terjadi kesalahan jaringan.', 'error');
+          } else {
+            alert('Terjadi kesalahan jaringan.');
+          }
+        }
+      };
+
+      // Modal Edit logic
+      let editRowCount = 0;
+      
+      window.openEditModal = function() {
+        const modal = document.getElementById('edit-modal');
+        if (!modal) return;
+        modal.showModal();
+
+        // Populate items table
+        const tbody = document.getElementById('edit-items-tbody');
+        tbody.innerHTML = '';
+        editRowCount = 0;
+
+        <% items.forEach(item => { %>
+          window.addEditRow('<%= item.item_name %>', <%= item.quantity %>);
+        <% }) %>
+      };
+
+      window.closeEditModal = function() {
+        const modal = document.getElementById('edit-modal');
+        if (modal) {
+          modal.close();
+        }
+        const alertEl = document.getElementById('modal-error-alert');
+        if (alertEl) {
+          alertEl.classList.add('hidden');
+        }
+      };
+
+      window.addEditRow = function(name = '', qty = 1) {
+        editRowCount++;
+        const tbody = document.getElementById('edit-items-tbody');
+        const tr = document.createElement('tr');
+        tr.id = `edit-item-row-${editRowCount}`;
+        tr.className = 'hover:bg-muted/10';
+        
+        tr.innerHTML = `
+          <td class="py-2 text-muted-foreground edit-row-index align-middle">${tbody.children.length + 1}</td>
+          <td class="py-1 pr-2 align-middle">
+            <input type="text" name="item_name" class="input w-full" placeholder="Nama barang..." value="${name}" required />
+          </td>
+          <td class="py-1 pr-2 align-middle">
+            <input type="number" name="quantity" class="input w-full" min="1" placeholder="Qty" value="${qty}" required />
+          </td>
+          <td class="py-1 align-middle text-right">
+            <button type="button" onclick="window.removeEditRow(${editRowCount})" class="btn-xs-icon-ghost text-destructive hover:bg-destructive/10">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      };
+
+      window.removeEditRow = function(id) {
+        const row = document.getElementById(`edit-item-row-${id}`);
+        if(row) {
+          row.remove();
+          window.recalculateEditIndices();
+        }
+      };
+
+      window.recalculateEditIndices = function() {
+        const indices = document.querySelectorAll('.edit-row-index');
+        indices.forEach((el, index) => {
+          el.innerText = index + 1;
+        });
+      };
+
+      window.submitEdit = async function(event) {
+        event.preventDefault();
+        
+        const form = document.getElementById('edit-form');
+        const formData = new URLSearchParams(new FormData(form));
+
+        try {
+          const response = await fetch('/procurement/<%= procurement.id %>/edit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+          });
+          const result = await response.json();
+          if(result.success) {
+            window.closeEditModal();
+            if (window.showToast) {
+              window.showToast('Sukses', result.message, 'success');
+            } else {
+              alert(result.message);
+            }
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            const alertEl = document.getElementById('modal-error-alert');
+            if (alertEl) {
+              alertEl.innerText = result.message || 'Gagal memperbarui berkas.';
+              alertEl.classList.remove('hidden');
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          if (window.showToast) {
+            window.showToast('Error', 'Terjadi kesalahan jaringan.', 'error');
+          } else {
+            alert('Terjadi kesalahan jaringan.');
+          }
+        }
+      };
+    })();
+  </script>
+</main>
+
+<%- include('../partials/footer') %>
