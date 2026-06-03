@@ -192,10 +192,18 @@ router.post('/:id/approve', async (req, res) => {
 router.post('/:id/reject', async (req, res) => {
     try {
         const currentId = req.params.id;
-        
-        // Ubah status di database jadi 'rejected'
-        await db.execute('UPDATE inventory_procurements SET status = ? WHERE id = ?', ['rejected', currentId]);
-        
+        const note = (req.body && req.body.note) ? req.body.note : null;
+
+        // Antisipasi: coba simpan status + catatan penolakan sekaligus.
+        // Kolom `note` belum pasti ada di skema final (menunggu konfirmasi dosen),
+        // jadi kalau query gagal kita fallback ke update status saja supaya tetap jalan.
+        try {
+            await db.execute('UPDATE inventory_procurements SET status = ?, note = ? WHERE id = ?', ['rejected', note, currentId]);
+        } catch (e) {
+            console.warn('[approval] kolom note belum tersedia, simpan status saja:', e.code || e.message);
+            await db.execute('UPDATE inventory_procurements SET status = ? WHERE id = ?', ['rejected', currentId]);
+        }
+
         // Silent Success: Langsung lempar balik ke halaman Inbox
         res.redirect('/approval/inbox');
     } catch (error) {
