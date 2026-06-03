@@ -24,11 +24,20 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Session configuration
+// Tabel `sessions` di DB ini bergaya Laravel (kolomnya berbeda dari yang
+// diharapkan express-mysql-session), maka sesi Express disimpan di tabel
+// terpisah `express_sessions` -- tidak mengganggu tabel `sessions` Laravel.
+// Tabel dibuat lewat migration eksplisit: scripts/migrate_sessions_table.js
+// (createDatabaseTable=false agar tidak membuat tabel diam-diam saat runtime).
 const sessionStore = new MySQLStore({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  createDatabaseTable: false,
+  schema: {
+    tableName: "express_sessions",
+  },
 });
 
 app.use(session({
