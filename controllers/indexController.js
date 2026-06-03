@@ -2,17 +2,18 @@ const bcrypt = require("bcryptjs");
 
 const db = require("../lib/db");
 
+// Dashboard dijadikan landing utama: root & /home mengarah ke sana.
 const index = (req, res) => {
-  res.render("index", { title: "Express" });
+  res.redirect("/dashboard");
 };
 
 const home = (req, res) => {
-  res.render("home", { title: "Home", user: req.session.username });
+  res.redirect("/dashboard");
 };
 
 const loginPage = (req, res) => {
   if (req.session.userId) {
-    return res.redirect("/home");
+    return res.redirect("/dashboard");
   }
   
   let errorMsg = null;
@@ -68,7 +69,7 @@ const login = async (req, res, next) => {
     const [perms] = await db.query(permQuery, [user.id]);
     req.session.permissions = perms.map(p => p.name);
 
-    res.redirect("/home");
+    res.redirect("/dashboard");
   } catch (err) {
     next(err);
   }
