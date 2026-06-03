@@ -1,9 +1,70 @@
+/* FacultyWare · genre: modern-minimal institusional · accent: hijau Unand · tokens: locked */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Permukaan (tinted hijau sangat tipis, jangan putih murni) */
+  --color-paper:        oklch(98% 0.006 150);   /* latar utama   ≈ #FBFDFB */
+  --color-paper-2:      oklch(96% 0.008 150);   /* kartu/section ≈ #F3F7F3 */
+  --color-paper-3:      oklch(93% 0.010 150);   /* hover surface */
+  /* Teks (hijau-kehitaman, jangan #000) */
+  --color-ink:          oklch(24% 0.015 150);   /* teks utama    ≈ #1B2A20 */
+  --color-ink-2:        oklch(46% 0.012 150);   /* teks sekunder/muted */
+  --color-rule:         oklch(88% 0.010 150);   /* garis hairline 1px */
+  /* Aksen = HIJAU UNAND (ganti di sini bila punya hex resmi) */
+  --color-accent:       oklch(46% 0.12 150);    /* hijau kampus  ≈ #1B7A48 */
+  --color-accent-strong:oklch(40% 0.13 150);    /* hover/active gelap */
+  --color-accent-soft:  oklch(95% 0.03 150);    /* badge/tinted bg lembut */
+  --color-accent-ink:   oklch(99% 0.01 150);    /* teks DI ATAS fill hijau (≈ putih) */
+  --color-focus:        oklch(55% 0.15 152);    /* cincin fokus */
+  /* Status (jangan hanya andalkan merah-hijau; sertakan ikon/teks) */
+  --color-danger:       oklch(52% 0.17 25);
+  --color-warn:         oklch(70% 0.13 75);
+  --color-ok:           oklch(52% 0.12 150);
+  
+  /* Tipografi */
+  --font-display: "Fraunces", Georgia, serif;            /* judul, hero — serif akademik */
+  --font-body:    "IBM Plex Sans", system-ui, sans-serif;/* prosa & UI */
+  --font-mono:    "IBM Plex Mono", ui-monospace, monospace; /* angka/NIM/kode */
+  
+  /* Spasi */
+  --space-2xs:4px; --space-xs:8px; --space-sm:12px; --space-md:16px;
+  --space-lg:24px; --space-xl:40px; --space-2xl:64px; --space-3xl:96px;
+  
+  /* Radius */
+  --radius-input:6px; --radius-card:10px; --radius-pill:999px;
+  
+  /* Motion */
+  --ease-out: cubic-bezier(0.16,1,0.3,1);
+  --dur-fast:160ms; --dur-base:220ms;
+  
+  /* Teks */
+  --text-sm: .8rem; --text-base: 1rem; --text-md: 1.25rem; --text-lg: 1.5625rem;
+  --text-xl: 1.953rem; --text-2xl: 2.441rem; --text-display: clamp(2.5rem, 4vw + 1rem, 4.25rem);
+}
+
+/* Mode gelap: JANGAN ganti hue. Naikkan lightness paper ke 14-18%, ink ke 92-95%,
+   turunkan chroma accent ~0.03, naikkan lightness accent ~8%. Elevasi = lebih TERANG. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper:        oklch(16% 0.004 150);
+    --color-paper-2:      oklch(18% 0.005 150);
+    --color-paper-3:      oklch(20% 0.006 150);
+    --color-ink:          oklch(92% 0.008 150);
+    --color-ink-2:        oklch(70% 0.010 150);
+    --color-rule:         oklch(30% 0.006 150);
+    --color-accent:       oklch(54% 0.09 150);
+    --color-accent-strong:oklch(60% 0.11 150);
+    --color-accent-soft:  oklch(25% 0.03 150);
+  }
+}
+
 /*! tailwindcss v4.1.4 | MIT License | https://tailwindcss.com */
 @layer properties;
 @layer theme, base, components, utilities;
 @layer theme {
   :root, :host {
-    --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    --font-sans: var(--font-body);
+    --font-mono: var(--font-mono);
       "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;

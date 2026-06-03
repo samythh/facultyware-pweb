@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dashboard Statistik</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body class="bg-gray-100 font-sans">
+    <main class="container mx-auto my-6 p-4">
+      <h1 class="text-2xl font-semibold tracking-wide mb-6">Dashboard Statistik</h1>
+
+      <!-- satu baris horizontal -->
+      <div class="flex gap-6">
+        <div class="flex-1 bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition">
+          <h2 class="text-sm font-medium uppercase text-gray-500">Total Permintaan</h2>
+          <p class="text-3xl font-bold text-blue-600 mt-2"><%= totalReq %></p>
+        </div>
+
+        <div class="flex-1 bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition">
+          <h2 class="text-sm font-medium uppercase text-gray-500">Menunggu Approval</h2>
+          <p class="text-3xl font-bold text-yellow-500 mt-2"><%= pending %></p>
+        </div>
+
+        <div class="flex-1 bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition">
+          <h2 class="text-sm font-medium uppercase text-gray-500">Total PO Dibuat</h2>
+          <p class="text-3xl font-bold text-green-600 mt-2"><%= totalPO %></p>
+        </div>
+
+        <div class="flex-1 bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition">
+          <h2 class="text-sm font-medium uppercase text-gray-500">Total Supplier</h2>
+          <p class="text-3xl font-bold text-purple-600 mt-2"><%= supplier %></p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

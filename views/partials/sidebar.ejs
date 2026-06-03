@@ -1,0 +1,12 @@
+<aside class="w-64 border-r border-rule bg-paper-2 min-h-screen p-6 flex flex-col justify-between">
+  <div>
+    <div class="font-display text-lg text-ink mb-8 font-semibold">Facultyware</div>
+    <nav class="space-y-2">
+      <a href="/dashboard" class="block px-4 py-2 rounded-md <%= path === '/dashboard' ? 'bg-accent/10 text-accent' : 'text-ink-2 hover:bg-muted' %> font-medium">Dashboard</a>
+      <a href="/purchase" class="block px-4 py-2 rounded-md <%= path === '/purchase' ? 'bg-accent/10 text-accent' : 'text-ink-2 hover:bg-muted' %> font-medium">Purchase Order</a>
+    </nav>
+  </div>
+  
+  <!-- Link Logout -->
+  <a href="/login" class="px-4 py-2 text-red-600 hover:bg-red-50 rounded-md font-medium">Logout</a>
+</aside>
