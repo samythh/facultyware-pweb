@@ -385,7 +385,7 @@
       <article>
         <header>
           <h2 id="dialog-confirm-title">Konfirmasi Penerimaan Final</h2>
-          <p>Stok akan diperbarui otomatis. Tindakan ini tidak dapat dibatalkan.</p>
+          <p>Penerimaan akan dicatat ke buku besar (transaksi barang masuk) dan status PO menjadi Selesai. Tindakan ini tidak dapat dibatalkan.</p>
         </header>
         <form method="post" action="/receiving/<%= po ? po.id : '0' %>/confirm">
           <footer class="flex items-center justify-end gap-2">

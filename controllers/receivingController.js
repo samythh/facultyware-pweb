@@ -4,9 +4,11 @@
 // Aturan:
 // - Native mysql2 (TANPA ORM). pool sudah berupa pool.promise() dari lib/db.js.
 // - Selalu pakai prepared statement: pool.query(sql, [params]).
-// - JANGAN membuat tabel baru. Tabel yang dipakai:
+// - Tabel yang dipakai:
 //   inventory_purchases, inventory_purchase_items, inventory_transactions,
-//   inventories, items.
+//   inventories, items, inventory_receiving_attachments.
+//   (inventory_receiving_attachments + kolom verifikasi per item ditambahkan
+//    via scripts/migrate_receiving_schema.js, dengan izin perubahan skema.)
 
 const pool = require("../lib/db");
 const PDFDocument = require("pdfkit");
@@ -162,7 +164,7 @@ const verifyStore = async (req, res, next) => {
 
     // Pastikan PO ada (dan ambil daftar item miliknya).
     const [poRows] = await conn.query(
-      "SELECT id FROM inventory_purchases WHERE id = ?",
+      "SELECT id, status FROM inventory_purchases WHERE id = ?",
       [poId]
     );
     if (poRows.length === 0) {
@@ -170,6 +172,17 @@ const verifyStore = async (req, res, next) => {
       return res.status(404).render("error", {
         message: "Purchase order tidak ditemukan.",
         error: { status: 404, stack: "" },
+      });
+    }
+
+    // Tolak verifikasi bila PO sudah dikonfirmasi (completed): transaksi
+    // ledger sudah terbentuk, mengubah angka verifikasi akan membuat
+    // verifikasi vs buku besar tidak konsisten.
+    if (poRows[0].status === "completed") {
+      await conn.rollback();
+      return res.status(409).render("error", {
+        message: "PO sudah dikonfirmasi (Selesai); verifikasi tidak bisa diubah.",
+        error: { status: 409, stack: "" },
       });
     }
 

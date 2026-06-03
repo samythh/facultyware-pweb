@@ -1,4 +1,6 @@
 ```
+# CATATAN: snapshot struktur proyek per commit ini — bisa kedaluwarsa
+# seiring penambahan/penghapusan file. Bukan sumber kebenaran.
 └── 📁facultyware-pweb
     └── 📁.vscode
         ├── settings.json

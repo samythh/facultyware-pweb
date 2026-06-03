@@ -6,7 +6,7 @@ const path = require("path");
  *
  * - Menyimpan bukti foto / surat jalan vendor ke disk.
  * - Destination : public/assets/uploads/receiving/
- * - Filename    : <timestamp>.<ext asli>
+ * - Filename    : <timestamp>-<acak>.<ext asli>
  * - Filter      : hanya .jpg, .jpeg, .png, .pdf
  * - Limit       : maksimal 5MB per file
  */
@@ -33,7 +33,10 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `${Date.now()}${ext}`);
+    // Suffix acak agar tidak tabrakan saat beberapa berkas diunggah
+    // pada milidetik yang sama (endpoint ini menerima multi-file).
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${unique}${ext}`);
   },
 });
 

@@ -2325,7 +2325,7 @@
   --card-foreground: oklch(24% 0.015 150);
   --popover: oklch(99.5% 0.004 150);
   --popover-foreground: oklch(24% 0.015 150);
-  --primary: oklch(62% 0.19 146);          /* hijau Gojek (lebih cerah) */
+  --primary: oklch(62% 0.19 146);          /* hijau Universitas Andalas (lebih cerah) */
   --primary-foreground: oklch(99% 0.01 150);
   --secondary: oklch(95% 0.012 150);
   --secondary-foreground: oklch(24% 0.015 150);
@@ -2353,7 +2353,7 @@
   --card-foreground: oklch(93% 0.012 150);
   --popover: oklch(22% 0.012 150);
   --popover-foreground: oklch(93% 0.012 150);
-  --primary: oklch(67% 0.18 146);          /* hijau Gojek (mode gelap) */
+  --primary: oklch(67% 0.18 146);          /* hijau Universitas Andalas (mode gelap) */
   --primary-foreground: oklch(18% 0.02 150);
   --secondary: oklch(24% 0.012 150);
   --secondary-foreground: oklch(93% 0.012 150);

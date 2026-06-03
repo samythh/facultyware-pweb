@@ -6,9 +6,10 @@ const { checkPermission } = require("../middlewares/acl");
 const upload = require("../middlewares/upload");
 
 // Semua route Penerimaan Barang diproteksi permission 'manage_receiving'.
-// Saat DEV_NO_AUTH=1 (lokal), guard dilewati untuk preview tampilan.
+// Saat DEV_NO_AUTH=1 (lokal, non-production), guard dilewati untuk preview
+// tampilan. Bypass TIDAK pernah aktif di production walau flag salah set.
 const can =
-  process.env.DEV_NO_AUTH === "1"
+  process.env.DEV_NO_AUTH === "1" && process.env.NODE_ENV !== "production"
     ? (req, res, next) => next()
     : checkPermission("manage_receiving");
 
@@ -28,7 +29,7 @@ router.post(
   receivingController.verifyStore
 );
 
-// POST /receiving/:po_id/confirm -> konfirmasi final (auto-update stok)
+// POST /receiving/:po_id/confirm -> konfirmasi final (catat transaksi masuk ke buku besar)
 router.post("/:po_id/confirm", can, receivingController.confirm);
 
 // POST /receiving/retur -> catat retur barang ke vendor
