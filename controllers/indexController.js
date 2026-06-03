@@ -17,17 +17,20 @@ const loginPage = (req, res) => {
 };
 
 const login = async (req, res, next) => {
-  const { username, password } = req.body;
+  // Tabel users (skema Laravel) memakai email sebagai identitas unik;
+  // tidak ada kolom username. Terima nilai dari field email/username apa pun.
+  const identifier = req.body.email || req.body.username;
+  const { password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
+    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [
+      identifier,
     ]);
 
     if (rows.length === 0) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Email atau kata sandi salah.",
       });
     }
 
@@ -37,13 +40,13 @@ const login = async (req, res, next) => {
     if (!isMatch) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Email atau kata sandi salah.",
       });
     }
 
     // Set session
     req.session.userId = user.id;
-    req.session.username = user.username;
+    req.session.username = user.name;
 
     res.redirect("/home");
   } catch (err) {

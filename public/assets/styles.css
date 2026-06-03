@@ -2315,6 +2315,66 @@
   --check-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="oklch(0.708 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"/></svg>');
   color-scheme: dark;
 }
+
+/* FacultyWare · variant tema: hijau Universitas Andalas · tokens: locked (DESIGN-PROMPT.md)
+   Aktif hanya bila elemen <html> punya class "theme-unand". Tidak mengubah tema lain. */
+.theme-unand {
+  --background: oklch(96.5% 0.013 150);
+  --foreground: oklch(24% 0.015 150);
+  --card: oklch(99.5% 0.004 150);
+  --card-foreground: oklch(24% 0.015 150);
+  --popover: oklch(99.5% 0.004 150);
+  --popover-foreground: oklch(24% 0.015 150);
+  --primary: oklch(62% 0.19 146);          /* hijau Universitas Andalas (lebih cerah) */
+  --primary-foreground: oklch(99% 0.01 150);
+  --secondary: oklch(95% 0.012 150);
+  --secondary-foreground: oklch(24% 0.015 150);
+  --muted: oklch(95% 0.012 150);
+  --muted-foreground: oklch(46% 0.012 150);
+  --accent: oklch(95% 0.03 150);
+  --accent-foreground: oklch(40% 0.13 150);
+  --destructive: oklch(52% 0.17 25);
+  --border: oklch(88% 0.010 150);
+  --input: oklch(88% 0.010 150);
+  --ring: oklch(62% 0.19 146);
+  --sidebar: oklch(96% 0.008 150);
+  --sidebar-foreground: oklch(24% 0.015 150);
+  --sidebar-primary: oklch(62% 0.19 146);
+  --sidebar-primary-foreground: oklch(99% 0.01 150);
+  --sidebar-accent: oklch(95% 0.03 150);
+  --sidebar-accent-foreground: oklch(40% 0.13 150);
+  --sidebar-border: oklch(88% 0.010 150);
+  --sidebar-ring: oklch(62% 0.19 146);
+}
+.theme-unand.dark {
+  --background: oklch(16% 0.012 150);
+  --foreground: oklch(93% 0.012 150);
+  --card: oklch(20% 0.012 150);
+  --card-foreground: oklch(93% 0.012 150);
+  --popover: oklch(22% 0.012 150);
+  --popover-foreground: oklch(93% 0.012 150);
+  --primary: oklch(67% 0.18 146);          /* hijau Universitas Andalas (mode gelap) */
+  --primary-foreground: oklch(18% 0.02 150);
+  --secondary: oklch(24% 0.012 150);
+  --secondary-foreground: oklch(93% 0.012 150);
+  --muted: oklch(24% 0.012 150);
+  --muted-foreground: oklch(70% 0.012 150);
+  --accent: oklch(28% 0.04 150);
+  --accent-foreground: oklch(93% 0.012 150);
+  --destructive: oklch(58% 0.15 25);
+  --border: oklch(30% 0.010 150);
+  --input: oklch(32% 0.010 150);
+  --ring: oklch(67% 0.18 146);
+  --sidebar: oklch(18% 0.012 150);
+  --sidebar-foreground: oklch(93% 0.012 150);
+  --sidebar-primary: oklch(67% 0.18 146);
+  --sidebar-primary-foreground: oklch(18% 0.02 150);
+  --sidebar-accent: oklch(28% 0.04 150);
+  --sidebar-accent-foreground: oklch(93% 0.012 150);
+  --sidebar-border: oklch(30% 0.010 150);
+  --sidebar-ring: oklch(67% 0.18 146);
+  color-scheme: dark;
+}
 @layer base {
   * {
     border-color: var(--color-border);
