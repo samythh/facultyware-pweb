@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../lib/db'); // Pastikan path ini benar mengarah ke konfigurasi DB
+const db = require('../lib/db');
 const { checkPermission } = require('../middlewares/acl');
 
 // Menerapkan middleware untuk semua route di bawah ini
@@ -180,7 +180,7 @@ router.post('/:id/approve', async (req, res) => {
         // Ubah status di database jadi 'approved'
         await db.execute('UPDATE inventory_procurements SET status = ? WHERE id = ?', ['approved', currentId]);
         
-        // Silent Success: Langsung lempar balik ke halaman Inbox
+        // Kembali ke halaman Inbox
         res.redirect('/approval/inbox');
     } catch (error) {
         console.error(error);
@@ -204,7 +204,7 @@ router.post('/:id/reject', async (req, res) => {
             await db.execute('UPDATE inventory_procurements SET status = ? WHERE id = ?', ['rejected', currentId]);
         }
 
-        // Silent Success: Langsung lempar balik ke halaman Inbox
+        // Kembali ke halaman Inbox
         res.redirect('/approval/inbox');
     } catch (error) {
         console.error(error);
