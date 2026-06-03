@@ -40,11 +40,11 @@
     <link rel="stylesheet" href="/assets/styles.css" />
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <style>
-      /* Penyesuaian tata letak halaman penerimaan (warna lewat token tema, sesuai DESIGN-PROMPT). */
+      /* Gaya khusus halaman detail penerimaan (warna memakai token tema). */
       .justify-end { justify-content: flex-end; }
       .theme-fab { position: fixed; top: 1rem; right: 1rem; z-index: 50; }
 
-      /* Pil status: gaya solid berwarna + ikon (referensi label berstatus) */
+      /* Pil status: latar solid berwarna + ikon */
       .status-pill { display: inline-flex; align-items: center; gap: .4rem; padding: .28rem .8rem; border-radius: 9999px; font-size: .78rem; font-weight: 600; line-height: 1.2; color: oklch(99% 0.01 150); white-space: nowrap; }
       .status-pill svg { width: .95rem; height: .95rem; flex: none; }
       .status-draft { background: oklch(70% 0.15 70); }
@@ -82,12 +82,12 @@
       .proof-name { display: block; font-weight: 500; color: var(--color-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .proof-date { color: var(--color-muted-foreground); font-size: .68rem; }
 
-      /* Accordion (lipat/buka isi kartu) — desain kartu tetap, hanya tambah panah di kanan */
+      /* Accordion: tombol panah di kanan kartu untuk melipat/membuka isi */
       .accordion-toggle { grid-column: 2; grid-row: 1 / span 2; align-self: start; justify-self: end; display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border: 0; border-radius: .5rem; background: transparent; color: var(--color-muted-foreground); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
       .accordion-toggle:hover { background: var(--color-muted); color: var(--color-foreground); }
       .accordion-toggle svg { width: 1.15rem; height: 1.15rem; transition: transform .22s var(--ease-out, ease); }
       .card.is-collapsed .accordion-toggle svg { transform: rotate(-90deg); }
-      /* Lipat/buka mulus: animasikan tinggi via grid-template-rows (0fr <-> 1fr) + fade */
+      /* Animasi lipat/buka: tinggi via grid-template-rows (0fr <-> 1fr) + fade */
       .accordion-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .28s var(--ease-out, ease); }
       .accordion-body > * { min-height: 0; transition: opacity .2s ease; }
       .card.is-collapsed .accordion-body { grid-template-rows: 0fr; }

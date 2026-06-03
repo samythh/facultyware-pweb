@@ -68,8 +68,7 @@ app.use('/purchase', require('./routes/purchase'));
 app.use('/procurement', require('./routes/inventoryProcurement'));
 app.use('/approval', require('./routes/approval'));
 
-// top-level dashboard and API routes (per tutorial)
-// Dashboard = landing ter-autentikasi (semua role yang sudah login).
+// Dashboard sebagai landing ter-autentikasi (semua role yang sudah login).
 app.get('/dashboard', require('./middlewares/auth').isAuthenticated, purchaseController.dashboard);
 app.get('/api/purchase', purchaseController.apiList);
 app.get('/api/procurement', require('./middlewares/auth').isAuthenticated, require('./middlewares/acl').checkPermission('manage_procurement'), require('./controllers/inventoryProcurementController').apiList);
