@@ -269,18 +269,34 @@ exports.procurementItems = async (req, res, next) => {
 };
 
 // Dashboard Statistik
+// Tiap statistik dibungkus sendiri-sendiri supaya tabel/kolom yang belum pasti
+// ada di DB (mis. kolom `supplier`) tidak membuat seluruh dashboard error.
+// Nilai gagal -> fallback 0. TODO: kunci skema final setelah konfirmasi dosen.
+async function safeCount(sql, params = []) {
+  try {
+    const [rows] = await db.query(sql, params);
+    return rows[0] ? Number(rows[0].cnt) || 0 : 0;
+  } catch (err) {
+    console.warn(`[dashboard] statistik dilewati (${err.code || err.message}): ${sql}`);
+    return 0;
+  }
+}
+
 exports.dashboard = async (req, res, next) => {
   try {
-    const [totalReqRows] = await db.query(`SELECT COUNT(*) as cnt FROM inventory_procurements`);
-    const [pendingRows] = await db.query(`SELECT COUNT(*) as cnt FROM inventory_procurements WHERE status='submitted'`);
-    const [totalPORows] = await db.query(`SELECT COUNT(*) as cnt FROM inventory_purchases`);
-    const [supplierRows] = await db.query(`SELECT COUNT(DISTINCT supplier) as cnt FROM inventory_purchases`);
+    const totalReq = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_procurements`);
+    const pending = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_procurements WHERE status='submitted'`);
+    const totalPO = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_purchases`);
+    // Kolom `supplier` belum pasti ada di skema final -> safeCount akan fallback 0 bila tidak ada.
+    const supplier = await safeCount(`SELECT COUNT(DISTINCT supplier) as cnt FROM inventory_purchases`);
 
     res.render('dashboard', {
-      totalReq: totalReqRows[0].cnt,
-      pending: pendingRows[0].cnt,
-      totalPO: totalPORows[0].cnt,
-      supplier: supplierRows[0].cnt
+      title: 'Dashboard',
+      user: req.session.username,
+      totalReq,
+      pending,
+      totalPO,
+      supplier
     });
   } catch (err) { next(err); }
 };
