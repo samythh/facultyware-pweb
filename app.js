@@ -45,6 +45,14 @@ app.use(session({
   }
 }));
 
+// Helper izin untuk view EJS
+app.use((req, res, next) => {
+  res.locals.can = (perm) => {
+    return req.session && req.session.permissions && req.session.permissions.includes(perm);
+  };
+  next();
+});
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/approval', require('./routes/approval'));

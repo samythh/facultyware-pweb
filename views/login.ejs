@@ -134,9 +134,23 @@
                   </div>
                   
                   <% if (error) { %>
-                    <div class="bg-destructive/15 text-destructive text-sm p-3 rounded-md border border-destructive/20 text-center">
-                      <%= error %>
-                    </div>
+                    <script>
+                      document.addEventListener("DOMContentLoaded", () => {
+                        // Delay sedikit agar toast.js selesai melakukan inisialisasi pada container #toaster
+                        setTimeout(() => {
+                          document.dispatchEvent(new CustomEvent('basecoat:toast', {
+                            detail: {
+                              config: {
+                                category: 'error',
+                                title: 'Akses Ditolak',
+                                description: '<%= error %>',
+                                duration: 5000
+                              }
+                            }
+                          }));
+                        }, 100);
+                      });
+                    </script>
                   <% } %>
 
                   <div
