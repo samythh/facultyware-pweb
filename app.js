@@ -10,6 +10,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var receivingRouter = require('./routes/receiving');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
+const purchaseController = require('./controllers/purchaseController');
 
 var app = express();
 
@@ -55,6 +56,12 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/receiving', receivingRouter);
 app.use('/api/receiving', receivingRouter.apiRouter);
+app.use('/purchase', require('./routes/purchase'));
+
+// top-level dashboard and API routes (per tutorial)
+// TODO: Add checkPermission middleware for production
+app.get('/dashboard', purchaseController.dashboard);
+app.get('/api/purchase', purchaseController.apiList);
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);

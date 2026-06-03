@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Detail Purchase Order</title>
+    <!-- pastikan styles.css kamu sudah diisi @tailwind base; @tailwind components; @tailwind utilities; -->
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body class="bg-gray-100">
+    <main class="container mx-auto my-8 p-6 max-w-3xl">
+      
+      <!-- Card Info PO -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h1 class="text-2xl font-semibold tracking-wide mb-4">Detail Purchase Order</h1>
+
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <p>
+            <span class="text-gray-500 uppercase font-medium">Nomor PO</span><br>
+            <span class="font-bold"><%= po.purchase_number %></span>
+          </p>
+          <p>
+            <span class="text-gray-500 uppercase font-medium">Supplier</span><br>
+            <span class="font-bold"><%= po.supplier %></span>
+          </p>
+          <p>
+            <span class="text-gray-500 uppercase font-medium">Tanggal</span><br>
+            <span class="font-bold"><%= po.purchase_date %></span>
+          </p>
+          <p>
+            <span class="text-gray-500 uppercase font-medium">Status</span><br>
+            <% if(po.status === 'completed'){ %>
+              <span class="inline-block px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded">Completed</span>
+            <% } else { %>
+              <span class="inline-block px-2 py-1 text-xs font-semibold text-yellow-700 bg-yellow-100 rounded">Draft</span>
+            <% } %>
+          </p>
+        </div>
+      </div>
+
+      <!-- Card Item -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-lg font-semibold mb-3">Item</h2>
+        <table class="table-auto w-full text-sm border-collapse">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="text-left px-3 py-2">Item</th>
+              <th class="text-right px-3 py-2">Qty</th>
+              <th class="text-right px-3 py-2">Harga</th>
+              <th class="text-right px-3 py-2">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% items.forEach(it => { %>
+              <tr class="border-t">
+                <td class="px-3 py-2"><%= it.name %></td>
+                <td class="px-3 py-2 text-right"><%= it.quantity %></td>
+                <td class="px-3 py-2 text-right"><%= it.price %></td>
+                <td class="px-3 py-2 text-right"><%= it.subtotal %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <p class="mt-4 text-right font-bold text-blue-600">Total: <%= total %></p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-3">
+        <form method="post" action="/purchase/<%= po.id %>/status">
+          <button type="submit" class="btn btn-warning">Update Status</button>
+        </form>
+        <a href="/purchase/<%= po.id %>/export" class="btn btn-success">Cetak PDF</a>
+        <a href="/purchase" class="btn btn-secondary">Kembali</a>
+      </div>
+    </main>
+  </body>
+</html>

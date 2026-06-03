@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Daftar Purchase Order</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <main class="container mx-auto my-6 p-4">
+      <div class="mb-6">
+        <h1 class="text-3xl font-semibold">Daftar Purchase Order</h1>
+      </div>
+
+      <form method="get" action="/purchase" class="mb-4 flex gap-2 items-center">
+        <input type="text" name="search" value="<%= search %>" placeholder="Cari supplier / nomor PO" class="input" style="flex:1" />
+        <button type="submit" class="btn">Search</button>
+        <a href="/purchase/create" class="btn btn-primary">+ Buat PO</a>
+      </form>
+
+      <div class="card p-4">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th class="text-left">No</th>
+              <th class="text-left">Nomor PO</th>
+              <th class="text-left">Supplier</th>
+              <th class="text-left">Tanggal</th>
+              <th class="text-left">Status</th>
+              <th class="text-left">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if(purchases && purchases.length){ %>
+              <% purchases.forEach((po, idx) => { %>
+                <tr>
+                  <td><%= idx+1 %></td>
+                  <td><%= po.purchase_number %></td>
+                  <td><%= po.supplier %></td>
+                  <td><%= po.purchase_date %></td>
+                  <td>
+                    <% if(po.status === 'draft'){ %>
+                      <span class="badge">Draft</span>
+                    <% } else { %>
+                      <span class="badge badge-success">Completed</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <a href="/purchase/<%= po.id %>" class="btn btn-sm">Detail</a>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr><td colspan="6" class="text-center p-4">Belum ada Purchase Order.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>
