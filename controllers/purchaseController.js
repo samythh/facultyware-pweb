@@ -121,8 +121,7 @@ exports.updateStatus = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-// Export PDF (perbaikan)
-// Export PDF dengan layout formulir rapi
+// Export PDF: formulir Purchase Order
 exports.exportPDF = async (req, res, next) => {
   try {
     const id = req.params.id;
