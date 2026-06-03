@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Detail Permintaan - FacultyWare</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400..900;1,400..900&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#d3dbd3", "on-secondary": "#ffffff", "surface-tint": "#236b46",
+                        "secondary-fixed": "#e0e3e0", "primary-fixed": "#a9f3c3", "on-surface": "#191c1c",
+                        "surface-container-high": "#e7e8e7", "on-primary": "#ffffff", "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#8ed6a9", "surface-container-highest": "#e1e3e2", "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#f0f1f0", "on-surface-variant": "#404942", "surface-dim": "#d9dad9",
+                        "on-tertiary-fixed": "#161d18", "background": "#f9f9f8", "tertiary-fixed": "#dce5dc",
+                        "surface-bright": "#f9f9f8", "on-tertiary": "#ffffff", "error-container": "#ffdad6",
+                        "inverse-surface": "#2e3131", "tertiary": "#414943", "primary-container": "#236b46",
+                        "tertiary-container": "#59615a", "on-primary-container": "#a0e9ba", "on-secondary-fixed-variant": "#444846",
+                        "on-primary-fixed": "#002110", "tertiary-fixed-dim": "#c0c9c0", "error": "#ba1a1a",
+                        "secondary": "#5b5f5d", "inverse-primary": "#8ed6a9", "outline": "#707971",
+                        "outline-variant": "#bfc9bf", "surface": "#f9f9f8", "primary": "#005230",
+                        "surface-container-low": "#f3f4f3", "on-secondary-fixed": "#181c1b",
+                        "on-tertiary-fixed-variant": "#414942", "on-primary-fixed-variant": "#005230",
+                        "on-error": "#ffffff", "surface-variant": "#e1e3e2", "surface-container": "#edeeed",
+                        "on-background": "#191c1c", "secondary-container": "#dde0de",
+                        "on-secondary-container": "#5f6361", "secondary-fixed-dim": "#c4c7c5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px", "container-max": "1280px", "gutter": "24px",
+                        "margin-desktop": "40px", "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["IBM Plex Sans"], "display-lg": ["Literata"], "label-caps": ["IBM Plex Sans"],
+                        "body-sm": ["IBM Plex Sans"], "headline-lg-mobile": ["Literata"], "body-md": ["IBM Plex Sans"],
+                        "data-mono": ["JetBrains Mono"], "headline-md": ["Literata"], "headline-lg": ["Literata"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background-color: #f9f9f8;
+            min-height: max(884px, 100dvh);
+        }
+        .serif-heading { font-family: 'Literata', serif; }
+        .mono-data { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased" style="background-image: radial-gradient(#00523005 1px, transparent 0); background-size: 24px 24px;">
+    
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-40 w-full bg-background border-b border-outline-variant px-margin-mobile py-4 flex items-center gap-4">
+        <a href="/wadek/inbox" aria-label="Go back" class="flex items-center justify-center w-10 h-10 hover:bg-surface-container-low transition-colors rounded-full">
+            <span class="material-symbols-outlined text-primary">arrow_back</span>
+        </a>
+        <h1 class="serif-heading font-headline-md text-headline-md text-primary">Detail Request #<%= procurement.request_number %></h1>
+    </header>
+
+    <main class="max-w-container-max mx-auto px-margin-mobile py-6 space-y-6">
+        
+        <!-- Requester Info Card -->
+        <section class="bg-surface border border-outline-variant p-4 space-y-3">
+            <div class="h-1 w-full bg-primary mb-3"></div>
+            <div class="flex flex-col">
+                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Pemohon</span>
+                <span class="font-body-lg text-body-lg text-on-surface"><%= procurement.pemohon_name || 'Staf / Admin' %></span>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col">
+                    <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Tanggal</span>
+                    <span class="font-body-md text-body-md mono-data">
+                        <%= new Date(procurement.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                    </span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Status</span>
+                    <div class="inline-flex">
+                        <span class="px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed text-xs font-bold rounded-sm uppercase tracking-tighter">
+                            <%= procurement.status %>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Item List (Data Table) -->
+        <section class="space-y-4">
+            <h2 class="serif-heading font-headline-md text-headline-md text-on-surface">Procurement Items</h2>
+            <div class="overflow-hidden border border-outline-variant">
+                <table class="w-full border-collapse">
+                    <thead class="bg-surface-container-low border-b border-outline-variant">
+                        <tr>
+                            <th class="text-left px-4 py-3 font-label-caps text-label-caps text-on-surface-variant">Description</th>
+                            <th class="text-right px-4 py-3 font-label-caps text-label-caps text-on-surface-variant">Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-outline-variant bg-surface">
+                        <!-- LOOPING DATA BARANG -->
+                        <% items.forEach(function(item) { %>
+                        <tr class="hover:bg-surface-container-low transition-colors border-b border-dashed border-outline-variant/30">
+                            <td class="px-4 py-5">
+                                <p class="font-body-md text-body-md text-on-surface"><%= item.item_name %></p>
+                            </td>
+                            <td class="px-4 text-right mono-data text-body-md py-5"><%= item.quantity %>x</td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Reason / Justification -->
+        <section class="p-4 bg-surface-container border border-outline-variant">
+            <span class="font-label-caps text-label-caps text-on-surface-variant uppercase block mb-2">Justifikasi Anggaran</span>
+            <p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                <%= procurement.title %>
+            </p>
+        </section>
+
+        <!-- Action CTAs (Hanya render jika status = submitted) -->
+        <% if (procurement.status === 'submitted') { %>
+        <div class="flex flex-col gap-3 py-4">
+            <!-- Form untuk Approve -->
+            <form action="/wadek/approve/<%= procurement.id %>" method="POST" class="w-full">
+                <button type="submit" class="w-full bg-primary text-on-primary font-body-md py-4 transition-all active:scale-[0.98] flex items-center justify-center gap-2 hover:shadow-lg hover:brightness-110">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    Setujui Permintaan
+                </button>
+            </form>
+
+            <!-- Tombol Trigger Modal Reject -->
+            <button class="w-full border border-outline text-on-surface-variant font-body-md py-4 hover:border-error hover:text-error transition-all active:scale-[0.98] flex items-center justify-center gap-2 hover:bg-error/5 hover:shadow-sm" onclick="toggleModal(true)">
+                <span class="material-symbols-outlined">cancel</span>
+                Tolak Permintaan
+            </button>
+        </div>
+        <% } %>
+    </main>
+
+    <!-- Modal: Catatan Penolakan -->
+    <div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-margin-mobile" id="rejectionModal">
+        <div class="bg-background w-full max-w-md border border-outline-variant p-6 space-y-6 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="serif-heading font-headline-md text-headline-md text-error">Alasan Penolakan</h3>
+                <button class="text-on-surface-variant hover:text-on-surface" onclick="toggleModal(false)">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <!-- Form Reject dengan Input Notes -->
+            <form action="/wadek/reject/<%= procurement.id %>" method="POST">
+                <div class="space-y-2 mb-6">
+                    <label class="font-label-caps text-label-caps text-on-surface-variant uppercase" for="rejectionNote">Catatan Penolakan</label>
+                    <textarea name="notes" id="rejectionNote" required class="w-full border border-outline-variant bg-surface-container-lowest p-3 font-body-md focus:border-primary focus:ring-0 outline-none resize-none transition-all" placeholder="Masukkan alasan penolakan secara mendetail..." rows="5"></textarea>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <button type="submit" class="w-full bg-error text-on-error font-body-md py-3 transition-all hover:bg-red-800 active:scale-95">
+                        Kirim Penolakan
+                    </button>
+                    <button type="button" class="w-full py-2 font-body-md text-on-surface-variant hover:underline transition-all" onclick="toggleModal(false)">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-12 bg-surface-container-low border-t border-outline-variant px-margin-mobile py-8 flex flex-col items-center gap-4 text-center">
+        <div class="font-display-lg text-body-lg text-primary">FacultyWare</div>
+        <p class="font-label-caps text-label-caps text-on-surface-variant tracking-wide">
+            © 2026 UNIVERSITAS ANDALAS · FACULTY OF ENGINEERING
+        </p>
+        <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <span class="text-on-surface-variant text-xs hover:text-primary cursor-pointer transition-colors">Privacy Policy</span>
+            <span class="text-on-surface-variant text-xs hover:text-primary cursor-pointer transition-colors">Support</span>
+            <span class="text-on-surface-variant text-xs hover:text-primary cursor-pointer transition-colors">Handbook</span>
+        </div>
+    </footer>
+
+    <script>
+        function toggleModal(show) {
+            const modal = document.getElementById('rejectionModal');
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') toggleModal(false);
+        });
+
+        // Close modal on background click
+        document.getElementById('rejectionModal').addEventListener('click', (e) => {
+            if (e.target.id === 'rejectionModal') toggleModal(false);
+        });
+    </script>
+</body>
+</html>
