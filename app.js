@@ -52,10 +52,17 @@ app.use(session({
   }
 }));
 
-// Helper izin untuk view EJS
+// Helper izin & format tanggal untuk view EJS
 app.use((req, res, next) => {
   res.locals.can = (perm) => {
     return req.session && req.session.permissions && req.session.permissions.includes(perm);
+  };
+  // Format tanggal seragam (mis. "10 Mar 2025"); aman untuk null/invalid.
+  res.locals.fmtDate = (d) => {
+    if (!d) return '-';
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return String(d);
+    return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
   };
   next();
 });
