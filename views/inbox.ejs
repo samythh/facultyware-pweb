@@ -36,12 +36,6 @@
         <% } %>
       </header>
 
-      <!-- Tab Inbox / Archive -->
-      <nav class="flex items-center gap-1 border-b" aria-label="Tab approval">
-        <a href="/approval" class="px-4 py-2 text-sm font-medium <%= tab === 'history' ? 'text-muted-foreground hover:text-foreground' : 'text-primary border-b-2 border-primary' %>">Inbox</a>
-        <a href="/approval/history" class="px-4 py-2 text-sm font-medium <%= tab === 'history' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground' %>">Archive</a>
-      </nav>
-
       <div class="card">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
