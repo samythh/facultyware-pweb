@@ -1,77 +1,90 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Detail Purchase Order</title>
-    <!-- pastikan styles.css kamu sudah diisi @tailwind base; @tailwind components; @tailwind utilities; -->
-    <link rel="stylesheet" href="/assets/styles.css" />
-  </head>
-  <body class="bg-gray-100">
-    <main class="container mx-auto my-8 p-6 max-w-3xl">
-      
-      <!-- Card Info PO -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h1 class="text-2xl font-semibold tracking-wide mb-4">Detail Purchase Order</h1>
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
 
-        <div class="grid grid-cols-2 gap-4 text-sm">
-          <p>
-            <span class="text-gray-500 uppercase font-medium">Nomor PO</span><br>
-            <span class="font-bold"><%= po.purchase_number %></span>
-          </p>
-          <p>
-            <span class="text-gray-500 uppercase font-medium">Supplier</span><br>
-            <span class="font-bold"><%= po.supplier %></span>
-          </p>
-          <p>
-            <span class="text-gray-500 uppercase font-medium">Tanggal</span><br>
-            <span class="font-bold"><%= po.purchase_date %></span>
-          </p>
-          <p>
-            <span class="text-gray-500 uppercase font-medium">Status</span><br>
-            <% if(po.status === 'completed'){ %>
-              <span class="inline-block px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded">Completed</span>
-            <% } else { %>
-              <span class="inline-block px-2 py-1 text-xs font-semibold text-yellow-700 bg-yellow-100 rounded">Draft</span>
-            <% } %>
-          </p>
+<main id="content">
+  <%- include('../partials/navbar') %>
+
+  <style>
+    .badge { display: inline-flex; align-items: center; padding: .15rem .6rem; border-radius: 9999px; font-size: .72rem; font-weight: 600; line-height: 1.3; }
+    .badge-draft { background: #fef9c3; color: #854d0e; }
+    .badge-done { background: #dcfce7; color: #166534; }
+  </style>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
+      <header class="flex flex-col gap-2">
+        <a href="/purchase" class="text-sm text-muted-foreground hover:underline">&larr; Kembali ke daftar</a>
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Detail Purchase Order</h1>
+      </header>
+
+      <!-- Info PO -->
+      <div class="card">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1">
+            <span class="text-xs uppercase tracking-wide text-muted-foreground">Nomor PO</span>
+            <span class="font-semibold font-mono"><%= po.purchase_number %></span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs uppercase tracking-wide text-muted-foreground">Supplier</span>
+            <span class="font-semibold"><%= po.supplier %></span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs uppercase tracking-wide text-muted-foreground">Tanggal</span>
+            <span class="font-semibold"><%= po.purchase_date %></span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs uppercase tracking-wide text-muted-foreground">Status</span>
+            <span>
+              <% if (po.status === 'completed') { %>
+                <span class="badge badge-done">Completed</span>
+              <% } else { %>
+                <span class="badge badge-draft">Draft</span>
+              <% } %>
+            </span>
+          </div>
         </div>
       </div>
 
-      <!-- Card Item -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-lg font-semibold mb-3">Item</h2>
-        <table class="table-auto w-full text-sm border-collapse">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="text-left px-3 py-2">Item</th>
-              <th class="text-right px-3 py-2">Qty</th>
-              <th class="text-right px-3 py-2">Harga</th>
-              <th class="text-right px-3 py-2">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% items.forEach(it => { %>
-              <tr class="border-t">
-                <td class="px-3 py-2"><%= it.name %></td>
-                <td class="px-3 py-2 text-right"><%= it.quantity %></td>
-                <td class="px-3 py-2 text-right"><%= it.price %></td>
-                <td class="px-3 py-2 text-right"><%= it.subtotal %></td>
+      <!-- Item -->
+      <div class="card">
+        <header>
+          <h2>Item</h2>
+        </header>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-muted-foreground text-left">
+                <th class="px-3 py-2 font-medium">Item</th>
+                <th class="px-3 py-2 font-medium text-right">Qty</th>
+                <th class="px-3 py-2 font-medium text-right">Harga</th>
+                <th class="px-3 py-2 font-medium text-right">Subtotal</th>
               </tr>
-            <% }) %>
-          </tbody>
-        </table>
-        <p class="mt-4 text-right font-bold text-blue-600">Total: <%= total %></p>
+            </thead>
+            <tbody>
+              <% items.forEach(function (it) { %>
+                <tr class="border-t">
+                  <td class="px-3 py-2"><%= it.name %></td>
+                  <td class="px-3 py-2 text-right"><%= it.quantity %></td>
+                  <td class="px-3 py-2 text-right"><%= it.price %></td>
+                  <td class="px-3 py-2 text-right"><%= it.subtotal %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-4 text-right font-bold">Total: <%= total %></p>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="flex gap-3">
+      <!-- Aksi -->
+      <div class="flex flex-wrap items-center gap-2">
         <form method="post" action="/purchase/<%= po.id %>/status">
-          <button type="submit" class="btn btn-warning">Update Status</button>
+          <button type="submit" class="btn-outline">Update Status</button>
         </form>
-        <a href="/purchase/<%= po.id %>/export" class="btn btn-success">Cetak PDF</a>
-        <a href="/purchase" class="btn btn-secondary">Kembali</a>
+        <a href="/purchase/<%= po.id %>/export" class="btn-outline">Cetak PDF</a>
+        <a href="/purchase" class="btn-outline">Kembali</a>
       </div>
-    </main>
-  </body>
-</html>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

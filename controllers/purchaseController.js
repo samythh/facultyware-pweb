@@ -15,7 +15,7 @@ exports.index = async (req, res, next) => {
       [`%${search}%`, `%${search}%`, limit, offset]
     );
 
-    res.render('purchase/index', { purchases, search, page });
+    res.render('purchase/index', { title: 'Daftar Purchase Order', user: req.session.username, purchases, search, page });
   } catch (err) { next(err); }
 };
 
@@ -27,7 +27,7 @@ exports.create = async (req, res, next) => {
        WHERE status='approved' 
        AND id NOT IN (SELECT inventory_procurement_id FROM inventory_purchases WHERE inventory_procurement_id IS NOT NULL)`
     );
-    res.render('purchase/create', { procurements, error: null });
+    res.render('purchase/create', { title: 'Buat Purchase Order', user: req.session.username, procurements, error: null });
   } catch (err) { next(err); }
 };
 
@@ -44,7 +44,7 @@ exports.store = async (req, res, next) => {
          WHERE status='approved' 
          AND id NOT IN (SELECT inventory_procurement_id FROM inventory_purchases WHERE inventory_procurement_id IS NOT NULL)`
       );
-      return res.render('purchase/create', { procurements, error: 'Field wajib diisi!' });
+      return res.render('purchase/create', { title: 'Buat Purchase Order', user: req.session.username, procurements, error: 'Field wajib diisi!' });
     }
 
     const [dupRows] = await db.query(
@@ -57,7 +57,7 @@ exports.store = async (req, res, next) => {
          WHERE status='approved' 
          AND id NOT IN (SELECT inventory_procurement_id FROM inventory_purchases WHERE inventory_procurement_id IS NOT NULL)`
       );
-      return res.render('purchase/create', { procurements, error: 'PO sudah ada untuk permintaan ini!' });
+      return res.render('purchase/create', { title: 'Buat Purchase Order', user: req.session.username, procurements, error: 'PO sudah ada untuk permintaan ini!' });
     }
 
     const now = new Date(purchase_date || Date.now());
@@ -108,7 +108,7 @@ exports.detail = async (req, res, next) => {
 
     const total = items.reduce((sum, it) => sum + Number(it.subtotal || 0), 0);
 
-    res.render('purchase/detail', { po, items, total });
+    res.render('purchase/detail', { title: 'Detail Purchase Order', user: req.session.username, po, items, total });
   } catch (err) { next(err); }
 };
 

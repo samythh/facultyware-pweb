@@ -1,125 +1,119 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Buat Purchase Order</title>
-    <link rel="stylesheet" href="/assets/styles.css" />
-  </head>
-  <body class="bg-gray-100">
-    <main class="container mx-auto my-8 p-6 max-w-3xl">
-      
-      <!-- Card Form PO -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h1 class="text-2xl font-semibold tracking-wide mb-4">Buat Purchase Order</h1>
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
 
-        <% if (locals.error) { %>
-          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
-            <span class="block sm:inline"><%= error %></span>
+<main id="content">
+  <%- include('../partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
+      <header class="flex flex-col gap-2">
+        <a href="/purchase" class="text-sm text-muted-foreground hover:underline">&larr; Kembali ke daftar</a>
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Buat Purchase Order</h1>
+      </header>
+
+      <% if (locals.error) { %>
+        <div class="card border-destructive p-4 text-destructive"><%= error %></div>
+      <% } %>
+
+      <form method="post" action="/purchase/create" class="card grid gap-6">
+        <div class="grid gap-2">
+          <label for="procurement_id">Permintaan (Approved)</label>
+          <select name="inventory_procurement_id" id="procurement_id" class="select" required>
+            <option value="">-- Pilih Permintaan --</option>
+            <% procurements.forEach(function (p) { %>
+              <option value="<%= p.id %>"><%= p.request_number %> - <%= p.title %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid gap-2">
+            <label for="supplier">Supplier</label>
+            <input type="text" id="supplier" name="supplier" class="input" required />
           </div>
-        <% } %>
-
-        <form method="post" action="/purchase/create" class="space-y-6 text-sm">
-          
-          <!-- Procurement di atas -->
-          <div>
-            <span class="text-gray-500 uppercase font-medium">Permintaan (Approved)</span><br>
-            <select name="inventory_procurement_id" id="procurement_id" class="w-full border rounded p-2 text-sm font-bold" required>
-              <option value="">-- Pilih Permintaan --</option>
-              <% procurements.forEach(p => { %>
-                <option value="<%= p.id %>"><%= p.request_number %> - <%= p.title %></option>
-              <% }) %>
-            </select>
+          <div class="grid gap-2">
+            <label for="purchase_date">Tanggal PO</label>
+            <input type="date" id="purchase_date" name="purchase_date" class="input" required />
           </div>
+        </div>
 
-          <!-- Supplier & Tanggal -->
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <span class="text-gray-500 uppercase font-medium">Supplier</span><br>
-              <input type="text" name="supplier" class="w-full border rounded p-2 text-sm font-bold" required />
-            </div>
-            <div>
-              <span class="text-gray-500 uppercase font-medium">Tanggal PO</span><br>
-              <input type="date" name="purchase_date" class="w-full border rounded p-2 text-sm font-bold" required />
-            </div>
-          </div>
+        <!-- Item dimuat dinamis setelah memilih permintaan -->
+        <div id="procurement_items"></div>
 
-          <!-- Tabel Item -->
-          <div id="procurement_items"></div>
+        <p class="text-right font-bold">Total: <span id="total">0</span></p>
 
-          <!-- Total -->
-          <p class="mt-4 text-right font-bold text-blue-600">Total: <span id="total">0</span></p>
+        <footer class="flex items-center justify-end gap-2">
+          <a href="/purchase" class="btn-outline">Batal</a>
+          <button type="submit" class="btn">Simpan PO</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+</main>
 
-          <!-- Action Buttons -->
-          <div class="flex gap-3">
-            <button type="submit" class="btn btn-primary">Simpan PO</button>
-            <a href="/purchase" class="btn btn-secondary">Batal</a>
-          </div>
-        </form>
-      </div>
-    </main>
-
-    <script>
-      document.getElementById('procurement_id').addEventListener('change', async function(){
-        const id = this.value;
-        const target = document.getElementById('procurement_items');
-        target.innerHTML = '';
-        if(!id) return;
-        try{
-          const res = await fetch(`/purchase/api/procurement/${id}/items`);
-          if(!res.ok) throw new Error('fetch failed');
-          const data = await res.json();
-          if(!data.items || !data.items.length){
-            target.innerHTML = '<p class="text-muted text-sm py-3">Tidak ada item dalam permintaan ini.</p>';
-            return;
-          }
-          const wrapper = document.createElement('div');
-          wrapper.className = 'bg-white rounded-lg shadow-md p-6 mb-6';
-          wrapper.innerHTML = '<h2 class="text-lg font-semibold mb-3">Item</h2>';
-          const table = document.createElement('table');
-          table.className = 'table-auto w-full text-sm border-collapse';
-          table.innerHTML = `
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="text-left px-3 py-2">Item</th>
-                <th class="text-right px-3 py-2">Qty</th>
-                <th class="text-right px-3 py-2">Harga</th>
-                <th class="text-right px-3 py-2">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.items.map((i, idx) => `
-                <tr class="border-t">
-                  <td class="px-3 py-2">${i.name}</td>
-                  <td class="px-3 py-2 text-right">${i.quantity}</td>
-                  <td class="px-3 py-2">
-                    <input type="number" name="prices[]" class="w-full border rounded p-1 text-sm text-right font-bold" oninput="updateSubtotal(${idx}, ${i.quantity})" />
-                  </td>
-                  <td id="subtotal-${idx}" class="px-3 py-2 text-right">0</td>
-                </tr>`).join('')}
-            </tbody>
-          `;
-          wrapper.appendChild(table);
-          target.appendChild(wrapper);
-        }catch(e){
-          target.innerHTML = '<p class="text-red-500 text-sm py-3">Gagal memuat items. Coba pilih ulang.</p>';
-        }
-      });
-
-      function updateSubtotal(idx, qty) {
-        const priceInput = document.getElementsByName('prices[]')[idx];
-        const subtotalCell = document.getElementById(`subtotal-${idx}`);
-        const price = parseFloat(priceInput.value) || 0;
-        const subtotal = qty * price;
-        subtotalCell.textContent = subtotal.toLocaleString('id-ID', { minimumFractionDigits: 2 });
-
-        // update total
-        let total = 0;
-        document.querySelectorAll('[id^="subtotal-"]').forEach(cell => {
-          total += parseFloat(cell.textContent.replace(/\./g,'')) || 0;
-        });
-        document.getElementById('total').textContent = total.toLocaleString('id-ID', { minimumFractionDigits: 2 });
+<script>
+  document.getElementById('procurement_id').addEventListener('change', async function () {
+    const id = this.value;
+    const target = document.getElementById('procurement_items');
+    target.innerHTML = '';
+    if (!id) return;
+    try {
+      const res = await fetch(`/purchase/api/procurement/${id}/items`);
+      if (!res.ok) throw new Error('fetch failed');
+      const data = await res.json();
+      if (!data.items || !data.items.length) {
+        target.innerHTML = '<p class="text-muted-foreground text-sm py-3">Tidak ada item dalam permintaan ini.</p>';
+        return;
       }
-    </script>
-  </body>
-</html>
+      const wrapper = document.createElement('div');
+      wrapper.className = 'card';
+      wrapper.innerHTML = '<header><h2>Item</h2></header>';
+      const tableWrap = document.createElement('div');
+      tableWrap.className = 'overflow-x-auto';
+      const table = document.createElement('table');
+      table.className = 'w-full text-sm';
+      table.innerHTML = `
+        <thead>
+          <tr class="text-muted-foreground text-left">
+            <th class="px-3 py-2 font-medium">Item</th>
+            <th class="px-3 py-2 font-medium text-right">Qty</th>
+            <th class="px-3 py-2 font-medium text-right">Harga</th>
+            <th class="px-3 py-2 font-medium text-right">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.items.map((i, idx) => `
+            <tr class="border-t">
+              <td class="px-3 py-2">${i.name}</td>
+              <td class="px-3 py-2 text-right">${i.quantity}</td>
+              <td class="px-3 py-2">
+                <input type="number" name="prices[]" class="input text-right" oninput="updateSubtotal(${idx}, ${i.quantity})" />
+              </td>
+              <td id="subtotal-${idx}" class="px-3 py-2 text-right">0</td>
+            </tr>`).join('')}
+        </tbody>
+      `;
+      tableWrap.appendChild(table);
+      wrapper.appendChild(tableWrap);
+      target.appendChild(wrapper);
+    } catch (e) {
+      target.innerHTML = '<p class="text-destructive text-sm py-3">Gagal memuat items. Coba pilih ulang.</p>';
+    }
+  });
+
+  function updateSubtotal(idx, qty) {
+    const priceInput = document.getElementsByName('prices[]')[idx];
+    const subtotalCell = document.getElementById(`subtotal-${idx}`);
+    const price = parseFloat(priceInput.value) || 0;
+    const subtotal = qty * price;
+    subtotalCell.textContent = subtotal.toLocaleString('id-ID', { minimumFractionDigits: 2 });
+
+    let total = 0;
+    document.querySelectorAll('[id^="subtotal-"]').forEach((cell) => {
+      total += parseFloat(cell.textContent.replace(/\./g, '')) || 0;
+    });
+    document.getElementById('total').textContent = total.toLocaleString('id-ID', { minimumFractionDigits: 2 });
+  }
+</script>
+
+<%- include('../partials/footer') %>
