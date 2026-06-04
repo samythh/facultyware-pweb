@@ -1,225 +1,114 @@
-<!DOCTYPE html>
-<html class="light" lang="en">
-<head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Inbox Wakil Dekan - FacultyWare</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "on-tertiary-container": "#d3dbd3", "on-secondary": "#ffffff", "surface-tint": "#236b46",
-                        "secondary-fixed": "#e0e3e0", "primary-fixed": "#a9f3c3", "on-surface": "#191c1c",
-                        "surface-container-high": "#e7e8e7", "on-primary": "#ffffff", "on-error-container": "#93000a",
-                        "primary-fixed-dim": "#8ed6a9", "surface-container-highest": "#e1e3e2", "surface-container-lowest": "#ffffff",
-                        "inverse-on-surface": "#f0f1f0", "on-surface-variant": "#404942", "surface-dim": "#d9dad9",
-                        "on-tertiary-fixed": "#161d18", "background": "#f9f9f8", "tertiary-fixed": "#dce5dc",
-                        "surface-bright": "#f9f9f8", "on-tertiary": "#ffffff", "error-container": "#ffdad6",
-                        "inverse-surface": "#2e3131", "tertiary": "#414943", "primary-container": "#236b46",
-                        "tertiary-container": "#59615a", "on-primary-container": "#a0e9ba", "on-secondary-fixed-variant": "#444846",
-                        "on-primary-fixed": "#002110", "tertiary-fixed-dim": "#c0c9c0", "error": "#ba1a1a",
-                        "secondary": "#5b5f5d", "inverse-primary": "#8ed6a9", "outline": "#707971",
-                        "outline-variant": "#bfc9bf", "surface": "#f9f9f8", "primary": "#005230",
-                        "surface-container-low": "#f3f4f3", "on-secondary-fixed": "#181c1b", "on-tertiary-fixed-variant": "#414942",
-                        "on-primary-fixed-variant": "#005230", "on-error": "#ffffff", "surface-variant": "#e1e3e2",
-                        "surface-container": "#edeeed", "on-background": "#191c1c", "secondary-container": "#dde0de",
-                        "on-secondary-container": "#5f6361", "secondary-fixed-dim": "#c4c7c5"
-                    },
-                    "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
-                    "spacing": { "margin-mobile": "16px", "container-max": "1280px", "gutter": "24px", "margin-desktop": "40px", "unit": "8px" },
-                    "fontFamily": {
-                        "body-lg": ["IBM Plex Sans"], "display-lg": ["Literata"], "label-caps": ["IBM Plex Sans"],
-                        "body-sm": ["IBM Plex Sans"], "headline-lg-mobile": ["Literata"], "body-md": ["IBM Plex Sans"],
-                        "data-mono": ["JetBrains Mono"], "headline-md": ["Literata"], "headline-lg": ["Literata"]
-                    },
-                    "fontSize": {
-                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}], "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}], "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
-                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}], "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                        "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "400"}], "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
-                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        :root {
-            --hairline: 1px solid #bfc9bf;
-            --paper-bg: #f3f4f3; 
-            --ink: #191c1c;
-        }
-        body {
-            background-color: var(--paper-bg);
-            background-image: radial-gradient(#236b46 0.5px, transparent 0.5px);
-            background-size: 24px 24px;
-            background-attachment: fixed;
-        }
-        .bg-pattern {
-            position: fixed; inset: 0; background-image: radial-gradient(#236b46 0.75px, transparent 0.75px);
-            background-size: 32px 32px; opacity: 0.05; z-index: -1; pointer-events: none;
-        }
-        .tabular-nums { font-variant-numeric: tabular-nums; }
-        .data-table-scroll { scrollbar-width: thin; scrollbar-color: #707971 transparent; }
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .card-accent-bar { position: relative; overflow: hidden; }
-        .card-accent-bar::before {
-            content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #005230; z-index: 10;
-        }
-    </style>
-</head>
-<body class="bg-surface-container-low text-on-background font-body-md min-h-screen flex flex-col relative opacity-0" style="transition: opacity 0.6s ease-out;">
-    <div class="bg-pattern"></div>
-    
-    <header class="bg-background w-full top-0 border-b border-outline-variant z-50 sticky shadow-sm">
-        <div class="flex justify-between items-center px-4 md:px-margin-desktop py-4 max-w-container-max mx-auto">
-            <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-primary text-2xl" data-icon="account_balance">account_balance</span>
-                <h1 class="font-display-lg text-headline-md text-primary tracking-tight">FacultyWare · FT Unand</h1>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="hidden md:flex gap-6 items-center">
-                    <nav class="flex gap-4">
-                        <a class="<%= tab === 'inbox' ? 'text-primary font-bold border-b-2 border-primary' : 'text-on-surface-variant font-medium hover:text-primary' %> transition-all duration-200" href="/approval">Inbox</a>
-                        <a class="<%= tab === 'history' ? 'text-primary font-bold border-b-2 border-primary' : 'text-on-surface-variant font-medium hover:text-primary' %> transition-colors" href="/approval/history">Archive</a>
-                    </nav>
-                </div>
-                <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center overflow-hidden">
-                    <span class="text-xs font-bold text-primary">WD</span>
-                </div>
-            </div>
-        </div>
-        <div class="md:hidden flex px-4 pb-2 gap-4 border-t border-outline-variant/30 pt-2 bg-surface-container-lowest">
-            <a class="font-label-caps text-label-caps <%= tab === 'inbox' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant' %> py-1" href="/approval">INBOX</a>
-            <a class="font-label-caps text-label-caps <%= tab === 'history' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant' %> py-1" href="/approval/history">ARCHIVE</a>
-        </div>
-    </header>
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
 
-    <main class="flex-grow max-w-container-max mx-auto w-full px-4 md:px-margin-desktop py-8">
-        <section class="mb-8 flex justify-between items-end">
-            <div>
-                <h2 class="font-headline-md text-headline-md text-on-surface mb-1"><%= title %></h2>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">
-                    <% if (tab === 'history') { %>
-                        Riwayat keputusan persetujuan pengadaan barang.
-                    <% } else { %>
-                        Review and approve procurement requests for the Faculty of Engineering.
-                    <% } %>
-                </p>
-            </div>
+<main id="content">
+  <%- include('partials/navbar') %>
+
+  <style>
+    /* Badge status & warna angka statistik (mandiri, tidak bergantung utilitas warna). */
+    .badge { display: inline-flex; align-items: center; padding: .15rem .6rem; border-radius: 9999px; font-size: .72rem; font-weight: 600; line-height: 1.3; }
+    .badge-pending { background: #fef9c3; color: #854d0e; }
+    .badge-approved { background: #dcfce7; color: #166534; }
+    .badge-rejected { background: #fee2e2; color: #991b1b; }
+    .stat-pending { color: #ca8a04; }
+    .stat-approved { color: #16a34a; }
+    .stat-rejected { color: #dc2626; }
+  </style>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
+      <header class="flex flex-wrap items-end justify-between gap-4">
+        <div class="flex flex-col gap-2">
+          <h1 class="text-2xl font-bold tracking-tight sm:text-3xl"><%= title %></h1>
+          <p class="text-muted-foreground">
             <% if (tab === 'history') { %>
-                <div class="flex gap-2">
-                    <a href="/approval/rekap/export?format=pdf" class="px-4 py-2 bg-primary text-on-primary rounded text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">picture_as_pdf</span> PDF
-                    </a>
-                    <a href="/approval/rekap/export?format=excel" class="px-4 py-2 bg-[#1e7145] text-white rounded text-sm font-semibold hover:bg-[#1e7145]/90 transition-colors flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">table_view</span> Excel
-                    </a>
-                </div>
+              Riwayat keputusan persetujuan pengadaan barang.
+            <% } else { %>
+              Tinjau dan setujui permintaan pengadaan barang fakultas.
             <% } %>
-        </section>
-
-        <div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden shadow-sm card-accent-bar">
-            <div class="overflow-x-auto data-table-scroll pt-1"> 
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-surface-container-low border-b border-outline-variant">
-                            <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">#</th>
-                            <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Requester</th>
-                            <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Title</th>
-                            <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-outline-variant/50">
-                        
-                        <% if (procurements && procurements.length > 0) { %>
-                            <% procurements.forEach(proc => { %>
-                                <tr onclick="window.location.href='/approval/<%= proc.id %>'" class="hover:bg-surface-container-low transition-colors duration-200 cursor-pointer group">
-                                    <td class="px-6 py-5 font-data-mono text-data-mono tabular-nums text-on-surface">#<%= proc.request_number %></td>
-                                    <td class="px-6 py-5 font-body-sm text-body-sm text-on-surface">
-                                        <%= new Date(proc.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) %>
-                                    </td>
-                                    <td class="px-6 py-5 font-body-sm text-body-sm font-semibold text-primary"><%= proc.pemohon_name || 'Unit/Staf' %></td>
-                                    <td class="px-6 py-5 font-display-lg text-body-md text-on-surface"><%= proc.title %></td>
-                                    <td class="px-6 py-5">
-                                        <% if (proc.status === 'submitted' || proc.status === 'draft') { %>
-                                            <span class="px-2 py-1 rounded bg-[#fff9c4] text-[#827717] font-label-caps text-[10px] uppercase border border-[#fbc02d]/30">Pending</span>
-                                        <% } else if (proc.status === 'approved') { %>
-                                            <span class="px-2 py-1 rounded bg-[#e8f5e9] text-[#2e7d32] font-label-caps text-[10px] uppercase border border-[#a5d6a7]/30">Approved</span>
-                                        <% } else if (proc.status === 'rejected') { %>
-                                            <span class="px-2 py-1 rounded bg-[#ffdad6] text-[#93000a] font-label-caps text-[10px] uppercase border border-[#ba1a1a]/30">Rejected</span>
-                                        <% } %>
-                                    </td>
-                                    <td class="px-6 py-5 text-right">
-                                        <button class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</button>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="6" class="px-6 py-8 text-center text-on-surface-variant font-body-sm">
-                                    Belum ada permintaan pengadaan yang masuk.
-                                </td>
-                            </tr>
-                        <% } %>
-
-                    </tbody>
-                </table>
-            </div>
-            <div class="px-6 py-4 bg-surface-container-low border-t border-outline-variant flex justify-between items-center">
-                <p class="font-body-sm text-body-sm text-on-surface-variant">Menampilkan <%= procurements ? procurements.length : 0 %> permintaan</p>
-                <div class="flex gap-2">
-                    <button class="p-2 border border-outline-variant rounded hover:bg-surface-container transition-colors disabled:opacity-30" disabled>
-                        <span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
-                    </button>
-                    <button class="p-2 border border-outline-variant rounded hover:bg-surface-container transition-colors">
-                        <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
-                    </button>
-                </div>
-            </div>
+          </p>
         </div>
+        <% if (tab === 'history') { %>
+          <div class="flex items-center gap-2">
+            <a href="/approval/rekap/export?format=pdf" class="btn-outline">Export PDF</a>
+            <a href="/approval/rekap/export?format=excel" class="btn-outline">Export Excel</a>
+          </div>
+        <% } %>
+      </header>
 
-        <section class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="p-6 bg-surface-container-lowest border border-outline-variant flex flex-col gap-2 shadow-sm card-accent-bar pt-8">
-                <span class="font-label-caps text-label-caps text-on-surface-variant">TOTAL PENDING</span>
-                <span class="font-display-lg text-headline-lg tabular-nums"><%= typeof totalPending !== 'undefined' ? totalPending : 0 %></span>
-                <div class="mt-2 h-1 w-full bg-surface-container">
-                    <div class="bg-primary h-full w-[100%]"></div>
-                </div>
-            </div>
-            <div class="p-6 bg-surface-container-lowest border border-outline-variant flex flex-col gap-2 shadow-sm card-accent-bar pt-8">
-                <span class="font-label-caps text-label-caps text-on-surface-variant">TOTAL APPROVED</span>
-                <span class="font-display-lg text-headline-lg tabular-nums"><%= typeof totalApproved !== 'undefined' ? totalApproved : 0 %></span>
-            </div>
-            <div class="p-6 bg-surface-container-lowest border border-outline-variant flex flex-col gap-2 shadow-sm card-accent-bar pt-8">
-                <span class="font-label-caps text-label-caps text-on-surface-variant">TOTAL REJECTED</span>
-                <span class="font-display-lg text-headline-lg tabular-nums"><%= typeof totalRejected !== 'undefined' ? totalRejected : 0 %></span>
-            </div>
-        </section>
-    </main>
+      <!-- Tab Inbox / Archive -->
+      <nav class="flex items-center gap-1 border-b" aria-label="Tab approval">
+        <a href="/approval" class="px-4 py-2 text-sm font-medium <%= tab === 'history' ? 'text-muted-foreground hover:text-foreground' : 'text-primary border-b-2 border-primary' %>">Inbox</a>
+        <a href="/approval/history" class="px-4 py-2 text-sm font-medium <%= tab === 'history' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground' %>">Archive</a>
+      </nav>
 
-    <footer class="bg-surface-container-low border-t border-outline-variant mt-auto shadow-inner">
-        <div class="flex flex-col md:flex-row justify-between items-center px-4 md:px-margin-desktop py-8 max-w-container-max mx-auto gap-4">
-            <div class="flex flex-col items-center md:items-start gap-2">
-                <span class="font-display-lg text-body-lg text-primary">FacultyWare</span>
-                <p class="font-label-caps text-label-caps text-on-surface-variant">© 2026 Universitas Andalas · Faculty of Engineering</p>
-            </div>
+      <div class="card">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-muted-foreground text-left">
+                <th class="px-3 py-2 font-medium">No</th>
+                <th class="px-3 py-2 font-medium">Tanggal</th>
+                <th class="px-3 py-2 font-medium">Pemohon</th>
+                <th class="px-3 py-2 font-medium">Judul</th>
+                <th class="px-3 py-2 font-medium">Status</th>
+                <th class="px-3 py-2 font-medium text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (procurements && procurements.length > 0) { %>
+                <% procurements.forEach(function (proc) { %>
+                  <tr class="border-t hover:bg-muted cursor-pointer" onclick="window.location.href='/approval/<%= proc.id %>'">
+                    <td class="px-3 py-2 font-mono">#<%= proc.request_number %></td>
+                    <td class="px-3 py-2"><%= new Date(proc.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                    <td class="px-3 py-2 font-medium"><%= proc.pemohon_name || 'Unit/Staf' %></td>
+                    <td class="px-3 py-2"><%= proc.title %></td>
+                    <td class="px-3 py-2">
+                      <% if (proc.status === 'submitted' || proc.status === 'draft') { %>
+                        <span class="badge badge-pending">Pending</span>
+                      <% } else if (proc.status === 'approved') { %>
+                        <span class="badge badge-approved">Disetujui</span>
+                      <% } else if (proc.status === 'rejected') { %>
+                        <span class="badge badge-rejected">Ditolak</span>
+                      <% } %>
+                    </td>
+                    <td class="px-3 py-2 text-right">
+                      <a href="/approval/<%= proc.id %>" class="btn-sm-outline" onclick="event.stopPropagation()">Detail</a>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr class="border-t">
+                  <td colspan="6" class="px-3 py-8 text-center text-muted-foreground">
+                    Belum ada permintaan pengadaan yang masuk.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
         </div>
-    </footer>
+        <div class="flex items-center justify-between border-t px-3 py-3 text-sm text-muted-foreground">
+          <span>Menampilkan <%= procurements ? procurements.length : 0 %> permintaan</span>
+        </div>
+      </div>
 
-    <script>
-        // Simple Fade in effect on load
-        window.addEventListener('DOMContentLoaded', () => {
-            requestAnimationFrame(() => {
-                document.body.style.opacity = '1';
-            });
-        });
-    </script>
-</body>
-</html>
+      <!-- Statistik -->
+      <section class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="card p-6 text-center">
+          <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Pending</h2>
+          <p class="text-3xl font-bold stat-pending mt-2"><%= typeof totalPending !== 'undefined' ? totalPending : 0 %></p>
+        </div>
+        <div class="card p-6 text-center">
+          <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Disetujui</h2>
+          <p class="text-3xl font-bold stat-approved mt-2"><%= typeof totalApproved !== 'undefined' ? totalApproved : 0 %></p>
+        </div>
+        <div class="card p-6 text-center">
+          <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Ditolak</h2>
+          <p class="text-3xl font-bold stat-rejected mt-2"><%= typeof totalRejected !== 'undefined' ? totalRejected : 0 %></p>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

@@ -43,13 +43,14 @@ router.get('/inbox', async (req, res) => {
         `;
         const [procurements] = await db.execute(query);
 
-        res.render('inbox', { 
+        res.render('inbox', {
             title: 'Inbox Wakil Dekan',
-            tab: 'inbox',               
-            procurements: procurements, 
-            totalPending: stats.totalPending, 
-            totalApproved: stats.totalApproved, 
-            totalRejected: stats.totalRejected 
+            user: req.session.username,
+            tab: 'inbox',
+            procurements: procurements,
+            totalPending: stats.totalPending,
+            totalApproved: stats.totalApproved,
+            totalRejected: stats.totalRejected
         });
     } catch (error) {
         console.error(error);
@@ -71,13 +72,14 @@ router.get('/history', async (req, res) => {
         `;
         const [historyProcurements] = await db.execute(query);
 
-        res.render('inbox', { 
+        res.render('inbox', {
             title: 'Archive Pengadaan',
-            tab: 'history', 
-            procurements: historyProcurements, 
-            totalPending: stats.totalPending, 
-            totalApproved: stats.totalApproved, 
-            totalRejected: stats.totalRejected 
+            user: req.session.username,
+            tab: 'history',
+            procurements: historyProcurements,
+            totalPending: stats.totalPending,
+            totalApproved: stats.totalApproved,
+            totalRejected: stats.totalRejected
         });
     } catch (error) {
         console.error(error);
@@ -192,7 +194,7 @@ router.post('/:id/approve', async (req, res) => {
 router.post('/:id/reject', async (req, res) => {
     try {
         const currentId = req.params.id;
-        const note = (req.body && req.body.note) ? req.body.note : null;
+        const note = (req.body && (req.body.notes || req.body.note)) || null;
 
         // Antisipasi: coba simpan status + catatan penolakan sekaligus.
         // Kolom `note` belum pasti ada di skema final (menunggu konfirmasi dosen),
@@ -242,9 +244,11 @@ router.get('/:id', async (req, res) => {
         `;
         const [itemsResult] = await db.execute(queryItems, [currentId]);
 
-        res.render('detail', { 
-            procurement: procurementResult[0], 
-            items: itemsResult 
+        res.render('detail', {
+            title: 'Detail Permintaan',
+            user: req.session.username,
+            procurement: procurementResult[0],
+            items: itemsResult
         });
 
     } catch (error) {
