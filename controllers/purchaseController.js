@@ -1,6 +1,21 @@
 const db = require('../lib/db');       // Utility koneksi database
 const PDFDocument = require('pdfkit'); // Library untuk generate PDF
 
+// inventory_purchase_items.item_id WAJIB merujuk items.id, sedangkan item
+// permintaan bisa berupa teks bebas (item_id null, hanya item_name). Helper ini
+// memetakan nama ke item master: pakai yang sudah ada, atau buat baru bila belum.
+async function resolveItemId(rawName) {
+  const name = (rawName || 'Barang').trim() || 'Barang';
+  const [found] = await db.query('SELECT id FROM items WHERE name = ? LIMIT 1', [name]);
+  if (found.length) return found[0].id;
+  const code = 'ITM-' + Date.now().toString(36).toUpperCase() + '-' + Math.floor(Math.random() * 1000);
+  const [res] = await db.query(
+    'INSERT INTO items (name, code, unit, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())',
+    [name, code, 'unit']
+  );
+  return res.insertId;
+}
+
 // Daftar PO
 exports.index = async (req, res, next) => {
   try {
@@ -79,10 +94,12 @@ exports.store = async (req, res, next) => {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const price = parseFloat(pricesArray[i]) || 0;
+      // item_id bisa null bila permintaan menyimpan nama bebas -> resolusikan ke items.id
+      const itemId = item.item_id || await resolveItemId(item.item_name);
       await db.query(
         `INSERT INTO inventory_purchase_items (inventory_purchase_id, item_id, quantity, price)
          VALUES (?,?,?,?)`,
-        [result.insertId, item.item_id, item.quantity, price]
+        [result.insertId, itemId, item.quantity, price]
       );
     }
 
