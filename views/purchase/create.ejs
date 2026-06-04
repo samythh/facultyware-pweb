@@ -38,9 +38,14 @@
         </div>
 
         <!-- Item dimuat dinamis setelah memilih permintaan -->
-        <div id="procurement_items"></div>
+        <div id="procurement_items">
+          <p class="text-muted-foreground text-sm">Pilih permintaan di atas untuk memuat daftar barang.</p>
+        </div>
 
-        <p class="text-right font-bold">Total: <span id="total">0</span></p>
+        <div class="flex items-center justify-end gap-3 border-t pt-4">
+          <span class="text-sm text-muted-foreground">Total</span>
+          <span id="total" class="text-lg font-bold">Rp 0</span>
+        </div>
 
         <footer class="flex items-center justify-end gap-2">
           <a href="/purchase" class="btn-outline">Batal</a>
@@ -66,8 +71,8 @@
         return;
       }
       const wrapper = document.createElement('div');
-      wrapper.className = 'card';
-      wrapper.innerHTML = '<header><h2>Item</h2></header>';
+      wrapper.className = 'border rounded-lg p-4 space-y-2';
+      wrapper.innerHTML = '<p class="text-sm font-semibold">Rincian Barang &amp; Harga</p>';
       const tableWrap = document.createElement('div');
       tableWrap.className = 'overflow-x-auto';
       const table = document.createElement('table');
@@ -87,9 +92,9 @@
               <td class="px-3 py-2">${i.name}</td>
               <td class="px-3 py-2 text-right">${i.quantity}</td>
               <td class="px-3 py-2">
-                <input type="number" name="prices[]" class="input text-right" oninput="updateSubtotal(${idx}, ${i.quantity})" />
+                <input type="number" name="prices[]" data-qty="${i.quantity}" min="0" class="input text-right" oninput="updateSubtotal()" />
               </td>
-              <td id="subtotal-${idx}" class="px-3 py-2 text-right">0</td>
+              <td id="subtotal-${idx}" class="px-3 py-2 text-right">Rp 0</td>
             </tr>`).join('')}
         </tbody>
       `;
@@ -101,18 +106,18 @@
     }
   });
 
-  function updateSubtotal(idx, qty) {
-    const priceInput = document.getElementsByName('prices[]')[idx];
-    const subtotalCell = document.getElementById(`subtotal-${idx}`);
-    const price = parseFloat(priceInput.value) || 0;
-    const subtotal = qty * price;
-    subtotalCell.textContent = subtotal.toLocaleString('id-ID', { minimumFractionDigits: 2 });
-
+  function updateSubtotal() {
+    const inputs = document.getElementsByName('prices[]');
     let total = 0;
-    document.querySelectorAll('[id^="subtotal-"]').forEach((cell) => {
-      total += parseFloat(cell.textContent.replace(/\./g, '')) || 0;
+    Array.from(inputs).forEach((inp, i) => {
+      const qty = Number(inp.dataset.qty) || 0;
+      const price = parseFloat(inp.value) || 0;
+      const sub = qty * price;
+      const cell = document.getElementById('subtotal-' + i);
+      if (cell) cell.textContent = 'Rp ' + sub.toLocaleString('id-ID');
+      total += sub;
     });
-    document.getElementById('total').textContent = total.toLocaleString('id-ID', { minimumFractionDigits: 2 });
+    document.getElementById('total').textContent = 'Rp ' + total.toLocaleString('id-ID');
   }
 </script>
 
