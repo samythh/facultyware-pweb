@@ -139,35 +139,23 @@
     </section>
 
     <footer>
-      <div id="popover-387533" class="popover">
-        <button id="popover-387533-trigger" type="button" aria-expanded="false" aria-controls="popover-387533-popover" class="btn-ghost p-2 h-12 w-full flex items-center justify-start" data-keep-mobile-sidebar-open="">
-          <div class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg font-bold shrink-0">
-            <%= (typeof user !== 'undefined' && user) ? user.charAt(0).toUpperCase() : 'U' %>
-          </div>
-          <div class="grid flex-1 text-left text-sm leading-tight ml-2">
-            <span class="truncate font-medium"><%= (typeof user !== 'undefined' && user) ? user : 'User' %></span>
-            <span class="truncate text-xs">Logged In</span>
-          </div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m7 15 5 5 5-5" />
-            <path d="m7 9 5-5 5 5" />
-          </svg>
-        </button>
-        <div id="popover-387533-popover" data-popover aria-hidden="true" data-side="top" class="w-[200px]">
-          <div class="grid gap-2 p-2">
-            <div class="px-2 py-1.5 text-sm font-semibold">My Account</div>
-            <div class="border-t my-1"></div>
-            <a href="/logout" class="btn-sm-outline w-full justify-start text-destructive hover:bg-destructive/10">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              Logout
-            </a>
-          </div>
+      <div class="flex items-center gap-2 p-2 mb-1">
+        <div class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg font-bold shrink-0">
+          <%= (typeof user !== 'undefined' && user) ? user.charAt(0).toUpperCase() : 'U' %>
+        </div>
+        <div class="grid flex-1 text-left text-sm leading-tight">
+          <span class="truncate font-medium"><%= (typeof user !== 'undefined' && user) ? user : 'User' %></span>
+          <span class="truncate text-xs text-muted-foreground">Sudah masuk</span>
         </div>
       </div>
+      <a href="/logout" class="btn-outline w-full justify-center text-destructive hover:bg-destructive/10">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+        Logout
+      </a>
     </footer>
   </nav>
 </aside>

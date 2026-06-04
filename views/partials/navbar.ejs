@@ -6,33 +6,6 @@
         <path d="M9 3v18" />
       </svg>
     </button>
-    <select class="select h-8 leading-none" id="theme-select">
-      <option value="">Default</option>
-      <option value="claude">Claude</option>
-      <option value="doom-64">Doom 64</option>
-      <option value="supabase">Supabase</option>
-    </select>
-    <script>
-      (() => {
-        const themeSelect = document.getElementById("theme-select");
-        const storedTheme = localStorage.getItem("themeVariant");
-        if (themeSelect && storedTheme) themeSelect.value = storedTheme;
-        themeSelect.addEventListener("change", () => {
-          const newTheme = themeSelect.value;
-          document.documentElement.classList.forEach((c) => {
-            if (c.startsWith("theme-"))
-              document.documentElement.classList.remove(c);
-          });
-          if (newTheme) {
-            document.documentElement.classList.add(`theme-${newTheme}`);
-            localStorage.setItem("themeVariant", newTheme);
-          } else {
-            localStorage.removeItem("themeVariant");
-          }
-        });
-      })();
-    </script>
-
     <button type="button" aria-label="Toggle dark mode" data-tooltip="Toggle dark mode" data-side="bottom" onclick="document.dispatchEvent(new CustomEvent('basecoat:theme'))" class="btn-icon-outline size-8">
       <span class="hidden dark:block">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
