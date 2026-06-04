@@ -28,7 +28,7 @@ async function generateRequestNumber() {
   const prefix = `PRQ-${dateStr}-`;
 
   const [rows] = await db.query(
-    'SELECT request_number FROM permintaan_pengadaan WHERE request_number LIKE ? ORDER BY id DESC LIMIT 1',
+    'SELECT request_number FROM inventory_procurements WHERE request_number LIKE ? ORDER BY id DESC LIMIT 1',
     [`${prefix}%`]
   );
 
@@ -55,7 +55,7 @@ const index = async (req, res, next) => {
 
     const employeeId = await resolveEmployeeId(req.session.userId);
 
-    let query = 'SELECT * FROM permintaan_pengadaan WHERE created_by = ?';
+    let query = 'SELECT * FROM inventory_procurements WHERE created_by = ?';
     let queryParams = [employeeId];
 
     if (search) {
@@ -69,7 +69,7 @@ const index = async (req, res, next) => {
     const [procurements] = await db.query(query, queryParams);
 
     // Get total count for pagination
-    let countQuery = 'SELECT COUNT(*) as total FROM permintaan_pengadaan WHERE created_by = ?';
+    let countQuery = 'SELECT COUNT(*) as total FROM inventory_procurements WHERE created_by = ?';
     let countParams = [employeeId];
 
     if (search) {
@@ -167,7 +167,7 @@ const store = async (req, res, next) => {
     await db.query('START TRANSACTION');
 
     const [headerResult] = await db.query(
-      `INSERT INTO permintaan_pengadaan (request_number, title, status, created_by, employee_id, created_at, updated_at)
+      `INSERT INTO inventory_procurements (request_number, title, status, created_by, employee_id, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
       [requestNumber, title.trim(), status, employeeId, employeeId]
     );
@@ -176,7 +176,7 @@ const store = async (req, res, next) => {
 
     for (const item of items) {
       await db.query(
-        `INSERT INTO permintaan_items (permintaan_pengadaan_id, item_name, quantity, created_at, updated_at)
+        `INSERT INTO inventory_procurement_items (inventory_procurement_id, item_name, quantity, created_at, updated_at)
          VALUES (?, ?, ?, NOW(), NOW())`,
         [procurementId, item.name, item.qty]
       );
@@ -197,7 +197,7 @@ const detail = async (req, res, next) => {
 
   try {
     const [procurementRows] = await db.query(
-      'SELECT * FROM permintaan_pengadaan WHERE id = ? AND created_by = ?',
+      'SELECT * FROM inventory_procurements WHERE id = ? AND created_by = ?',
       [id, employeeId]
     );
 
@@ -211,7 +211,7 @@ const detail = async (req, res, next) => {
     const procurement = procurementRows[0];
 
     const [items] = await db.query(
-      'SELECT * FROM permintaan_items WHERE permintaan_pengadaan_id = ?',
+      'SELECT * FROM inventory_procurement_items WHERE inventory_procurement_id = ?',
       [id]
     );
 
@@ -233,7 +233,7 @@ const update = async (req, res, next) => {
   const employeeId = await resolveEmployeeId(req.session.userId);
 
   try {
-    const [rows] = await db.query('SELECT status FROM permintaan_pengadaan WHERE id = ? AND created_by = ?', [id, employeeId]);
+    const [rows] = await db.query('SELECT status FROM inventory_procurements WHERE id = ? AND created_by = ?', [id, employeeId]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
     }
@@ -275,17 +275,17 @@ const update = async (req, res, next) => {
     await db.query('START TRANSACTION');
 
     await db.query(
-      'UPDATE permintaan_pengadaan SET title = ?, updated_at = NOW() WHERE id = ?',
+      'UPDATE inventory_procurements SET title = ?, updated_at = NOW() WHERE id = ?',
       [title.trim(), id]
     );
 
     // Remove old items
-    await db.query('DELETE FROM permintaan_items WHERE permintaan_pengadaan_id = ?', [id]);
+    await db.query('DELETE FROM inventory_procurement_items WHERE inventory_procurement_id = ?', [id]);
 
     // Insert new items
     for (const item of items) {
       await db.query(
-        `INSERT INTO permintaan_items (permintaan_pengadaan_id, item_name, quantity, created_at, updated_at)
+        `INSERT INTO inventory_procurement_items (inventory_procurement_id, item_name, quantity, created_at, updated_at)
          VALUES (?, ?, ?, NOW(), NOW())`,
         [id, item.name, item.qty]
       );
@@ -305,7 +305,7 @@ const destroy = async (req, res, next) => {
   const employeeId = await resolveEmployeeId(req.session.userId);
 
   try {
-    const [rows] = await db.query('SELECT status FROM permintaan_pengadaan WHERE id = ? AND created_by = ?', [id, employeeId]);
+    const [rows] = await db.query('SELECT status FROM inventory_procurements WHERE id = ? AND created_by = ?', [id, employeeId]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
     }
@@ -315,8 +315,8 @@ const destroy = async (req, res, next) => {
     }
 
     await db.query('START TRANSACTION');
-    await db.query('DELETE FROM permintaan_items WHERE permintaan_pengadaan_id = ?', [id]);
-    await db.query('DELETE FROM permintaan_pengadaan WHERE id = ?', [id]);
+    await db.query('DELETE FROM inventory_procurement_items WHERE inventory_procurement_id = ?', [id]);
+    await db.query('DELETE FROM inventory_procurements WHERE id = ?', [id]);
     await db.query('COMMIT');
 
     res.json({ success: true, message: 'Berhasil menghapus draf.' });
@@ -332,7 +332,7 @@ const submit = async (req, res, next) => {
   const employeeId = await resolveEmployeeId(req.session.userId);
 
   try {
-    const [rows] = await db.query('SELECT status FROM permintaan_pengadaan WHERE id = ? AND created_by = ?', [id, employeeId]);
+    const [rows] = await db.query('SELECT status FROM inventory_procurements WHERE id = ? AND created_by = ?', [id, employeeId]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
     }
@@ -342,7 +342,7 @@ const submit = async (req, res, next) => {
     }
 
     await db.query(
-      "UPDATE permintaan_pengadaan SET status = 'submitted', updated_at = NOW() WHERE id = ?",
+      "UPDATE inventory_procurements SET status = 'submitted', updated_at = NOW() WHERE id = ?",
       [id]
     );
 
@@ -359,7 +359,7 @@ const exportPDF = async (req, res, next) => {
 
   try {
     const [procurementRows] = await db.query(
-      'SELECT ip.*, e.name as requester_name FROM permintaan_pengadaan ip JOIN employees e ON ip.created_by = e.id WHERE ip.id = ? AND ip.created_by = ?',
+      'SELECT ip.*, e.name as requester_name FROM inventory_procurements ip JOIN employees e ON ip.created_by = e.id WHERE ip.id = ? AND ip.created_by = ?',
       [id, employeeId]
     );
 
@@ -372,7 +372,7 @@ const exportPDF = async (req, res, next) => {
 
     const procurement = procurementRows[0];
     const [items] = await db.query(
-      'SELECT * FROM permintaan_items WHERE permintaan_pengadaan_id = ?',
+      'SELECT * FROM inventory_procurement_items WHERE inventory_procurement_id = ?',
       [id]
     );
 
@@ -471,12 +471,12 @@ const apiList = async (req, res, next) => {
     const employeeId = await resolveEmployeeId(req.session.userId);
 
     const [items] = await db.query(
-      'SELECT * FROM permintaan_pengadaan WHERE created_by = ? ORDER BY id DESC LIMIT ? OFFSET ?',
+      'SELECT * FROM inventory_procurements WHERE created_by = ? ORDER BY id DESC LIMIT ? OFFSET ?',
       [employeeId, limit, offset]
     );
 
     const [countRows] = await db.query(
-      'SELECT COUNT(*) as total FROM permintaan_pengadaan WHERE created_by = ?',
+      'SELECT COUNT(*) as total FROM inventory_procurements WHERE created_by = ?',
       [employeeId]
     );
 
