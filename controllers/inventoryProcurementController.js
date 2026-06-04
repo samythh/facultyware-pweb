@@ -1,21 +1,30 @@
 const db = require('../lib/db');
 const PDFDocument = require('pdfkit');
 
-// Helper: Resolve logged-in user name to employee ID
+// Helper: Resolve logged-in user name to employee ID.
+// inventory_procurements.created_by mengacu ke employees.id, jadi nilai harus
+// merujuk employee yang benar-benar ada. Cocokkan via nama user; bila tidak
+// ketemu, fallback ke employee pertama yang ada agar FK tetap valid.
+// (Jalankan scripts/seed_employees.js bila tabel employees masih kosong.)
 async function resolveEmployeeId(userId) {
-  let employeeId = 1; // Default fallback to test employee
   try {
-    const [users] = await db.query('SELECT name FROM users WHERE id = ?', [userId]);
-    if (users.length > 0) {
-      const [employees] = await db.query('SELECT id FROM employees WHERE name = ?', [users[0].name]);
-      if (employees.length > 0) {
-        employeeId = employees[0].id;
+    if (userId) {
+      const [users] = await db.query('SELECT name FROM users WHERE id = ?', [userId]);
+      if (users.length > 0) {
+        const [employees] = await db.query('SELECT id FROM employees WHERE name = ? LIMIT 1', [users[0].name]);
+        if (employees.length > 0) {
+          return employees[0].id;
+        }
       }
+    }
+    const [any] = await db.query('SELECT id FROM employees ORDER BY id ASC LIMIT 1');
+    if (any.length > 0) {
+      return any[0].id;
     }
   } catch (error) {
     console.error('Error resolving employee ID:', error);
   }
-  return employeeId;
+  return null; // tidak ada employee sama sekali (perlu seed_employees.js)
 }
 
 // Helper: Generate sequential request number (PRQ-YYYYMMDD-XXXX)
