@@ -16,8 +16,10 @@ const PDFDocument = require("pdfkit");
 const PAGE_SIZE = 10;
 
 // Label status PO (enum DB: 'draft' | 'completed') ke bahasa tampilan.
+// PO dibuat dari permintaan yang SUDAH disetujui, jadi 'draft' di konteks
+// penerimaan berarti "sudah di-PO, menunggu barang diterima".
 const STATUS_LABEL = {
-  draft: "Draf",
+  draft: "Menunggu Penerimaan",
   completed: "Selesai",
 };
 

@@ -9,12 +9,6 @@
       .justify-end { justify-content: flex-end; }
       .num { text-align: right; font-variant-numeric: tabular-nums; }
 
-      /* Pil status: gaya solid berwarna + ikon (referensi label berstatus) */
-      .status-pill { display: inline-flex; align-items: center; gap: .4rem; padding: .28rem .8rem; border-radius: 9999px; font-size: .78rem; font-weight: 600; line-height: 1.2; color: oklch(99% 0.01 150); white-space: nowrap; }
-      .status-pill svg { width: .95rem; height: .95rem; flex: none; }
-      .status-draft { background: oklch(70% 0.15 70); }
-      .status-done { background: oklch(55% 0.14 150); }
-
       /* Header informasi PO (samakan dengan halaman detail) */
       .po-info { display: flex; flex-direction: column; gap: 1.25rem; }
       .po-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--color-border); }
@@ -81,14 +75,7 @@
                   <span class="po-eyebrow">Nomor Purchase Order</span>
                   <span class="po-number font-mono"><%= po ? po.purchase_number : "-" %></span>
                 </div>
-                <span class="status-pill <%= po && po.status === 'completed' ? 'status-done' : 'status-draft' %>">
-                  <% if (po && po.status === 'completed') { %>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-                  <% } else { %>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                  <% } %>
-                  <%= po ? po.status_label : "-" %>
-                </span>
+                <% if (po) { %><%- include('../partials/status-badge', { status: po.status, label: po.status_label }) %><% } %>
               </div>
               <div class="info-grid">
                 <div class="info-tile">
@@ -120,7 +107,7 @@
           >
             <header>
               <h2>Verifikasi Item</h2>
-              <p>Pisahkan jumlah yang diterima <strong>baik</strong> dan yang <strong>cacat</strong>. Saat dikonfirmasi, seluruh barang fisik (baik + cacat) tercatat masuk ke buku besar; barang cacat dikeluarkan kembali lewat retur ke vendor.</p>
+              <p>Isi jumlah yang diterima <strong>baik</strong>; kolom <strong>cacat</strong> terisi otomatis sebagai sisa (qty dipesan &minus; baik) dan tetap bisa diubah. Bila ada barang yang <strong>tidak diterima/hilang</strong>, turunkan jumlah cacat &mdash; selisihnya muncul di kolom <strong>Kurang/Hilang</strong>. Saat dikonfirmasi, barang fisik (baik + cacat) tercatat masuk ke buku besar; yang cacat dikeluarkan lewat retur ke vendor.</p>
             </header>
             <section class="grid gap-6">
               <div class="overflow-x-auto">
@@ -131,34 +118,36 @@
                       <th class="px-3 py-2 font-medium num">Qty Dipesan</th>
                       <th class="px-3 py-2 font-medium num">Diterima Baik</th>
                       <th class="px-3 py-2 font-medium num">Cacat</th>
+                      <th class="px-3 py-2 font-medium num">Kurang/Hilang</th>
                       <th class="px-3 py-2 font-medium">Keterangan</th>
                     </tr>
                   </thead>
                   <tbody>
                     <% if (typeof items !== 'undefined' && items.length > 0) { %>
                       <% items.forEach(function (item) { %>
-                        <tr class="border-t">
+                        <tr class="border-t verify-row" data-ordered="<%= item.quantity %>">
                           <td class="px-3 py-2"><%= item.name %></td>
                           <td class="px-3 py-2 num"><%= item.quantity %></td>
                           <td class="px-3 py-2">
-                            <input type="number" min="0" class="input w-24 num"
+                            <input type="number" min="0" max="<%= item.quantity %>" class="input w-24 num good-input"
                               name="good_qty[<%= item.id %>]"
                               value="<%= item.quantity %>" />
                           </td>
                           <td class="px-3 py-2">
-                            <input type="number" min="0" class="input w-24 num"
+                            <input type="number" min="0" max="<%= item.quantity %>" class="input w-24 num defective-input"
                               name="defective_qty[<%= item.id %>]"
                               value="0" />
                           </td>
+                          <td class="px-3 py-2 num"><span class="missing-cell">0</span></td>
                           <td class="px-3 py-2">
                             <input type="text" class="input w-full"
-                              name="notes[<%= item.id %>]" placeholder="Opsional (mis. alasan cacat)" />
+                              name="notes[<%= item.id %>]" placeholder="Opsional (mis. alasan cacat / barang hilang)" />
                           </td>
                         </tr>
                       <% }) %>
                     <% } else { %>
                       <tr class="border-t">
-                        <td class="px-3 py-8 text-center text-muted-foreground" colspan="5">
+                        <td class="px-3 py-8 text-center text-muted-foreground" colspan="6">
                           Tidak ada item pada purchase order ini.
                         </td>
                       </tr>
@@ -411,6 +400,41 @@
           if (e.dataTransfer && e.dataTransfer.files.length) {
             addFiles(e.dataTransfer.files);
           }
+        });
+      })();
+    </script>
+
+    <script>
+      // Auto-hitung verifikasi: saat "Diterima Baik" diisi, "Cacat" otomatis = sisa
+      // (qty dipesan - baik). Cacat tetap bisa diedit; jika diturunkan, selisihnya
+      // dianggap "Kurang/Hilang" (barang tidak diterima). Nilai dibatasi 0..qty dipesan.
+      (() => {
+        const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+        document.querySelectorAll(".verify-row").forEach((row) => {
+          const ordered = Number(row.dataset.ordered) || 0;
+          const good = row.querySelector(".good-input");
+          const def = row.querySelector(".defective-input");
+          const missing = row.querySelector(".missing-cell");
+          if (!good || !def || !missing) return;
+
+          const recalc = () => {
+            const g = clamp(parseInt(good.value, 10) || 0, 0, ordered);
+            good.value = g;
+            const d = clamp(parseInt(def.value, 10) || 0, 0, ordered - g);
+            def.value = d;
+            const m = ordered - g - d;
+            missing.textContent = m;
+            missing.style.color = m > 0 ? "#dc2626" : "var(--color-muted-foreground)";
+            missing.style.fontWeight = m > 0 ? "600" : "400";
+          };
+
+          good.addEventListener("input", () => {
+            const g = clamp(parseInt(good.value, 10) || 0, 0, ordered);
+            def.value = ordered - g; // default: sisa dianggap cacat
+            recalc();
+          });
+          def.addEventListener("input", recalc);
+          recalc();
         });
       })();
     </script>

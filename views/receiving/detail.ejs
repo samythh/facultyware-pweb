@@ -70,25 +70,9 @@
                 Detail Penerimaan
               </h1>
             </div>
-            <div class="flex items-center justify-end gap-2">
-              <% if (po && po.status !== 'completed') { %>
-                <button type="button" class="btn"
-                  onclick="document.getElementById('dialog-confirm').showModal()">
-                  Konfirmasi Final
-                </button>
-              <% } %>
-              <button type="button" class="btn-outline"
-                onclick="document.getElementById('dialog-retur').showModal()">
-                Catat Retur
-              </button>
-              <button type="button" class="btn-outline"
-                onclick="document.getElementById('dialog-replacement').showModal()">
-                Catat Barang Ganti
-              </button>
-              <a class="btn-outline" href="/receiving/<%= po ? po.id : '0' %>/export">
-                Export PDF
-              </a>
-            </div>
+            <a class="btn-outline shrink-0" href="/receiving/<%= po ? po.id : '0' %>/export">
+              Export PDF
+            </a>
           </header>
 
           <!-- Info PO -->
@@ -99,14 +83,7 @@
                   <span class="po-eyebrow">Nomor Purchase Order</span>
                   <span class="po-number font-mono"><%= po ? po.purchase_number : "-" %></span>
                 </div>
-                <span class="status-pill <%= po && po.status === 'completed' ? 'status-done' : 'status-draft' %>">
-                  <% if (po && po.status === 'completed') { %>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-                  <% } else { %>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                  <% } %>
-                  <%= po ? po.status_label : "-" %>
-                </span>
+                <% if (po) { %><%- include('../partials/status-badge', { status: po.status, label: po.status_label }) %><% } %>
               </div>
               <div class="info-grid">
                 <div class="info-tile">
@@ -115,7 +92,7 @@
                 </div>
                 <div class="info-tile">
                   <div class="info-label">Tanggal Pembelian</div>
-                  <div class="info-value"><%= po ? po.purchase_date : "-" %></div>
+                  <div class="info-value"><%= po ? fmtDate(po.purchase_date) : "-" %></div>
                 </div>
                 <div class="info-tile">
                   <div class="info-label">Jenis Barang</div>
@@ -125,6 +102,13 @@
                   <div class="info-label">Total Nilai PO</div>
                   <div class="info-value"><%= summary ? summary.totalValue_label : "Rp 0" %></div>
                 </div>
+              </div>
+              <div class="flex flex-wrap items-center justify-end gap-2 pt-2 border-t" style="border-color: var(--color-border);">
+                <% if (po && po.status !== 'completed') { %>
+                  <button type="button" class="btn" onclick="document.getElementById('dialog-confirm').showModal()">Konfirmasi Final</button>
+                <% } %>
+                <button type="button" class="btn-outline" onclick="document.getElementById('dialog-retur').showModal()">Catat Retur</button>
+                <button type="button" class="btn-outline" onclick="document.getElementById('dialog-replacement').showModal()">Catat Barang Ganti</button>
               </div>
             </section>
           </div>
