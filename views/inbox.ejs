@@ -5,14 +5,11 @@
   <%- include('partials/navbar') %>
 
   <style>
-    /* Badge status & warna angka statistik (mandiri, tidak bergantung utilitas warna). */
+    /* Badge status (mandiri, tidak bergantung utilitas warna). */
     .badge { display: inline-flex; align-items: center; padding: .15rem .6rem; border-radius: 9999px; font-size: .72rem; font-weight: 600; line-height: 1.3; }
     .badge-pending { background: #fef9c3; color: #854d0e; }
     .badge-approved { background: #dcfce7; color: #166534; }
     .badge-rejected { background: #fee2e2; color: #991b1b; }
-    .stat-pending { color: #ca8a04; }
-    .stat-approved { color: #16a34a; }
-    .stat-rejected { color: #dc2626; }
   </style>
 
   <div class="p-4 md:p-6 xl:p-12">
@@ -85,22 +82,6 @@
           <span>Menampilkan <%= procurements ? procurements.length : 0 %> permintaan</span>
         </div>
       </div>
-
-      <!-- Statistik -->
-      <section class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div class="card p-6 text-center">
-          <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Pending</h2>
-          <p class="text-3xl font-bold stat-pending mt-2"><%= typeof totalPending !== 'undefined' ? totalPending : 0 %></p>
-        </div>
-        <div class="card p-6 text-center">
-          <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Disetujui</h2>
-          <p class="text-3xl font-bold stat-approved mt-2"><%= typeof totalApproved !== 'undefined' ? totalApproved : 0 %></p>
-        </div>
-        <div class="card p-6 text-center">
-          <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Ditolak</h2>
-          <p class="text-3xl font-bold stat-rejected mt-2"><%= typeof totalRejected !== 'undefined' ? totalRejected : 0 %></p>
-        </div>
-      </section>
     </div>
   </div>
 </main>
