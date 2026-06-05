@@ -93,7 +93,7 @@
             <% if (currentPage > 1) { %>
               <a href="/procurement?page=<%= currentPage - 1 %>&search=<%= search %>" class="btn-xs-outline">Sebelumnya</a>
             <% } else { %>
-              <button type="button" onclick="if(window.showToast){window.showToast('Info', 'Anda sudah berada di halaman pertama.', 'info')}else{alert('Anda sudah berada di halaman pertama.')}" class="btn-xs-outline select-none">Sebelumnya</button>
+              <button type="button" class="btn-xs-outline select-none" disabled>Sebelumnya</button>
             <% } %>
 
             <% for (let i = 1; i <= totalPages; i++) { %>
@@ -109,7 +109,7 @@
             <% if (currentPage < totalPages) { %>
               <a href="/procurement?page=<%= currentPage + 1 %>&search=<%= search %>" class="btn-xs-outline">Berikutnya</a>
             <% } else { %>
-              <button type="button" onclick="if(window.showToast){window.showToast('Info', 'Anda sudah berada di halaman terakhir.', 'info')}else{alert('Anda sudah berada di halaman terakhir.')}" class="btn-xs-outline select-none">Berikutnya</button>
+              <button type="button" class="btn-xs-outline select-none" disabled>Berikutnya</button>
             <% } %>
           </div>
         </div>
