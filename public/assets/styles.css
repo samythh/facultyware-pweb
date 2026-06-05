@@ -6427,3 +6427,65 @@ code.hljs {
     }
   }
 }
+
+/* ── Tombol extra-small (pagination & aksi ringkas) ───────────────────
+   btn-xs / btn-xs-outline tidak ada di basecoat, dulu tampil polos.
+   Pakai token basecoat (--color-foreground/-background/-border) supaya
+   warnanya konsisten dengan tombol lain dan tidak ikut terbalik di dark
+   mode OS (token proyek --color-ink dkk ikut membalik, basecoat tidak). */
+.btn-xs,
+a.btn-xs,
+.btn-xs-outline,
+a.btn-xs-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--spacing) * 1.5);
+  height: calc(var(--spacing) * 8);
+  padding: 0 calc(var(--spacing) * 3);
+  min-width: calc(var(--spacing) * 8);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+/* Halaman aktif: terisi lembut (secondary) */
+.btn-xs,
+a.btn-xs {
+  background-color: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+  border: 1px solid var(--color-border);
+}
+
+/* Bisa diklik (Sebelumnya / Berikutnya / nomor halaman): outline */
+.btn-xs-outline,
+a.btn-xs-outline {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  border: 1px solid var(--color-border);
+}
+
+.btn-xs-outline:hover,
+a.btn-xs-outline:hover {
+  background-color: var(--color-accent);
+  color: var(--color-accent-foreground);
+}
+
+.btn-xs:focus-visible,
+.btn-xs-outline:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.btn-xs:disabled,
+.btn-xs-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
