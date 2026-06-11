@@ -33,7 +33,6 @@
                 <th class="px-3 py-2 font-medium">No</th>
                 <th class="px-3 py-2 font-medium">Tanggal</th>
                 <th class="px-3 py-2 font-medium">Pemohon</th>
-                <th class="px-3 py-2 font-medium">Judul</th>
                 <th class="px-3 py-2 font-medium">Status</th>
                 <th class="px-3 py-2 font-medium text-right">Aksi</th>
               </tr>
@@ -45,7 +44,6 @@
                     <td class="px-3 py-2 font-mono">#<%= proc.request_number %></td>
                     <td class="px-3 py-2"><%= new Date(proc.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
                     <td class="px-3 py-2 font-medium"><%= proc.pemohon_name || 'Unit/Staf' %></td>
-                    <td class="px-3 py-2"><%= proc.title %></td>
                     <td class="px-3 py-2"><%- include('partials/status-badge', { status: proc.status }) %></td>
                     <td class="px-3 py-2 text-right">
                       <a href="/approval/<%= proc.id %>" class="btn-sm-outline" onclick="event.stopPropagation()">Detail</a>
@@ -54,7 +52,7 @@
                 <% }) %>
               <% } else { %>
                 <tr class="border-t">
-                  <td colspan="6" class="px-3 py-8 text-center text-muted-foreground">
+                  <td colspan="5" class="px-3 py-8 text-center text-muted-foreground">
                     Belum ada permintaan pengadaan yang masuk.
                   </td>
                 </tr>

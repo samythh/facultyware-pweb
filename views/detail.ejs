@@ -85,13 +85,15 @@
         </div>
       </div>
 
-      <!-- Justifikasi -->
-      <div class="card">
+      <!-- Catatan Penolakan -->
+      <% if (procurement.status === 'rejected' && procurement.notes) { %>
+      <div class="card border-red-500/50 bg-red-50/50">
         <header>
-          <h2>Justifikasi Anggaran</h2>
+          <h2 class="text-red-700">Catatan Penolakan</h2>
         </header>
-        <p class="text-sm leading-relaxed"><%= procurement.title %></p>
+        <p class="text-sm leading-relaxed text-red-900"><%= procurement.notes %></p>
       </div>
+      <% } %>
 
       <!-- Aksi (hanya saat status submitted) -->
       <% if (procurement.status === 'submitted') { %>

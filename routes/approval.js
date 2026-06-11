@@ -18,7 +18,7 @@ async function getStats() {
             SUM(CASE WHEN status = 'submitted' THEN 1 ELSE 0 END) AS totalPending,
             SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) AS totalApproved,
             SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) AS totalRejected
-        FROM inventory_procurements
+        FROM inventory_requests
     `;
     const [rows] = await db.execute(query);
     return {
@@ -35,9 +35,10 @@ router.get('/inbox', async (req, res) => {
         
         // Query JOIN untuk mengambil data pengadaan beserta nama pemohon
         const query = `
-            SELECT p.id, p.request_number, p.title, p.status, p.created_at, e.name AS pemohon_name
-            FROM inventory_procurements p
-            JOIN employees e ON p.created_by = e.id
+            SELECT p.id, p.request_number, p.status, p.created_at, e.name AS pemohon_name, a.notes
+            FROM inventory_requests p
+            JOIN employees e ON p.employee_id = e.id
+            LEFT JOIN inventory_request_approvals a ON p.id = a.inventory_request_id
             WHERE p.status = 'submitted'
             ORDER BY p.created_at DESC
         `;
@@ -64,9 +65,10 @@ router.get('/history', async (req, res) => {
         const stats = await getStats();
         
         const query = `
-            SELECT p.id, p.request_number, p.title, p.status, p.created_at, e.name AS pemohon_name
-            FROM inventory_procurements p
-            JOIN employees e ON p.created_by = e.id
+            SELECT p.id, p.request_number, p.status, p.created_at, e.name AS pemohon_name, a.notes
+            FROM inventory_requests p
+            JOIN employees e ON p.employee_id = e.id
+            LEFT JOIN inventory_request_approvals a ON p.id = a.inventory_request_id
             WHERE p.status IN ('approved', 'rejected')
             ORDER BY p.created_at DESC
         `;
@@ -93,9 +95,10 @@ router.get('/rekap/export', async (req, res) => {
     try {
         // Ambil data riwayat
         const query = `
-            SELECT p.request_number, p.title, p.status, p.created_at, e.name AS pemohon_name
-            FROM inventory_procurements p
-            JOIN employees e ON p.created_by = e.id
+            SELECT p.request_number, p.status, p.created_at, e.name AS pemohon_name, a.notes
+            FROM inventory_requests p
+            JOIN employees e ON p.employee_id = e.id
+            LEFT JOIN inventory_request_approvals a ON p.id = a.inventory_request_id
             WHERE p.status IN ('approved', 'rejected')
             ORDER BY p.created_at DESC
         `;
@@ -119,10 +122,12 @@ router.get('/rekap/export', async (req, res) => {
             // Konten Data
             historyProcurements.forEach((proc, index) => {
                 doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. No. Pengajuan: ${proc.request_number}`);
-                doc.fontSize(11).font('Helvetica').text(`Judul: ${proc.title}`);
-                doc.text(`Pemohon: ${proc.pemohon_name}`);
+                doc.fontSize(11).font('Helvetica').text(`Pemohon: ${proc.pemohon_name}`);
                 doc.text(`Status: ${proc.status.toUpperCase()}`);
                 doc.text(`Tanggal: ${new Date(proc.created_at).toLocaleDateString('id-ID')}`);
+                if (proc.notes) {
+                    doc.text(`Catatan: ${proc.notes}`);
+                }
                 doc.moveDown();
             });
             
@@ -136,10 +141,10 @@ router.get('/rekap/export', async (req, res) => {
             worksheet.columns = [
                 { header: 'No', key: 'no', width: 5 },
                 { header: 'No. Pengajuan', key: 'req_num', width: 20 },
-                { header: 'Judul', key: 'title', width: 35 },
                 { header: 'Pemohon', key: 'requester', width: 25 },
                 { header: 'Status', key: 'status', width: 15 },
-                { header: 'Tanggal', key: 'date', width: 15 }
+                { header: 'Tanggal', key: 'date', width: 15 },
+                { header: 'Catatan', key: 'notes', width: 35 }
             ];
 
             // Styling header
@@ -150,10 +155,10 @@ router.get('/rekap/export', async (req, res) => {
                 worksheet.addRow({
                     no: index + 1,
                     req_num: proc.request_number,
-                    title: proc.title,
                     requester: proc.pemohon_name,
                     status: proc.status.toUpperCase(),
-                    date: new Date(proc.created_at).toLocaleDateString('id-ID')
+                    date: new Date(proc.created_at).toLocaleDateString('id-ID'),
+                    notes: proc.notes || '-'
                 });
             });
 
@@ -179,12 +184,20 @@ router.get('/rekap/export', async (req, res) => {
 router.post('/:id/approve', async (req, res) => {
     try {
         const currentId = req.params.id;
-        // Ubah status di database jadi 'approved'
-        await db.execute('UPDATE inventory_procurements SET status = ? WHERE id = ?', ['approved', currentId]);
+        const approverId = req.session.userId;
+        
+        await db.query('START TRANSACTION');
+        await db.execute('UPDATE inventory_requests SET status = ? WHERE id = ?', ['approved', currentId]);
+        await db.execute(
+            'INSERT INTO inventory_request_approvals (inventory_request_id, approver_id, status, notes, action_date) VALUES (?, ?, ?, ?, NOW())',
+            [currentId, approverId, 'approved', null]
+        );
+        await db.query('COMMIT');
         
         // Kembali ke halaman Inbox
         res.redirect('/approval/inbox');
     } catch (error) {
+        await db.query('ROLLBACK');
         console.error(error);
         res.status(500).send("Gagal memproses persetujuan.");
     }
@@ -195,20 +208,20 @@ router.post('/:id/reject', async (req, res) => {
     try {
         const currentId = req.params.id;
         const note = (req.body && (req.body.notes || req.body.note)) || null;
+        const approverId = req.session.userId;
 
-        // Antisipasi: coba simpan status + catatan penolakan sekaligus.
-        // Kolom `note` belum pasti ada di skema final (menunggu konfirmasi dosen),
-        // jadi kalau query gagal kita fallback ke update status saja supaya tetap jalan.
-        try {
-            await db.execute('UPDATE inventory_procurements SET status = ?, note = ? WHERE id = ?', ['rejected', note, currentId]);
-        } catch (e) {
-            console.warn('[approval] kolom note belum tersedia, simpan status saja:', e.code || e.message);
-            await db.execute('UPDATE inventory_procurements SET status = ? WHERE id = ?', ['rejected', currentId]);
-        }
+        await db.query('START TRANSACTION');
+        await db.execute('UPDATE inventory_requests SET status = ? WHERE id = ?', ['rejected', currentId]);
+        await db.execute(
+            'INSERT INTO inventory_request_approvals (inventory_request_id, approver_id, status, notes, action_date) VALUES (?, ?, ?, ?, NOW())',
+            [currentId, approverId, 'rejected', note]
+        );
+        await db.query('COMMIT');
 
         // Kembali ke halaman Inbox
         res.redirect('/approval/inbox');
     } catch (error) {
+        await db.query('ROLLBACK');
         console.error(error);
         res.status(500).send("Gagal memproses penolakan.");
     }
@@ -225,9 +238,10 @@ router.get('/:id', async (req, res) => {
 
         // Ambil data utama pengadaan
         const queryProcurement = `
-            SELECT p.*, e.name AS pemohon_name
-            FROM inventory_procurements p
-            JOIN employees e ON p.created_by = e.id
+            SELECT p.*, e.name AS pemohon_name, a.notes
+            FROM inventory_requests p
+            JOIN employees e ON p.employee_id = e.id
+            LEFT JOIN inventory_request_approvals a ON p.id = a.inventory_request_id
             WHERE p.id = ?
         `;
         const [procurementResult] = await db.execute(queryProcurement, [currentId]);
@@ -239,8 +253,8 @@ router.get('/:id', async (req, res) => {
         // Ambil daftar barang (items) untuk pengadaan ini
         const queryItems = `
             SELECT item_name, quantity
-            FROM inventory_procurement_items
-            WHERE inventory_procurement_id = ?
+            FROM inventory_request_details
+            WHERE inventory_request_id = ?
         `;
         const [itemsResult] = await db.execute(queryItems, [currentId]);
 
