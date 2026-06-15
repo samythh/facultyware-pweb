@@ -20,7 +20,7 @@ milik tim. Untuk catatan perubahan per-branch lihat [CATATAN-TIM.md](CATATAN-TIM
 
 > **Khusus pengguna yang juga memasang Dolibarr/DoliWamp:** MariaDB Dolibarr
 > sering merebut port 3306 sehingga MySQL XAMPP tidak bisa jalan dan aplikasi
-> gagal konek. Lihat [bagian 8 Troubleshooting](#8-troubleshooting).
+> gagal konek. Pastikan MySQL XAMPP yang memegang port 3306.
 
 ---
 
@@ -157,37 +157,7 @@ Pembuktian hak akses cepat:
 
 ---
 
-## 8. Troubleshooting
-
-| Masalah                                | Solusi                                                                 |
-|----------------------------------------|-----------------------------------------------------------------------|
-| `ECONNREFUSED` / DB tak konek          | Pastikan MySQL XAMPP menyala & isian `.env` benar.                     |
-| `ER_ACCESS_DENIED_ERROR` di port 3306  | Biasanya **MariaDB Dolibarr merebut port 3306**. Lihat catatan bawah. |
-| Login admin malah kena 403 di `/purchase` | Database belum lengkap — impor ulang dump (bagian 5).             |
-| Login error "tabel tidak ada"          | Database belum diimpor — jalankan bagian 5.                           |
-| Port 3000 sudah dipakai                | Ubah `PORT` di `.env`.                                                |
-
-**Konflik port 3306 dengan Dolibarr/DoliWamp.** Jika di komputer Anda terpasang
-DoliWamp, service `doliwampmysqld` (MariaDB) sering menyala otomatis dan memegang
-port 3306 lebih dulu, sehingga MySQL XAMPP gagal bind dan aplikasi konek ke
-server yang salah. Solusi (PowerShell **as Administrator**):
-
-```powershell
-# Matikan Dolibarr + Apache XAMPP, dan setel agar tidak auto-start
-Stop-Service doliwampapache, doliwampmysqld, Apache2.4 -Force
-Set-Service  doliwampapache, doliwampmysqld, Apache2.4 -StartupType Manual
-
-# Pastikan MySQL XAMPP yang memegang 3306
-Restart-Service mysql
-
-# Cek siapa pemilik port 3306
-Get-NetTCPConnection -State Listen -LocalPort 3306 |
-  ForEach-Object { (Get-Process -Id $_.OwningProcess).Path }
-```
-
----
-
-## 9. (Lanjutan) Membangun ulang DB dari skrip — opsional
+## 8. (Lanjutan) Membangun ulang DB dari skrip — opsional
 
 Jalur normal cukup impor dump (bagian 5). Bagian ini hanya untuk yang ingin
 membangun ulang dari skema mentah dosen, mis. saat menambah perubahan skema baru.
@@ -210,7 +180,7 @@ sudah ada. Skema dasar itu hanya tersedia lewat dump dosen / [`database/facultyw
 
 ---
 
-## 10. Catatan penting
+## 9. Catatan penting
 
 - **Jangan commit `.env`.**
 - Berkas hasil upload di `public/assets/uploads/` adalah **data runtime** —
