@@ -171,10 +171,6 @@ node scripts/seed_rbac.js                 # roles, permissions, dan akun login
 node scripts/seed_employees.js            # data employees (FK modul Pengadaan/Approval)
 ```
 
-> ⛔ **JANGAN jalankan `scripts/init_db.js`.** Skrip lama ini men-`DROP TABLE`
-> lalu membuat skema gaya lama (`users.username`) yang **bentrok** dengan skema
-> sekarang (`email`) dan dapat menghapus data.
-
 Skrip-skrip di atas mengandaikan skema dasar (tabel-tabel gaya Laravel dari dosen)
 sudah ada. Skema dasar itu hanya tersedia lewat dump dosen / [`database/facultyware.sql`](database/facultyware.sql).
 
