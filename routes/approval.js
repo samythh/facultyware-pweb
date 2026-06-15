@@ -15,7 +15,7 @@ router.get('/', (req, res) => {
 async function getStats() {
     const query = `
         SELECT 
-            SUM(CASE WHEN status = 'submitted' THEN 1 ELSE 0 END) AS totalPending,
+            SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS totalPending,
             SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) AS totalApproved,
             SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) AS totalRejected
         FROM inventory_requests
@@ -28,7 +28,7 @@ async function getStats() {
     };
 }
 
-// 2. Route untuk nampilin UI Inbox (Hanya yang berstatus 'submitted')
+// 2. Route untuk nampilin UI Inbox (Hanya yang berstatus 'pending')
 router.get('/inbox', async (req, res) => {
     try {
         const stats = await getStats();
@@ -39,7 +39,7 @@ router.get('/inbox', async (req, res) => {
             FROM inventory_requests p
             JOIN employees e ON p.employee_id = e.id
             LEFT JOIN inventory_request_approvals a ON p.id = a.inventory_request_id
-            WHERE p.status = 'submitted'
+            WHERE p.status = 'pending'
             ORDER BY p.created_at DESC
         `;
         const [procurements] = await db.execute(query);
@@ -190,10 +190,14 @@ router.post('/:id/approve', async (req, res) => {
         const approverId = req.session.userId;
 
         await conn.beginTransaction();
-        await conn.execute('UPDATE inventory_requests SET status = ? WHERE id = ?', ['approved', currentId]);
+        // employee_id di tabel approvals NOT NULL -> ambil pemohon dari request.
+        const [reqRows] = await conn.execute('SELECT employee_id FROM inventory_requests WHERE id = ?', [currentId]);
+        const requesterId = reqRows[0] ? reqRows[0].employee_id : approverId;
+
+        await conn.execute('UPDATE inventory_requests SET status = ?, approved_by = ?, approved_at = NOW() WHERE id = ?', ['approved', approverId, currentId]);
         await conn.execute(
-            'INSERT INTO inventory_request_approvals (inventory_request_id, approver_id, status, notes, action_date) VALUES (?, ?, ?, ?, NOW())',
-            [currentId, approverId, 'approved', null]
+            'INSERT INTO inventory_request_approvals (inventory_request_id, approver_id, employee_id, status, notes, action_date) VALUES (?, ?, ?, ?, ?, NOW())',
+            [currentId, approverId, requesterId, 'approved', null]
         );
         await conn.commit();
 
@@ -218,10 +222,14 @@ router.post('/:id/reject', async (req, res) => {
         const approverId = req.session.userId;
 
         await conn.beginTransaction();
+        // employee_id di tabel approvals NOT NULL -> ambil pemohon dari request.
+        const [reqRows] = await conn.execute('SELECT employee_id FROM inventory_requests WHERE id = ?', [currentId]);
+        const requesterId = reqRows[0] ? reqRows[0].employee_id : approverId;
+
         await conn.execute('UPDATE inventory_requests SET status = ? WHERE id = ?', ['rejected', currentId]);
         await conn.execute(
-            'INSERT INTO inventory_request_approvals (inventory_request_id, approver_id, status, notes, action_date) VALUES (?, ?, ?, ?, NOW())',
-            [currentId, approverId, 'rejected', note]
+            'INSERT INTO inventory_request_approvals (inventory_request_id, approver_id, employee_id, status, notes, action_date) VALUES (?, ?, ?, ?, ?, NOW())',
+            [currentId, approverId, requesterId, 'rejected', note]
         );
         await conn.commit();
 
