@@ -10,12 +10,12 @@
       <!-- Breadcrumb & Title -->
       <div class="mb-6 flex flex-col gap-2">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
-          <a href="/procurement" class="hover:text-foreground">Permintaan Pengadaan</a>
+          <a href="/procurement" class="hover:text-foreground">Permintaan Barang</a>
           <span>/</span>
           <span class="text-foreground">Buat Baru</span>
         </div>
-        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Buat Permintaan Pengadaan Baru</h1>
-        <p class="text-sm text-muted-foreground">Isi judul dan tambahkan barang yang ingin diajukan.</p>
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Buat Permintaan Barang Baru</h1>
+        <p class="text-sm text-muted-foreground">Tambahkan rincian barang yang ingin diajukan untuk pengadaan.</p>
       </div>
 
       <!-- Error Alert -->
@@ -34,17 +34,7 @@
       <% } %>
 
       <form action="/procurement/create" method="POST" id="procurement-form" class="space-y-6">
-        <input type="hidden" name="action" id="form-action" value="draft" />
-
-        <!-- Header Card -->
-        <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
-          <h3 class="text-base font-semibold">Detail Informasi Pengadaan</h3>
-          <div class="grid gap-2">
-            <label for="title" class="text-sm font-medium">Judul Permintaan <span class="text-destructive">*</span></label>
-            <input type="text" name="title" id="title" placeholder="Contoh: Pengadaan Monitor dan Keyboard Lab Komputer" class="input w-full" required />
-          </div>
-        </div>
-
+        
         <!-- Items Card -->
         <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
           <div class="flex justify-between items-center gap-4">
@@ -78,8 +68,7 @@
         <!-- Action Buttons -->
         <div class="flex justify-end gap-3">
           <a href="/procurement" class="btn-outline" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Batal</a>
-          <button type="button" onclick="window.submitForm('draft')" class="btn-secondary">Simpan Draf</button>
-          <button type="button" onclick="window.submitForm('submit')" class="btn">Kirim ke Wadir</button>
+          <button type="submit" class="btn">Kirim Permintaan</button>
         </div>
       </form>
 
@@ -137,32 +126,18 @@
         });
       };
 
-      window.submitForm = function(actionValue) {
-        document.getElementById('form-action').value = actionValue;
-        
-        // Basic validations
-        const title = document.getElementById('title').value;
-        if (!title || title.trim() === '') {
-          if (window.showToast) {
-            window.showToast('Validasi Gagal', 'Judul permohonan wajib diisi.', 'error');
-          } else {
-            alert('Judul permohonan wajib diisi.');
-          }
-          return;
-        }
-
+      // Form validation before submission
+      document.getElementById('procurement-form').addEventListener('submit', function(e) {
         const rows = document.querySelectorAll('#items-tbody tr');
         if (rows.length === 0) {
+          e.preventDefault();
           if (window.showToast) {
             window.showToast('Validasi Gagal', 'Tambahkan minimal 1 barang permintaan.', 'error');
           } else {
             alert('Tambahkan minimal 1 barang permintaan.');
           }
-          return;
         }
-
-        document.getElementById('procurement-form').submit();
-      };
+      });
 
       // Add initial row on load
       if (document.readyState === 'loading') {
