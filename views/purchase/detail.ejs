@@ -55,16 +55,16 @@
               <% items.forEach(function (it) { %>
                 <tr class="border-t">
                   <td class="px-3 py-2"><%= it.name %></td>
-                  <td class="px-3 py-2 text-right"><%= it.quantity %></td>
-                  <td class="px-3 py-2 text-right">Rp <%= Number(it.price || 0).toLocaleString('id-ID') %></td>
-                  <td class="px-3 py-2 text-right">Rp <%= Number(it.subtotal || 0).toLocaleString('id-ID') %></td>
+                  <td class="px-3 py-2 text-right tabular-nums"><%= it.quantity %></td>
+                  <td class="px-3 py-2 text-right tabular-nums">Rp <%= Number(it.price || 0).toLocaleString('id-ID') %></td>
+                  <td class="px-3 py-2 text-right tabular-nums">Rp <%= Number(it.subtotal || 0).toLocaleString('id-ID') %></td>
                 </tr>
               <% }) %>
             </tbody>
             <tfoot>
               <tr class="border-t font-bold">
                 <td class="px-3 py-2" colspan="3">Total</td>
-                <td class="px-3 py-2 text-right">Rp <%= Number(total || 0).toLocaleString('id-ID') %></td>
+                <td class="px-3 py-2 text-right tabular-nums">Rp <%= Number(total || 0).toLocaleString('id-ID') %></td>
               </tr>
             </tfoot>
           </table>
