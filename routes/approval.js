@@ -182,48 +182,57 @@ router.get('/rekap/export', async (req, res) => {
 
 // 5. Route untuk mengeksekusi APPROVE
 router.post('/:id/approve', async (req, res) => {
+    // Pakai satu koneksi khusus agar transaksi atomik (db adalah pool,
+    // START/COMMIT terpisah bisa kena koneksi berbeda).
+    const conn = await db.getConnection();
     try {
         const currentId = req.params.id;
         const approverId = req.session.userId;
-        
-        await db.query('START TRANSACTION');
-        await db.execute('UPDATE inventory_requests SET status = ? WHERE id = ?', ['approved', currentId]);
-        await db.execute(
+
+        await conn.beginTransaction();
+        await conn.execute('UPDATE inventory_requests SET status = ? WHERE id = ?', ['approved', currentId]);
+        await conn.execute(
             'INSERT INTO inventory_request_approvals (inventory_request_id, approver_id, status, notes, action_date) VALUES (?, ?, ?, ?, NOW())',
             [currentId, approverId, 'approved', null]
         );
-        await db.query('COMMIT');
-        
+        await conn.commit();
+
         // Kembali ke halaman Inbox
         res.redirect('/approval/inbox');
     } catch (error) {
-        await db.query('ROLLBACK');
+        await conn.rollback();
         console.error(error);
         res.status(500).send("Gagal memproses persetujuan.");
+    } finally {
+        conn.release();
     }
 });
 
 // 6. Route untuk mengeksekusi REJECT
 router.post('/:id/reject', async (req, res) => {
+    // Pakai satu koneksi khusus agar transaksi atomik (lihat catatan di /approve).
+    const conn = await db.getConnection();
     try {
         const currentId = req.params.id;
         const note = (req.body && (req.body.notes || req.body.note)) || null;
         const approverId = req.session.userId;
 
-        await db.query('START TRANSACTION');
-        await db.execute('UPDATE inventory_requests SET status = ? WHERE id = ?', ['rejected', currentId]);
-        await db.execute(
+        await conn.beginTransaction();
+        await conn.execute('UPDATE inventory_requests SET status = ? WHERE id = ?', ['rejected', currentId]);
+        await conn.execute(
             'INSERT INTO inventory_request_approvals (inventory_request_id, approver_id, status, notes, action_date) VALUES (?, ?, ?, ?, NOW())',
             [currentId, approverId, 'rejected', note]
         );
-        await db.query('COMMIT');
+        await conn.commit();
 
         // Kembali ke halaman Inbox
         res.redirect('/approval/inbox');
     } catch (error) {
-        await db.query('ROLLBACK');
+        await conn.rollback();
         console.error(error);
         res.status(500).send("Gagal memproses penolakan.");
+    } finally {
+        conn.release();
     }
 });
 
