@@ -79,7 +79,9 @@
                           <td class="px-3 py-2"><%- include('../partials/status-badge', { status: po.status, label: po.status_label }) %></td>
                           <td class="px-3 py-2">
                             <div class="flex items-center justify-end gap-2">
-                              <a class="btn-sm" href="/receiving/<%= po.id %>/verify">Verifikasi</a>
+                              <% if (po.status !== 'completed') { %>
+                                <a class="btn-sm" href="/receiving/<%= po.id %>/verify">Verifikasi</a>
+                              <% } %>
                               <a class="btn-sm-outline" href="/receiving/<%= po.id %>/detail">Detail</a>
                             </div>
                           </td>
