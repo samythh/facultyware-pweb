@@ -73,6 +73,7 @@ app.use('/receiving', receivingRouter);
 app.use('/api/receiving', receivingRouter.apiRouter);
 app.use('/purchase', require('./routes/purchase'));
 app.use('/procurement', require('./routes/inventoryProcurement'));
+app.use('/pengadaan', require('./routes/pengadaan'));
 app.use('/approval', require('./routes/approval'));
 app.use('/supplier', require('./routes/supplier'));
 
