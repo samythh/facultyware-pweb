@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<main id="content">
+  <%- include('partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto">
+      <header class="flex flex-col gap-2 mb-8">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Dashboard</h1>
+        <p class="text-muted-foreground">Ringkasan aktivitas pengadaan dan purchase order fakultas.</p>
+      </header>
+
+      <section class="flex flex-wrap gap-6">
+        <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
+          <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Permintaan</h2>
+          <p class="text-3xl font-bold text-blue-600 mt-2"><%= totalReq %></p>
+        </div>
+
+        <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
+          <h2 class="text-sm font-medium uppercase text-muted-foreground">Menunggu Approval</h2>
+          <p class="text-3xl font-bold text-yellow-500 mt-2"><%= pending %></p>
+        </div>
+
+        <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
+          <h2 class="text-sm font-medium uppercase text-muted-foreground">Total PO Dibuat</h2>
+          <p class="text-3xl font-bold text-green-600 mt-2"><%= totalPO %></p>
+        </div>
+
+        <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
+          <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Supplier</h2>
+          <p class="text-3xl font-bold text-purple-600 mt-2"><%= supplier %></p>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

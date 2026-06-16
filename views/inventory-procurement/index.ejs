@@ -10,7 +10,7 @@
       <!-- Top Title and Create Button -->
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 class="text-2xl font-bold tracking-tight">Permintaan Pengadaan Barang</h1>
+          <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Permintaan Pengadaan Barang</h1>
           <p class="text-sm text-muted-foreground">Kelola permohonan pengadaan barang inventaris baru.</p>
         </div>
         <a href="/procurement/create" class="btn shrink-0" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
@@ -68,27 +68,9 @@
                     <td class="p-4">
                       <%= item.title %>
                     </td>
-                    <td class="p-4">
-                      <% if (item.status === 'pending') { %>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-900/50">
-                          Pending
-                        </span>
-                      <% } else if (item.status === 'submitted') { %>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-900/50">
-                          Submitted
-                        </span>
-                      <% } else if (item.status === 'approved') { %>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-900/50">
-                          Approved
-                        </span>
-                      <% } else if (item.status === 'rejected') { %>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-900/50">
-                          Rejected
-                        </span>
-                      <% } %>
-                    </td>
+                    <td class="p-4"><%- include('../partials/status-badge', { status: item.status }) %></td>
                     <td class="p-4 text-muted-foreground">
-                      <%= item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-' %>
+                      <%= fmtDate(item.created_at) %>
                     </td>
                     <td class="p-4 text-right">
                       <a href="/procurement/<%= item.id %>" class="btn-xs-outline inline-flex items-center" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
@@ -111,7 +93,7 @@
             <% if (currentPage > 1) { %>
               <a href="/procurement?page=<%= currentPage - 1 %>&search=<%= search %>" class="btn-xs-outline">Sebelumnya</a>
             <% } else { %>
-              <button type="button" onclick="if(window.showToast){window.showToast('Info', 'Anda sudah berada di halaman pertama.', 'info')}else{alert('Anda sudah berada di halaman pertama.')}" class="btn-xs-outline select-none">Sebelumnya</button>
+              <button type="button" class="btn-xs-outline select-none" disabled>Sebelumnya</button>
             <% } %>
 
             <% for (let i = 1; i <= totalPages; i++) { %>
@@ -127,7 +109,7 @@
             <% if (currentPage < totalPages) { %>
               <a href="/procurement?page=<%= currentPage + 1 %>&search=<%= search %>" class="btn-xs-outline">Berikutnya</a>
             <% } else { %>
-              <button type="button" onclick="if(window.showToast){window.showToast('Info', 'Anda sudah berada di halaman terakhir.', 'info')}else{alert('Anda sudah berada di halaman terakhir.')}" class="btn-xs-outline select-none">Berikutnya</button>
+              <button type="button" class="btn-xs-outline select-none" disabled>Berikutnya</button>
             <% } %>
           </div>
         </div>

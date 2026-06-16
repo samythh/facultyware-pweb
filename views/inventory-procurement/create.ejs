@@ -10,12 +10,12 @@
       <!-- Breadcrumb & Title -->
       <div class="mb-6 flex flex-col gap-2">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
-          <a href="/procurement" class="hover:text-foreground">Permintaan Pengadaan</a>
+          <a href="/procurement" class="hover:text-foreground">Permintaan Barang</a>
           <span>/</span>
           <span class="text-foreground">Buat Baru</span>
         </div>
-        <h1 class="text-2xl font-bold tracking-tight">Buat Permintaan Pengadaan Baru</h1>
-        <p class="text-sm text-muted-foreground">Isi judul dan tambahkan barang yang ingin diajukan. Status awal otomatis <strong>Pending</strong>.</p>
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Buat Permintaan Barang Baru</h1>
+        <p class="text-sm text-muted-foreground">Tambahkan rincian barang yang ingin diajukan untuk pengadaan.</p>
       </div>
 
       <!-- Error Alert -->
@@ -34,16 +34,7 @@
       <% } %>
 
       <form action="/procurement/create" method="POST" id="procurement-form" class="space-y-6">
-
-        <!-- Header Card -->
-        <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
-          <h3 class="text-base font-semibold">Detail Informasi Pengadaan</h3>
-          <div class="grid gap-2">
-            <label for="title" class="text-sm font-medium">Judul Permintaan <span class="text-destructive">*</span></label>
-            <input type="text" name="title" id="title" placeholder="Contoh: Pengadaan Monitor dan Keyboard Lab Komputer" class="input w-full" required />
-          </div>
-        </div>
-
+        
         <!-- Items Card -->
         <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
           <div class="flex justify-between items-center gap-4">
@@ -63,9 +54,8 @@
                 <tr class="border-b text-muted-foreground font-semibold">
                   <th class="pb-3 w-[50px]">No</th>
                   <th class="pb-3 pr-4">Nama Barang</th>
-                  <th class="pb-3 pr-4">Spesifikasi</th>
-                  <th class="pb-3 pr-4 w-[140px]">Jumlah (Qty)</th>
-                  <th class="pb-3 w-[60px] text-right">Aksi</th>
+                  <th class="pb-3 pr-4 w-[180px]">Jumlah (Quantity)</th>
+                  <th class="pb-3 w-[80px] text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody class="divide-y" id="items-tbody">
@@ -78,7 +68,7 @@
         <!-- Action Buttons -->
         <div class="flex justify-end gap-3">
           <a href="/procurement" class="btn-outline" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Batal</a>
-          <button type="button" onclick="window.submitForm()" class="btn">Simpan Permintaan</button>
+          <button type="submit" class="btn">Kirim Permintaan</button>
         </div>
       </form>
 
@@ -90,7 +80,7 @@
     (() => {
       let rowCount = 0;
 
-      window.addItemRow = function(name = '', spec = '', qty = 1) {
+      window.addItemRow = function(name = '', qty = 1) {
         rowCount++;
         const tbody = document.getElementById('items-tbody');
         
@@ -100,13 +90,10 @@
 
         tr.innerHTML = `
           <td class="py-3 font-medium align-middle row-index">${tbody.children.length + 1}</td>
-          <td class="py-2 pr-3 align-middle">
+          <td class="py-2 pr-4 align-middle">
             <input type="text" name="item_name" class="input w-full" placeholder="Nama barang..." value="${name}" required />
           </td>
-          <td class="py-2 pr-3 align-middle">
-            <input type="text" name="specification" class="input w-full" placeholder="Spesifikasi (opsional)" value="${spec}" />
-          </td>
-          <td class="py-2 pr-3 align-middle">
+          <td class="py-2 pr-4 align-middle">
             <input type="number" name="quantity" class="input w-full" min="1" placeholder="Qty" value="${qty}" required />
           </td>
           <td class="py-2 align-middle text-right">
@@ -139,30 +126,18 @@
         });
       };
 
-      window.submitForm = function() {
-        // Basic validations
-        const title = document.getElementById('title').value;
-        if (!title || title.trim() === '') {
-          if (window.showToast) {
-            window.showToast('Validasi Gagal', 'Judul permohonan wajib diisi.', 'error');
-          } else {
-            alert('Judul permohonan wajib diisi.');
-          }
-          return;
-        }
-
+      // Form validation before submission
+      document.getElementById('procurement-form').addEventListener('submit', function(e) {
         const rows = document.querySelectorAll('#items-tbody tr');
         if (rows.length === 0) {
+          e.preventDefault();
           if (window.showToast) {
             window.showToast('Validasi Gagal', 'Tambahkan minimal 1 barang permintaan.', 'error');
           } else {
             alert('Tambahkan minimal 1 barang permintaan.');
           }
-          return;
         }
-
-        document.getElementById('procurement-form').submit();
-      };
+      });
 
       // Add initial row on load
       if (document.readyState === 'loading') {

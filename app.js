@@ -8,7 +8,9 @@ var MySQLStore = require('express-mysql-session')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var receivingRouter = require('./routes/receiving');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
+const purchaseController = require('./controllers/purchaseController');
 
 var app = express();
 
@@ -23,15 +25,20 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Session configuration
+// Tabel `sessions` di DB ini bergaya Laravel (kolomnya berbeda dari yang
+// diharapkan express-mysql-session), maka sesi Express disimpan di tabel
+// terpisah `express_sessions` -- tidak mengganggu tabel `sessions` Laravel.
+// Tabel dibuat lewat migration eksplisit: scripts/migrate_sessions_table.js
+// (createDatabaseTable=false agar tidak membuat tabel diam-diam saat runtime).
 const sessionStore = new MySQLStore({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  createDatabaseTable: true,
+  createDatabaseTable: false,
   schema: {
-    tableName: 'sessions_node'
-  }
+    tableName: "express_sessions",
+  },
 });
 
 app.use(session({
@@ -45,9 +52,33 @@ app.use(session({
   }
 }));
 
+// Helper izin & format tanggal untuk view EJS
+app.use((req, res, next) => {
+  res.locals.can = (perm) => {
+    return req.session && req.session.permissions && req.session.permissions.includes(perm);
+  };
+  // Format tanggal seragam (mis. "10 Mar 2025"); aman untuk null/invalid.
+  res.locals.fmtDate = (d) => {
+    if (!d) return '-';
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return String(d);
+    return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  next();
+});
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/receiving', receivingRouter);
+app.use('/api/receiving', receivingRouter.apiRouter);
+app.use('/purchase', require('./routes/purchase'));
 app.use('/procurement', require('./routes/inventoryProcurement'));
+app.use('/approval', require('./routes/approval'));
+app.use('/supplier', require('./routes/supplier'));
+
+// Dashboard sebagai landing ter-autentikasi (semua role yang sudah login).
+app.get('/dashboard', require('./middlewares/auth').isAuthenticated, purchaseController.dashboard);
+app.get('/api/purchase', purchaseController.apiList);
 app.get('/api/procurement', require('./middlewares/auth').isAuthenticated, require('./middlewares/acl').checkPermission('manage_procurement'), require('./controllers/inventoryProcurementController').apiList);
 
 // catch 404 and forward to error handler

@@ -1,0 +1,71 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<main id="content">
+  <%- include('partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
+      <header class="flex flex-wrap items-end justify-between gap-4">
+        <div class="flex flex-col gap-2">
+          <h1 class="text-2xl font-bold tracking-tight sm:text-3xl"><%= title %></h1>
+          <p class="text-muted-foreground">
+            <% if (tab === 'history') { %>
+              Riwayat keputusan persetujuan pengadaan barang.
+            <% } else { %>
+              Tinjau dan setujui permintaan pengadaan barang fakultas.
+            <% } %>
+          </p>
+        </div>
+        <% if (tab === 'history') { %>
+          <div class="flex items-center gap-2">
+            <a href="/approval/rekap/export?format=pdf" class="btn-outline">Export PDF</a>
+            <a href="/approval/rekap/export?format=excel" class="btn-outline">Export Excel</a>
+          </div>
+        <% } %>
+      </header>
+
+      <div class="card">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-muted-foreground text-left">
+                <th class="px-3 py-2 font-medium">No</th>
+                <th class="px-3 py-2 font-medium">Tanggal</th>
+                <th class="px-3 py-2 font-medium">Pemohon</th>
+                <th class="px-3 py-2 font-medium">Status</th>
+                <th class="px-3 py-2 font-medium text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (procurements && procurements.length > 0) { %>
+                <% procurements.forEach(function (proc) { %>
+                  <tr class="border-t hover:bg-muted cursor-pointer" onclick="window.location.href='/approval/<%= proc.id %>'">
+                    <td class="px-3 py-2 font-mono">#<%= proc.request_number %></td>
+                    <td class="px-3 py-2"><%= new Date(proc.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                    <td class="px-3 py-2 font-medium"><%= proc.pemohon_name || 'Unit/Staf' %></td>
+                    <td class="px-3 py-2"><%- include('partials/status-badge', { status: proc.status }) %></td>
+                    <td class="px-3 py-2 text-right">
+                      <a href="/approval/<%= proc.id %>" class="btn-sm-outline" onclick="event.stopPropagation()">Detail</a>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr class="border-t">
+                  <td colspan="5" class="px-3 py-8 text-center text-muted-foreground">
+                    Belum ada permintaan pengadaan yang masuk.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex items-center justify-between border-t px-3 py-3 text-sm text-muted-foreground">
+          <span>Menampilkan <%= procurements ? procurements.length : 0 %> permintaan</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

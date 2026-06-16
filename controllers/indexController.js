@@ -1,51 +1,75 @@
 const bcrypt = require("bcryptjs");
+
 const db = require("../lib/db");
 
+// Dashboard dijadikan landing utama: root & /home mengarah ke sana.
 const index = (req, res) => {
-  res.render("index", { title: "Express" });
+  res.redirect("/dashboard");
 };
 
 const home = (req, res) => {
-  res.render("home", { title: "Home", user: req.session.username });
+  res.redirect("/dashboard");
 };
 
 const loginPage = (req, res) => {
   if (req.session.userId) {
-    return res.redirect("/home");
+    return res.redirect("/dashboard");
   }
-  res.render("login", { title: "Login", error: null });
+  
+  let errorMsg = null;
+  if (req.query.expired === '1') {
+    errorMsg = "Anda belum login atau sesi Anda telah habis. Silakan login kembali.";
+  }
+
+  res.render("login", { title: "Login", error: errorMsg });
 };
 
 const login = async (req, res, next) => {
-  const { username, password } = req.body;
+  // Tabel users (skema Laravel) memakai email sebagai identitas unik;
+  // tidak ada kolom username. Terima nilai dari field email/username apa pun.
+  const identifier = req.body.email || req.body.username;
+  const { password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
+    const [rows] = await db.query("SELECT * FROM users WHERE email = ? OR name = ?", [
+      identifier, identifier
     ]);
 
     if (rows.length === 0) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Email atau kata sandi salah.",
       });
     }
 
     const user = rows[0];
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
+    // Attempt bcrypt compare, fallback to plain text compare if not hashed
+    const isMatch = await bcrypt.compare(password, user.password).catch(() => false);
+    
+    if (!isMatch && password !== user.password) {
       return res.render("login", {
         title: "Login",
-        error: "Invalid username or password",
+        error: "Email atau kata sandi salah.",
       });
     }
 
     // Set session
     req.session.userId = user.id;
-    req.session.username = user.username;
+    req.session.username = user.name; // kolom username tidak ada, pakai name
 
-    res.redirect("/home");
+    // Muat permission user ke session (RBAC)
+    const permQuery = `
+      SELECT DISTINCT p.name
+      FROM permissions p
+      JOIN role_has_permissions rhp ON rhp.permission_id = p.id
+      JOIN model_has_roles mhr ON mhr.role_id = rhp.role_id
+      WHERE mhr.model_type = 'App\\\\Models\\\\User'
+        AND mhr.model_id = ?
+    `;
+    const [perms] = await db.query(permQuery, [user.id]);
+    req.session.permissions = perms.map(p => p.name);
+
+    res.redirect("/dashboard");
   } catch (err) {
     next(err);
   }
