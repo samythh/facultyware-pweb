@@ -74,6 +74,7 @@ app.use('/api/receiving', receivingRouter.apiRouter);
 app.use('/purchase', require('./routes/purchase'));
 app.use('/procurement', require('./routes/inventoryProcurement'));
 app.use('/approval', require('./routes/approval'));
+app.use('/supplier', require('./routes/supplier'));
 
 // Dashboard sebagai landing ter-autentikasi (semua role yang sudah login).
 app.get('/dashboard', require('./middlewares/auth').isAuthenticated, purchaseController.dashboard);

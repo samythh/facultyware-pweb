@@ -23,7 +23,7 @@ async function run() {
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE
       WHERE 
         TABLE_SCHEMA = ? AND REFERENCED_TABLE_NAME IS NOT NULL
-        AND TABLE_NAME IN ('inventory_procurements', 'inventory_procurement_items')
+        AND TABLE_NAME IN ('inventory_requests', 'inventory_request_details')
     `, [process.env.DB_NAME]);
     console.log('Foreign Keys:', fks);
 
