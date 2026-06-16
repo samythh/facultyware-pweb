@@ -20,10 +20,12 @@
             <p class="text-sm text-muted-foreground">Rincian lengkap dan status transaksi pesanan pembelian.</p>
           </div>
           <div class="flex gap-2 shrink-0">
-            <% if (po.status === 'draft' && typeof updateStatus !== 'undefined') { %>
-              <form method="POST" action="/purchase/<%= po.id %>/status" class="inline">
-                <button type="submit" class="btn">Selesaikan PO</button>
+            <% if (po.status === 'pending') { %>
+              <form method="POST" action="/purchase/<%= po.id %>/approve" class="inline">
+                <button type="submit" class="btn bg-emerald-600 hover:bg-emerald-700 text-white">Setujui PO</button>
               </form>
+              <button type="button" class="btn bg-rose-600 hover:bg-rose-700 text-white"
+                onclick="document.getElementById('dialog-reject-po').showModal()">Tolak PO</button>
             <% } %>
             <a href="/purchase/<%= po.id %>/export" class="btn-outline inline-flex items-center shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
@@ -93,8 +95,35 @@
         </div>
       </div>
 
+      <% if (po.status === 'rejected' && po.approval_notes) { %>
+      <div class="card p-6 bg-card rounded-xl border border-red-500/40 bg-red-50/40 space-y-1">
+        <h3 class="text-base font-semibold text-red-700">Alasan Penolakan PO</h3>
+        <p class="text-sm text-red-900"><%= po.approval_notes %></p>
+      </div>
+      <% } %>
+
     </div>
   </div>
 </main>
+
+<!-- Modal: Alasan Penolakan PO -->
+<dialog id="dialog-reject-po" class="dialog">
+  <article>
+    <header>
+      <h2>Alasan Penolakan PO</h2>
+      <p>Tuliskan alasan penolakan Purchase Order ini.</p>
+    </header>
+    <form method="post" action="/purchase/<%= po.id %>/reject" class="grid gap-4">
+      <div class="grid gap-2">
+        <label for="po-notes">Catatan Penolakan</label>
+        <textarea id="po-notes" name="notes" class="input" rows="4" required placeholder="Mis. harga melebihi anggaran..."></textarea>
+      </div>
+      <footer class="flex items-center justify-end gap-2">
+        <button type="button" class="btn-outline" onclick="document.getElementById('dialog-reject-po').close()">Batal</button>
+        <button type="submit" class="btn bg-rose-600 hover:bg-rose-700 text-white">Kirim Penolakan</button>
+      </footer>
+    </form>
+  </article>
+</dialog>
 
 <%- include('../partials/footer') %>

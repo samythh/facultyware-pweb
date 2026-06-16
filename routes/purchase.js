@@ -25,8 +25,12 @@ router.get('/dashboard', checkPermission('manage_po'), purchaseController.dashbo
 // Export PO ke PDF (static before param)
 router.get('/:id/export', checkPermission('manage_po'), purchaseController.exportPDF);
 
-// Update status PO (draft → completed)
+// Update status PO (approved → completed)
 router.post('/:id/status', checkPermission('manage_po'), purchaseController.updateStatus);
+
+// Persetujuan PO oleh Wakil Dekan (gerbang ke-2)
+router.post('/:id/approve', checkPermission('manage_approval'), purchaseController.approve);
+router.post('/:id/reject', checkPermission('manage_approval'), purchaseController.reject);
 
 // Detail PO berdasarkan ID (param last)
 router.get('/:id', checkPermission('manage_po'), purchaseController.detail);
