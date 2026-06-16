@@ -113,11 +113,11 @@ exports.store = async (req, res, next) => {
     const [countRows] = await db.query(`SELECT COUNT(*) as cnt FROM inventory_purchases`);
     const purchase_number = `${prefix}-${String(countRows[0].cnt+1).padStart(4,'0')}`;
 
-    // Simpan supplier_id dan supplier name
+    // PO baru menunggu persetujuan (gerbang ke-2: Wadir menimbang harga/anggaran).
     const [result] = await db.query(
       `INSERT INTO inventory_purchases (purchase_number, inventory_procurement_id, purchase_date, supplier, supplier_id, status, created_at, updated_at)
        VALUES (?,?,?,?,?,?, NOW(), NOW())`,
-      [purchase_number, inventory_procurement_id, purchase_date, supplierName, supplier_id, 'draft']
+      [purchase_number, inventory_procurement_id, purchase_date, supplierName, supplier_id, 'pending']
     );
 
     const [items] = await db.query(
@@ -162,11 +162,43 @@ exports.detail = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-// Update Status PO
+// Update Status PO -> completed (hanya boleh setelah disetujui)
 exports.updateStatus = async (req, res, next) => {
   try {
     const id = req.params.id;
-    await db.query(`UPDATE inventory_purchases SET status='completed', updated_at = NOW() WHERE id=?`, [id]);
+    await db.query(
+      `UPDATE inventory_purchases SET status='completed', updated_at = NOW() WHERE id=? AND status='approved'`,
+      [id]
+    );
+    res.redirect(`/purchase/${id}`);
+  } catch (err) { next(err); }
+};
+
+// Persetujuan PO oleh Wakil Dekan (gerbang ke-2, sadar-harga).
+// approved_by merujuk employees.id; session.userId = users.id yang 1:1 dengan employees.id.
+exports.approve = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    await db.query(
+      `UPDATE inventory_purchases
+          SET status='approved', approved_by=?, approved_at=NOW(), updated_at=NOW()
+        WHERE id=? AND status='pending'`,
+      [req.session.userId, id]
+    );
+    res.redirect(`/purchase/${id}`);
+  } catch (err) { next(err); }
+};
+
+exports.reject = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const notes = (req.body && (req.body.notes || req.body.approval_notes)) || null;
+    await db.query(
+      `UPDATE inventory_purchases
+          SET status='rejected', approved_by=?, approved_at=NOW(), approval_notes=?, updated_at=NOW()
+        WHERE id=? AND status='pending'`,
+      [req.session.userId, notes, id]
+    );
     res.redirect(`/purchase/${id}`);
   } catch (err) { next(err); }
 };
@@ -198,26 +230,26 @@ exports.exportPDF = async (req, res, next) => {
 
     // Header institusi
     doc.fontSize(14).font("Helvetica-Bold")
-      .text("Fakultas Teknologi Informasi - Universitas Andalas", { align: "center" });
+       .text("Fakultas Teknologi Informasi - Universitas Andalas", { align: "center" });
     doc.moveDown(0.5);
 
     // Judul dokumen
     doc.fontSize(18).font("Helvetica-Bold")
-      .text("FORMULIR PURCHASE ORDER", { align: "center" });
+       .text("FORMULIR PURCHASE ORDER", { align: "center" });
     doc.moveDown();
 
     // Informasi PO
     doc.fontSize(12).font("Helvetica")
-      .text(`Nomor PO   : ${po.purchase_number}`)
-      .text(`Tanggal    : ${po.purchase_date}`)
-      .text(`Supplier   : ${po.supplier}`)
-      .text(`Status     : ${po.status}`);
+       .text(`Nomor PO   : ${po.purchase_number}`)
+       .text(`Tanggal    : ${po.purchase_date}`)
+       .text(`Supplier   : ${po.supplier}`)
+       .text(`Status     : ${po.status}`);
     doc.moveDown();
 
     // Tabel barang
     const tableTop = doc.y + 10;
     const startX = 50;
-    const colWidths = [40, 200, 80, 100, 100];
+    const colWidths = [40, 200, 80, 100, 100]; // No, Item, Qty, Harga, Subtotal
 
     // Header tabel
     const headers = ["No", "Item", "Qty", "Harga", "Subtotal"];
@@ -225,7 +257,7 @@ exports.exportPDF = async (req, res, next) => {
     headers.forEach((h, i) => {
       doc.rect(x, tableTop, colWidths[i], 20).stroke();
       doc.font("Helvetica-Bold")
-        .text(h, x + 5, tableTop + 5, { width: colWidths[i] - 10, align: "center" });
+         .text(h, x + 5, tableTop + 5, { width: colWidths[i] - 10, align: "center" });
       x += colWidths[i];
     });
 
@@ -243,7 +275,7 @@ exports.exportPDF = async (req, res, next) => {
       row.forEach((val, i) => {
         doc.rect(x, y, colWidths[i], 20).stroke();
         doc.font("Helvetica")
-          .text(val.toString(), x + 5, y + 5, { width: colWidths[i] - 10, align: "center" });
+           .text(val.toString(), x + 5, y + 5, { width: colWidths[i] - 10, align: "center" });
         x += colWidths[i];
       });
       y += 20;
@@ -253,7 +285,7 @@ exports.exportPDF = async (req, res, next) => {
     const totalLabelWidth = colWidths.slice(0, 4).reduce((a, b) => a + b, 0);
     doc.rect(startX, y, totalLabelWidth, 20).stroke();
     doc.font("Helvetica-Bold")
-      .text("Total", startX + 5, y + 5, { width: totalLabelWidth - 10, align: "right" });
+       .text("Total", startX + 5, y + 5, { width: totalLabelWidth - 10, align: "right" });
     doc.rect(startX + totalLabelWidth, y, colWidths[4], 20).stroke();
     doc.text(
       Number(total).toLocaleString('id-ID', { minimumFractionDigits: 2 }),
@@ -262,7 +294,7 @@ exports.exportPDF = async (req, res, next) => {
       { width: colWidths[4] - 10, align: "center" }
     );
 
-    // Footer
+    // Footer tanda tangan
     doc.moveDown(3);
     doc.fontSize(12).text("Disiapkan oleh,", startX, doc.y);
     doc.text("Disetujui,", startX + 300, doc.y);
@@ -330,55 +362,18 @@ async function safeCount(sql, params = []) {
 
 exports.dashboard = async (req, res, next) => {
   try {
-    // 1. DIKEMBALIKAN KE inventory_requests agar sinkron dengan inputan Admin
-    const totalReq = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests`);
-    const pending = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='pending'`);
-    const approved = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='approved'`);
-    const rejected = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='rejected'`);
+    const totalReq = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_procurements`);
+    const pending = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_purchases WHERE status='pending'`);
     const totalPO = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_purchases`);
+    const supplier = await safeCount(`SELECT COUNT(*) as cnt FROM suppliers`);
 
-    // 2. Data Grafik
-    const trendLabels = [];
-    const trendData = [];
-    
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
-      
-      const monthName = d.toLocaleString('id-ID', { month: 'short' });
-      trendLabels.push(monthName);
-      
-      const m = d.getMonth() + 1;
-      const y = d.getFullYear();
-      
-      const count = await safeCount(
-        `SELECT COUNT(*) as cnt FROM inventory_requests WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?`,
-        [m, y]
-      );
-      trendData.push(count);
-    }
-
-    // 3. AMBIL 5 PERMINTAAN TERBARU (Ditambah JOIN ke tabel employees untuk nama pemohon)
-    const [recentRequests] = await db.query(
-      `SELECT r.id, r.request_number, r.created_at, r.status, e.name AS pemohon_name 
-       FROM inventory_requests r
-       LEFT JOIN employees e ON r.employee_id = e.id
-       ORDER BY r.created_at DESC 
-       LIMIT 5`
-    );
-
-    // 4. Render ke Dashboard EJS
     res.render('dashboard', {
       title: 'Dashboard',
       user: req.session.username,
       totalReq,
       pending,
-      approved,
-      rejected,
       totalPO,
-      trendLabels: JSON.stringify(trendLabels),
-      trendData: JSON.stringify(trendData),
-      recentRequests
+      supplier
     });
   } catch (err) { next(err); }
 };
