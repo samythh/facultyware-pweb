@@ -15,11 +15,14 @@ const PDFDocument = require("pdfkit");
 
 const PAGE_SIZE = 10;
 
-// Label status PO (enum DB: 'draft' | 'completed') ke bahasa tampilan.
-// PO dibuat dari permintaan yang SUDAH disetujui, jadi 'draft' di konteks
-// penerimaan berarti "sudah di-PO, menunggu barang diterima".
+// Label status PO ke bahasa tampilan. Alur 2-gerbang: PO 'pending' (menunggu
+// persetujuan Wadir) -> 'approved' (siap diterima) -> 'completed' (selesai).
+// Hanya PO 'approved' yang boleh diverifikasi & dikonfirmasi di modul ini.
 const STATUS_LABEL = {
-  draft: "Menunggu Penerimaan",
+  draft: "Draf",
+  pending: "Menunggu Persetujuan",
+  approved: "Menunggu Penerimaan",
+  rejected: "Ditolak",
   completed: "Selesai",
 };
 
@@ -59,17 +62,23 @@ const index = async (req, res, next) => {
     const search = (req.query.q || "").trim();
     const { where, params } = buildSearch(search);
 
+    // Hanya PO yang relevan untuk penerimaan: sudah disetujui (siap diterima)
+    // atau sudah selesai. PO 'pending'/'draft'/'rejected' tidak ditampilkan.
+    const statusClause = where
+      ? `${where} AND status IN ('approved','completed')`
+      : `WHERE status IN ('approved','completed')`;
+
     const [rows] = await pool.query(
       `SELECT id, purchase_number, supplier, purchase_date, status
        FROM inventory_purchases
-       ${where}
+       ${statusClause}
        ORDER BY purchase_date DESC, id DESC
        LIMIT ? OFFSET ?`,
       [...params, PAGE_SIZE, offset]
     );
 
     const [[{ total }]] = await pool.query(
-      `SELECT COUNT(*) AS total FROM inventory_purchases ${where}`,
+      `SELECT COUNT(*) AS total FROM inventory_purchases ${statusClause}`,
       params
     );
 
@@ -113,11 +122,13 @@ const verifyForm = async (req, res, next) => {
         }
       : null;
 
-    // PO yang sudah dikonfirmasi (Selesai) tidak boleh diverifikasi ulang;
-    // alihkan ke halaman detail (selaras dgn tombol Verifikasi yang disembunyikan
-    // di daftar dan penolakan 409 saat submit).
+    // Hanya PO yang sudah disetujui (approved) yang boleh diverifikasi.
+    // Yang sudah 'completed' -> ke detail; selain 'approved' -> kembali ke daftar.
     if (po && po.status === "completed") {
       return res.redirect(`/receiving/${poId}/detail`);
+    }
+    if (!po || po.status !== "approved") {
+      return res.redirect(`/receiving`);
     }
 
     const [items] = await pool.query(
@@ -191,6 +202,14 @@ const verifyStore = async (req, res, next) => {
       await conn.rollback();
       return res.status(409).render("error", {
         message: "PO sudah dikonfirmasi (Selesai); verifikasi tidak bisa diubah.",
+        error: { status: 409, stack: "" },
+      });
+    }
+    // Hanya PO yang sudah disetujui Wadir yang boleh diverifikasi.
+    if (poRows[0].status !== "approved") {
+      await conn.rollback();
+      return res.status(409).render("error", {
+        message: "PO belum disetujui; tidak bisa diverifikasi.",
         error: { status: 409, stack: "" },
       });
     }
@@ -272,6 +291,14 @@ const confirm = async (req, res, next) => {
       await conn.rollback();
       return res.redirect(`/receiving/${id}/detail`);
     }
+    // Hanya PO yang sudah disetujui Wadir yang boleh dikonfirmasi diterima.
+    if (po.status !== "approved") {
+      await conn.rollback();
+      return res.status(409).render("error", {
+        message: "PO belum disetujui; tidak bisa dikonfirmasi.",
+        error: { status: 409, stack: "" },
+      });
+    }
 
     // Model buku besar: semua barang FISIK yang datang (baik + cacat) masuk stok.
     // Barang cacat yang dikirim balik nanti dikeluarkan lewat retur, sehingga
@@ -311,35 +338,19 @@ const confirm = async (req, res, next) => {
       [id]
     );
 
-    // Tutup loop: tandai permintaan asal sebagai 'fulfilled'.
-    // Jejak mengikuti kontrak pipeline (PO -> pengadaan -> permintaan via
-    // request_number). Fallback ke tautan langsung PO->permintaan bila modul
-    // Pengadaan belum terpasang. Tidak menyentuh tabel inventories (milik B11).
-    let reqId = null;
-    const [viaProc] = await conn.query(
-      `SELECT r.id
-         FROM inventory_purchases po
-         JOIN inventory_procurements pr ON pr.id = po.inventory_procurement_id
-         JOIN inventory_requests r ON r.request_number = pr.request_number
-        WHERE po.id = ? LIMIT 1`,
+    // Tutup loop: tandai SEMUA permintaan yang tergabung pada pengadaan PO ini
+    // sebagai 'fulfilled'. Satu pengadaan bisa mengkonsolidasi banyak permintaan
+    // (inventory_requests.inventory_procurement_id), jadi many->one.
+    // Tidak menyentuh tabel inventories (milik B11).
+    const [poInfo] = await conn.query(
+      "SELECT inventory_procurement_id FROM inventory_purchases WHERE id = ?",
       [id]
     );
-    if (viaProc.length) {
-      reqId = viaProc[0].id;
-    } else {
-      const [direct] = await conn.query(
-        `SELECT r.id
-           FROM inventory_purchases po
-           JOIN inventory_requests r ON r.id = po.inventory_procurement_id
-          WHERE po.id = ? LIMIT 1`,
-        [id]
-      );
-      if (direct.length) reqId = direct[0].id;
-    }
-    if (reqId != null) {
+    const procurementId = poInfo[0] ? poInfo[0].inventory_procurement_id : null;
+    if (procurementId != null) {
       await conn.query(
-        "UPDATE inventory_requests SET status = 'fulfilled', updated_at = NOW() WHERE id = ? AND status = 'approved'",
-        [reqId]
+        "UPDATE inventory_requests SET status = 'fulfilled', updated_at = NOW() WHERE inventory_procurement_id = ? AND status = 'approved'",
+        [procurementId]
       );
     }
 
