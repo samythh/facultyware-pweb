@@ -1,0 +1,144 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<main id="content">
+  <%- include('partials/navbar') %>
+
+  <div class="p-4 md:p-6 xl:p-12">
+    <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
+      <header class="flex flex-wrap items-end justify-between gap-4">
+        <div class="flex flex-col gap-2">
+          <h1 class="text-2xl font-bold tracking-tight sm:text-3xl"><%= title %></h1>
+          <p class="text-muted-foreground">
+            <% if (tab === 'history') { %>
+              Riwayat keputusan persetujuan pengadaan barang.
+            <% } else { %>
+              Tinjau dan setujui permintaan pengadaan barang fakultas.
+            <% } %>
+          </p>
+        </div>
+        <% if (tab === 'history') { %>
+          <div class="flex items-center gap-2">
+            <a href="/approval/rekap/export?format=pdf" class="btn-outline">Export PDF</a>
+            <a href="/approval/rekap/export?format=excel" class="btn-outline">Export Excel</a>
+          </div>
+        <% } %>
+      </header>
+
+      <div class="card">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-muted-foreground text-left">
+                <th class="px-3 py-2 font-medium">No</th>
+                <th class="px-3 py-2 font-medium">Tanggal</th>
+                <th class="px-3 py-2 font-medium">Pemohon</th>
+                <th class="px-3 py-2 font-medium">Status</th>
+                <th class="px-3 py-2 font-medium text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (procurements && procurements.length > 0) { %>
+                <% procurements.forEach(function (proc) { %>
+                  <tr class="border-t hover:bg-muted cursor-pointer" onclick="window.location.href='/approval/<%= proc.id %>'">
+                    <td class="px-3 py-2 font-mono">#<%= proc.request_number %></td>
+                    <td class="px-3 py-2"><%= new Date(proc.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                    <td class="px-3 py-2 font-medium"><%= proc.pemohon_name || 'Unit/Staf' %></td>
+                    <td class="px-3 py-2"><%- include('partials/status-badge', { status: proc.status }) %></td>
+                    <td class="px-3 py-2 text-right">
+                      <a href="/approval/<%= proc.id %>" class="btn-sm-outline" onclick="event.stopPropagation()">Detail</a>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr class="border-t">
+                  <td colspan="5" class="px-3 py-8 text-center text-muted-foreground">
+                    Belum ada permintaan pengadaan yang masuk.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+        
+        <div id="pagination-container" class="flex items-center justify-between border-t px-4 py-4 text-sm text-muted-foreground">
+          <span id="page-info">Menampilkan <%= procurements ? procurements.length : 0 %> permintaan</span>
+          
+          <div class="flex items-center gap-2" id="pagination-buttons">
+            <button type="button" id="btn-prev" class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed select-none transition-colors" disabled>Sebelumnya</button>
+            <div id="page-numbers" class="flex gap-2"></div>
+            <button type="button" id="btn-next" class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed select-none transition-colors" disabled>Berikutnya</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dibungkus dalam Block Scope {} agar aman saat dieksekusi ulang oleh Turbo/Turbolinks
+    {
+      const initInboxPagination = () => {
+        const rows = document.querySelectorAll('tbody tr.cursor-pointer');
+        const itemsPerPage = 10;
+        let totalPages = Math.ceil(rows.length / itemsPerPage);
+        
+        if (totalPages === 0) totalPages = 1;
+    
+        let currentPage = 1;
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const pageNumbers = document.getElementById('page-numbers');
+        const pageInfo = document.getElementById('page-info');
+        const paginationButtons = document.getElementById('pagination-buttons');
+    
+        if (!paginationButtons || !btnPrev || !btnNext || !pageNumbers) return;
+    
+        paginationButtons.style.display = 'flex';
+    
+        const render = () => {
+          // Filter baris tabel
+          rows.forEach((row, index) => {
+            row.style.display = (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) ? '' : 'none';
+          });
+    
+          // Teks info halaman ("Halaman 1 dari 1")
+          if (pageInfo) {
+            pageInfo.innerHTML = `Halaman ${currentPage} dari ${totalPages}`;
+          }
+          
+          btnPrev.disabled = currentPage === 1;
+          btnNext.disabled = currentPage === totalPages;
+    
+          pageNumbers.innerHTML = '';
+          for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            
+            if (i === currentPage) {
+              // Gaya tombol angka aktif (Background abu-abu terang)
+              btn.className = 'px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium bg-gray-100 text-gray-800 select-none';
+              btn.textContent = i;
+            } else {
+              // Gaya tombol angka tidak aktif
+              btn.className = 'px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 select-none transition-colors';
+              btn.textContent = i;
+              btn.onclick = () => { currentPage = i; render(); };
+            }
+            pageNumbers.appendChild(btn);
+          }
+        };
+    
+        btnPrev.onclick = () => { if (currentPage > 1) { currentPage--; render(); } };
+        btnNext.onclick = () => { if (currentPage < totalPages) { currentPage++; render(); } };
+    
+        render();
+      };
+
+      // Langsung eksekusi fungsi pendukung pagination
+      initInboxPagination();
+    }
+  </script>
+</main>
+
+<%- include('partials/footer') %>

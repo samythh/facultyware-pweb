@@ -1,0 +1,132 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main id="content">
+  <%- include('../partials/navbar') %>
+
+    <style>
+      /* Gaya khusus halaman daftar penerimaan (warna memakai token tema). */
+      .justify-end { justify-content: flex-end; }
+
+      /* Indikator pencarian (muncul hanya saat request HTMX berjalan) */
+      .htmx-indicator { display: none; }
+      .htmx-request.htmx-indicator { display: inline; }
+    </style>
+
+    <div class="p-4 md:p-6 xl:p-12">
+        <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
+          <header class="flex flex-col gap-2">
+            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
+              Penerimaan Barang
+            </h1>
+            <p class="text-muted-foreground">
+              Verifikasi, konfirmasi, dan kelola penerimaan barang dari vendor.
+            </p>
+          </header>
+
+          <div class="card">
+            <section class="grid gap-4">
+              <!-- Search (live, via HTMX) -->
+              <form
+                class="flex items-center justify-end gap-2"
+                action="/receiving"
+                method="get"
+                hx-get="/receiving"
+                hx-target="#receiving-results"
+                hx-select="#receiving-results"
+                hx-swap="outerHTML"
+                hx-push-url="true"
+              >
+                <input
+                  type="search"
+                  name="q"
+                  class="input w-72 max-w-full"
+                  placeholder="Cari nomor PO atau pemasok"
+                  value="<%= typeof search !== 'undefined' ? search : '' %>"
+                  autocomplete="off"
+                  hx-get="/receiving"
+                  hx-trigger="keyup changed delay:300ms, search"
+                  hx-target="#receiving-results"
+                  hx-select="#receiving-results"
+                  hx-swap="outerHTML"
+                  hx-push-url="true"
+                  hx-indicator="#search-indicator"
+                />
+                <span id="search-indicator" class="htmx-indicator text-sm text-muted-foreground">Mencari…</span>
+                <button type="submit" class="btn-outline">Cari</button>
+              </form>
+
+              <div id="receiving-results" class="grid gap-4">
+              <!-- Tabel penerimaan -->
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="text-muted-foreground text-left">
+                      <th class="px-3 py-2 font-medium">No PO</th>
+                      <th class="px-3 py-2 font-medium">Supplier</th>
+                      <th class="px-3 py-2 font-medium">Tanggal</th>
+                      <th class="px-3 py-2 font-medium">Status</th>
+                      <th class="px-3 py-2 font-medium text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (typeof rows !== 'undefined' && rows.length > 0) { %>
+                      <% rows.forEach(function (po) { %>
+                        <tr class="border-t">
+                          <td class="px-3 py-2 font-mono"><%= po.purchase_number %></td>
+                          <td class="px-3 py-2"><%= po.supplier %></td>
+                          <td class="px-3 py-2"><%= fmtDate(po.purchase_date) %></td>
+                          <td class="px-3 py-2"><%- include('../partials/status-badge', { status: po.status, label: po.status_label }) %></td>
+                          <td class="px-3 py-2">
+                            <div class="flex items-center justify-end gap-2">
+                              <% if (po.status !== 'completed') { %>
+                                <a class="btn-sm" href="/receiving/<%= po.id %>/verify">Verifikasi</a>
+                              <% } %>
+                              <a class="btn-sm-outline" href="/receiving/<%= po.id %>/detail">Detail</a>
+                            </div>
+                          </td>
+                        </tr>
+                      <% }) %>
+                    <% } else { %>
+                      <tr class="border-t">
+                        <td class="px-3 py-8 text-center text-muted-foreground" colspan="5">
+                          Tidak ada data penerimaan barang untuk ditampilkan.
+                        </td>
+                      </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Pagination -->
+              <% const _pg = (typeof page !== 'undefined' ? page : 1); const _tp = (typeof totalPages !== 'undefined' ? totalPages : 1); const _q = (typeof search !== 'undefined' ? search : ''); %>
+              <div class="flex items-center justify-between gap-4 pt-1" aria-label="Pagination">
+                <span class="text-xs text-muted-foreground">Halaman <%= _pg %> dari <%= _tp %></span>
+                <div class="flex gap-1" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+                  <% if (_pg > 1) { %>
+                    <a href="/receiving?page=<%= _pg - 1 %>&q=<%= _q %>" class="btn-xs-outline">Sebelumnya</a>
+                  <% } else { %>
+                    <button type="button" class="btn-xs-outline select-none" disabled>Sebelumnya</button>
+                  <% } %>
+                  <% for (let i = 1; i <= _tp; i++) { %>
+                    <% if (i === _pg) { %>
+                      <button type="button" class="btn-xs font-semibold select-none"><%= i %></button>
+                    <% } else { %>
+                      <a href="/receiving?page=<%= i %>&q=<%= _q %>" class="btn-xs-outline"><%= i %></a>
+                    <% } %>
+                  <% } %>
+                  <% if (_pg < _tp) { %>
+                    <a href="/receiving?page=<%= _pg + 1 %>&q=<%= _q %>" class="btn-xs-outline">Berikutnya</a>
+                  <% } else { %>
+                    <button type="button" class="btn-xs-outline select-none" disabled>Berikutnya</button>
+                  <% } %>
+                </div>
+              </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+
+<%- include('../partials/footer') %>
