@@ -62,10 +62,12 @@ const index = async (req, res, next) => {
 
     // Cari berdasarkan nomor pengajuan atau nama barang detail
     let query = `
-      SELECT r.*, 
-             COALESCE(
-               (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = r.id LIMIT 1), 
-               'Permintaan Barang'
+      SELECT r.*,
+             CONCAT(
+               COALESCE((SELECT item_name FROM inventory_request_details WHERE inventory_request_id = r.id ORDER BY id LIMIT 1), 'Permintaan Barang'),
+               CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) > 1
+                    THEN CONCAT(' +', (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) - 1, ' lainnya')
+                    ELSE '' END
              ) AS title
       FROM inventory_requests r
       WHERE r.employee_id = ?
@@ -212,12 +214,14 @@ const detail = async (req, res, next) => {
 
   try {
     const [procurementRows] = await db.query(
-      `SELECT r.*, 
-              COALESCE(
-                (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = r.id LIMIT 1), 
-                'Permintaan Barang'
-              ) AS title 
-       FROM inventory_requests r 
+      `SELECT r.*,
+              CONCAT(
+                COALESCE((SELECT item_name FROM inventory_request_details WHERE inventory_request_id = r.id ORDER BY id LIMIT 1), 'Permintaan Barang'),
+                CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) > 1
+                     THEN CONCAT(' +', (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) - 1, ' lainnya')
+                     ELSE '' END
+              ) AS title
+       FROM inventory_requests r
        WHERE r.id = ? AND r.employee_id = ?`,
       [id, employeeId]
     );
@@ -376,7 +380,9 @@ const exportPDF = async (req, res, next) => {
     );
 
     // Set virtual title
-    procurement.title = items[0]?.item_name || 'Permintaan Barang';
+    procurement.title = items.length
+      ? (items[0].item_name + (items.length > 1 ? ` +${items.length - 1} lainnya` : ''))
+      : 'Permintaan Barang';
 
     // Initialize PDFKit
     res.setHeader('Content-Type', 'application/pdf');
@@ -473,11 +479,13 @@ const apiList = async (req, res, next) => {
     const employeeId = await resolveEmployeeId(req.session.userId);
 
     const [items] = await db.query(
-      `SELECT *, 
-              COALESCE(
-                (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id LIMIT 1), 
-                'Permintaan Barang'
-              ) AS title 
+      `SELECT *,
+              CONCAT(
+                COALESCE((SELECT item_name FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id ORDER BY id LIMIT 1), 'Permintaan Barang'),
+                CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id) > 1
+                     THEN CONCAT(' +', (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id) - 1, ' lainnya')
+                     ELSE '' END
+              ) AS title
        FROM inventory_requests WHERE employee_id = ? ORDER BY id DESC LIMIT ? OFFSET ?`,
       [employeeId, limit, offset]
     );
