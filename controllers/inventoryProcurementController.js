@@ -63,12 +63,12 @@ const index = async (req, res, next) => {
     // Cari berdasarkan nomor pengajuan atau nama barang detail
     let query = `
       SELECT r.*,
-             CONCAT(
+             COALESCE(NULLIF(r.title, ''), CONCAT(
                COALESCE((SELECT item_name FROM inventory_request_details WHERE inventory_request_id = r.id ORDER BY id LIMIT 1), 'Permintaan Barang'),
                CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) > 1
                     THEN CONCAT(' +', (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) - 1, ' lainnya')
                     ELSE '' END
-             ) AS title
+             )) AS title
       FROM inventory_requests r
       WHERE r.employee_id = ?
     `;
@@ -135,6 +135,7 @@ const create = async (req, res, next) => {
 // POST /procurement/create -> simpan
 const store = async (req, res, next) => {
   const { item_name, quantity } = req.body;
+  const title = (req.body.title || '').trim() || null;
   const employeeId = await resolveEmployeeId(req.session.userId);
 
   // Check if items exist
@@ -184,9 +185,9 @@ const store = async (req, res, next) => {
     await db.query('START TRANSACTION');
 
     const [headerResult] = await db.query(
-      `INSERT INTO inventory_requests (request_number, employee_id, request_date, status, approved_by_id, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-      [requestNumber, employeeId, requestDate, status, approvedById]
+      `INSERT INTO inventory_requests (request_number, title, employee_id, request_date, status, approved_by_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [requestNumber, title, employeeId, requestDate, status, approvedById]
     );
 
     const requestId = headerResult.insertId;
@@ -215,12 +216,12 @@ const detail = async (req, res, next) => {
   try {
     const [procurementRows] = await db.query(
       `SELECT r.*,
-              CONCAT(
+              COALESCE(NULLIF(r.title, ''), CONCAT(
                 COALESCE((SELECT item_name FROM inventory_request_details WHERE inventory_request_id = r.id ORDER BY id LIMIT 1), 'Permintaan Barang'),
                 CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) > 1
                      THEN CONCAT(' +', (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) - 1, ' lainnya')
                      ELSE '' END
-              ) AS title
+              )) AS title
        FROM inventory_requests r
        WHERE r.id = ? AND r.employee_id = ?`,
       [id, employeeId]
@@ -480,12 +481,12 @@ const apiList = async (req, res, next) => {
 
     const [items] = await db.query(
       `SELECT *,
-              CONCAT(
+              COALESCE(NULLIF(title, ''), CONCAT(
                 COALESCE((SELECT item_name FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id ORDER BY id LIMIT 1), 'Permintaan Barang'),
                 CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id) > 1
                      THEN CONCAT(' +', (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id) - 1, ' lainnya')
                      ELSE '' END
-              ) AS title
+              )) AS title
        FROM inventory_requests WHERE employee_id = ? ORDER BY id DESC LIMIT ? OFFSET ?`,
       [employeeId, limit, offset]
     );
