@@ -1,9 +1,7 @@
 const db = require('../lib/db');       // Utility koneksi database
 const PDFDocument = require('pdfkit'); // Library untuk generate PDF
 
-// inventory_purchase_items.item_id WAJIB merujuk items.id, sedangkan item
-// permintaan bisa berupa teks bebas (item_id null, hanya item_name). Helper ini
-// memetakan nama ke item master: pakai yang sudah ada, atau buat baru bila belum.
+// Helper: Resolve raw item name to item id.
 async function resolveItemId(rawName) {
   const name = (rawName || 'Barang').trim() || 'Barang';
   const [found] = await db.query('SELECT id FROM items WHERE name = ? LIMIT 1', [name]);
@@ -38,41 +36,74 @@ exports.index = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const [procurements] = await db.query(
-      `SELECT * FROM inventory_procurements 
+      `SELECT *, (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id LIMIT 1) as title 
+       FROM inventory_requests 
        WHERE status='approved' 
        AND id NOT IN (SELECT inventory_procurement_id FROM inventory_purchases WHERE inventory_procurement_id IS NOT NULL)`
     );
-    res.render('purchase/create', { title: 'Buat Purchase Order', user: req.session.username, procurements, error: null });
+
+    const [suppliers] = await db.query('SELECT id, name, code FROM suppliers ORDER BY name ASC');
+
+    res.render('purchase/create', { 
+      title: 'Buat Purchase Order', 
+      user: req.session.username, 
+      procurements, 
+      suppliers, 
+      error: null 
+    });
   } catch (err) { next(err); }
 };
 
 // Simpan PO Baru
 exports.store = async (req, res, next) => {
   try {
-    const { purchase_date, supplier, inventory_procurement_id } = req.body;
+    const { purchase_date, supplier_id, inventory_procurement_id } = req.body;
     const rawPrices = req.body.prices || req.body['prices[]'];
     const pricesArray = Array.isArray(rawPrices) ? rawPrices : (rawPrices ? [rawPrices] : []);
 
-    if (!purchase_date || !supplier || !inventory_procurement_id) {
-      const [procurements] = await db.query(
-        `SELECT * FROM inventory_procurements 
-         WHERE status='approved' 
-         AND id NOT IN (SELECT inventory_procurement_id FROM inventory_purchases WHERE inventory_procurement_id IS NOT NULL)`
-      );
-      return res.render('purchase/create', { title: 'Buat Purchase Order', user: req.session.username, procurements, error: 'Field wajib diisi!' });
+    const [suppliers] = await db.query('SELECT id, name FROM suppliers ORDER BY name ASC');
+    const [procurements] = await db.query(
+      `SELECT *, (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id LIMIT 1) as title 
+       FROM inventory_requests 
+       WHERE status='approved' 
+       AND id NOT IN (SELECT inventory_procurement_id FROM inventory_purchases WHERE inventory_procurement_id IS NOT NULL)`
+    );
+
+    if (!purchase_date || !supplier_id || !inventory_procurement_id) {
+      return res.render('purchase/create', { 
+        title: 'Buat Purchase Order', 
+        user: req.session.username, 
+        procurements, 
+        suppliers, 
+        error: 'Field wajib diisi!' 
+      });
     }
+
+    // Ambil detail supplier
+    const [supplierRows] = await db.query('SELECT name FROM suppliers WHERE id = ?', [supplier_id]);
+    if (supplierRows.length === 0) {
+      return res.render('purchase/create', { 
+        title: 'Buat Purchase Order', 
+        user: req.session.username, 
+        procurements, 
+        suppliers, 
+        error: 'Supplier yang dipilih tidak valid!' 
+      });
+    }
+    const supplierName = supplierRows[0].name;
 
     const [dupRows] = await db.query(
       `SELECT COUNT(*) as cnt FROM inventory_purchases WHERE inventory_procurement_id=?`,
       [inventory_procurement_id]
     );
     if (dupRows[0].cnt > 0) {
-      const [procurements] = await db.query(
-        `SELECT * FROM inventory_procurements 
-         WHERE status='approved' 
-         AND id NOT IN (SELECT inventory_procurement_id FROM inventory_purchases WHERE inventory_procurement_id IS NOT NULL)`
-      );
-      return res.render('purchase/create', { title: 'Buat Purchase Order', user: req.session.username, procurements, error: 'PO sudah ada untuk permintaan ini!' });
+      return res.render('purchase/create', { 
+        title: 'Buat Purchase Order', 
+        user: req.session.username, 
+        procurements, 
+        suppliers, 
+        error: 'PO sudah ada untuk permintaan ini!' 
+      });
     }
 
     const now = new Date(purchase_date || Date.now());
@@ -80,25 +111,25 @@ exports.store = async (req, res, next) => {
     const [countRows] = await db.query(`SELECT COUNT(*) as cnt FROM inventory_purchases`);
     const purchase_number = `${prefix}-${String(countRows[0].cnt+1).padStart(4,'0')}`;
 
+    // Simpan supplier_id dan supplier name (ke kolom supplier untuk kompatibilitas ke belakang)
     const [result] = await db.query(
-      `INSERT INTO inventory_purchases (purchase_number, inventory_procurement_id, purchase_date, supplier, status)
-       VALUES (?,?,?,?,?)`,
-      [purchase_number, inventory_procurement_id, purchase_date, supplier, 'draft']
+      `INSERT INTO inventory_purchases (purchase_number, inventory_procurement_id, purchase_date, supplier, supplier_id, status, created_at, updated_at)
+       VALUES (?,?,?,?,?,?, NOW(), NOW())`,
+      [purchase_number, inventory_procurement_id, purchase_date, supplierName, supplier_id, 'draft']
     );
 
     const [items] = await db.query(
-      `SELECT * FROM inventory_procurement_items WHERE inventory_procurement_id=? ORDER BY id ASC`,
+      `SELECT * FROM inventory_request_details WHERE inventory_request_id=? ORDER BY id ASC`,
       [inventory_procurement_id]
     );
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const price = parseFloat(pricesArray[i]) || 0;
-      // item_id bisa null bila permintaan menyimpan nama bebas -> resolusikan ke items.id
       const itemId = item.item_id || await resolveItemId(item.item_name);
       await db.query(
-        `INSERT INTO inventory_purchase_items (inventory_purchase_id, item_id, quantity, price)
-         VALUES (?,?,?,?)`,
+        `INSERT INTO inventory_purchase_items (inventory_purchase_id, item_id, quantity, price, created_at, updated_at)
+         VALUES (?,?,?,?, NOW(), NOW())`,
         [result.insertId, itemId, item.quantity, price]
       );
     }
@@ -133,7 +164,7 @@ exports.detail = async (req, res, next) => {
 exports.updateStatus = async (req, res, next) => {
   try {
     const id = req.params.id;
-    await db.query(`UPDATE inventory_purchases SET status='completed' WHERE id=?`, [id]);
+    await db.query(`UPDATE inventory_purchases SET status='completed', updated_at = NOW() WHERE id=?`, [id]);
     res.redirect(`/purchase/${id}`);
   } catch (err) { next(err); }
 };
@@ -160,7 +191,7 @@ exports.exportPDF = async (req, res, next) => {
 
     const doc = new PDFDocument({ margin: 50 });
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename=po-${po.purchase_number}.pdf`);
+    res.setHeader('Content-Disposition', `attachment; filename=po-${po.purchase_number}.pdf`);
     doc.pipe(res);
 
     // Header institusi
@@ -274,9 +305,9 @@ exports.procurementItems = async (req, res, next) => {
     const id = req.params.id;
     const [items] = await db.query(
       `SELECT pi.item_id, COALESCE(pi.item_name, i.name) as name, pi.quantity
-       FROM inventory_procurement_items pi
+       FROM inventory_request_details pi
        LEFT JOIN items i ON pi.item_id = i.id
-       WHERE pi.inventory_procurement_id = ?
+       WHERE pi.inventory_request_id = ?
        ORDER BY pi.id ASC`,
       [id]
     );
@@ -285,9 +316,6 @@ exports.procurementItems = async (req, res, next) => {
 };
 
 // Dashboard Statistik
-// Tiap statistik dibungkus sendiri-sendiri supaya tabel/kolom yang belum pasti
-// ada di DB (mis. kolom `supplier`) tidak membuat seluruh dashboard error.
-// Nilai gagal -> fallback 0. TODO: kunci skema final setelah konfirmasi dosen.
 async function safeCount(sql, params = []) {
   try {
     const [rows] = await db.query(sql, params);
@@ -300,11 +328,10 @@ async function safeCount(sql, params = []) {
 
 exports.dashboard = async (req, res, next) => {
   try {
-    const totalReq = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_procurements`);
-    const pending = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_procurements WHERE status='submitted'`);
+    const totalReq = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests`);
+    const pending = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='pending'`);
     const totalPO = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_purchases`);
-    // Kolom `supplier` belum pasti ada di skema final -> safeCount akan fallback 0 bila tidak ada.
-    const supplier = await safeCount(`SELECT COUNT(DISTINCT supplier) as cnt FROM inventory_purchases`);
+    const supplier = await safeCount(`SELECT COUNT(*) as cnt FROM suppliers`);
 
     res.render('dashboard', {
       title: 'Dashboard',

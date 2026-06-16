@@ -113,6 +113,13 @@ const verifyForm = async (req, res, next) => {
         }
       : null;
 
+    // PO yang sudah dikonfirmasi (Selesai) tidak boleh diverifikasi ulang;
+    // alihkan ke halaman detail (selaras dgn tombol Verifikasi yang disembunyikan
+    // di daftar dan penolakan 409 saat submit).
+    if (po && po.status === "completed") {
+      return res.redirect(`/receiving/${poId}/detail`);
+    }
+
     const [items] = await pool.query(
       `SELECT ipi.id, ipi.quantity, ipi.price, it.name, it.code, it.unit
        FROM inventory_purchase_items ipi

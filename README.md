@@ -1,60 +1,58 @@
 # Facultyware — Sistem Informasi Pengadaan Barang Fakultas (B09)
 
-Aplikasi web (Express + EJS + MySQL) untuk transaksi pengadaan barang: permintaan
-pengadaan → persetujuan Wakil Dekan → Purchase Order → **Penerimaan Barang**.
+Aplikasi web (Express + EJS + MySQL) untuk transaksi pengadaan barang:
+permintaan pengadaan → persetujuan Wakil Dekan → Purchase Order → **Penerimaan Barang**.
 
-Dokumen ini menjelaskan **cara menjalankan proyek di komputer kamu** setelah
-`git pull`. Untuk catatan perubahan per-branch lihat [CATATAN-TIM.md](CATATAN-TIM.md).
+Dokumen ini adalah **panduan menjalankan proyek dari nol** — ditujukan untuk
+orang yang baru pertama kali meng-clone repo dan belum punya database apa pun.
+Setelah mengikuti langkah di bawah, database Anda akan **persis sama** dengan
+milik tim. Untuk catatan perubahan per-branch lihat [CATATAN-TIM.md](CATATAN-TIM.md).
 
 ---
 
 ## 1. Prasyarat
 
-- **Node.js** (v18+ disarankan) & npm
-- **MySQL / MariaDB** berjalan di lokal (mis. lewat XAMPP/Laragon)
-- Database bernama **`facultyware`** sudah dibuat dan terisi (dari dump skema dosen)
+- **Node.js** v18 atau lebih baru (beserta `npm`).
+- **MySQL/MariaDB** berjalan di lokal. Paling mudah lewat **XAMPP** — nyalakan
+  modul **MySQL** dari XAMPP Control Panel.
+- Secara default proyek menyambung ke `localhost:3306`, user `root`, **tanpa
+  password** (lihat `.env` di langkah 4). Itu konfigurasi bawaan XAMPP.
+
+> **Khusus pengguna yang juga memasang Dolibarr/DoliWamp:** MariaDB Dolibarr
+> sering merebut port 3306 sehingga MySQL XAMPP tidak bisa jalan dan aplikasi
+> gagal konek. Pastikan MySQL XAMPP yang memegang port 3306.
 
 ---
 
-## 2. Langkah menjalankan (pertama kali)
+## 2. Ambil kode
 
 ```bash
-# 1. Ambil kode terbaru
+git clone https://github.com/samythh/facultyware-pweb.git
+cd facultyware-pweb
 git checkout dev
-git pull
-
-# 2. Install dependency
-npm install
-
-# 3. Buat file .env di root (lihat bagian 3 di bawah) — WAJIB, tidak ikut di-push
-
-# 4. Migrasi & seed (sekali saja, urut dari atas)
-node scripts/migrate_sessions_table.js    # tabel sesi: express_sessions
-node scripts/migrate_receiving_schema.js  # skema modul Penerimaan
-node scripts/seed_rbac.js                 # bikin AKUN LOGIN + roles + permissions
-node scripts/seed_employees.js            # bikin employees (FK modul Pengadaan/Approval)
-
-# 5. Jalankan aplikasi
-npm run dev        # mode dev (auto-reload), buka http://localhost:3000
-# atau
-npm start          # mode biasa
 ```
 
-> Kalau lupa migrasi sesi, **login akan error** "tabel tidak ada".
->
-> Akun di bagian 4 (tabel di bawah) **dibuat oleh `seed_rbac.js`** — kalau skrip
-> itu belum dijalankan, akunnya belum ada dan login pasti gagal.
->
-> ⛔ **JANGAN jalankan `scripts/init_db.js`** — skrip lama yang men-`DROP TABLE`
-> lalu membuat ulang skema gaya lama (`users.username`) yang **bentrok** dengan
-> skema sekarang (`email`) dan bisa menghapus data.
+Jika sudah pernah clone, cukup perbarui:
+
+```bash
+git checkout dev
+git pull
+```
 
 ---
 
-## 3. File `.env` (buat manual)
+## 3. Install dependency
 
-`.env` **tidak ikut di Git** (sengaja, lihat `.gitignore`). Buat file `.env` di
-root proyek dengan isi berikut, sesuaikan dengan MySQL lokal kamu:
+```bash
+npm install
+```
+
+---
+
+## 4. Buat file `.env`
+
+`.env` **tidak ikut di Git** (sengaja). Buat berkas `.env` di root proyek
+dengan isi berikut:
 
 ```env
 DB_HOST=localhost
@@ -65,68 +63,136 @@ DB_NAME=facultyware
 PORT=3000
 SESSION_SECRET=facultyware-dev-secret
 
-# Dev only: lewati SEMUA pengecekan (login + permission) untuk preview cepat.
-# Set 1 hanya saat ngetes lokal. JANGAN commit dengan nilai 1.
-# Lihat bagian 4 untuk kapan pakai 1 vs 0.
-DEV_NO_AUTH=1
+# Dev only: lewati SEMUA pengecekan auth (login + permission) untuk preview cepat.
+# Pakai 0 untuk menguji hak akses sungguhan (lihat bagian 6).
+DEV_NO_AUTH=0
 ```
+
+> Jika MySQL Anda memakai password atau port lain, sesuaikan `DB_PASSWORD`
+> dan tambahkan `DB_PORT=...` bila perlu.
 
 ---
 
-## 4. Akun tes (lokal)
+## 5. Siapkan database (agar persis dengan tim)
+
+Database lengkap (struktur **dan** data, termasuk seluruh skema dosen + migrasi
+dan seed yang sudah dijalankan tim) sudah tersedia sebagai satu berkas dump di
+[`database/facultyware.sql`](database/facultyware.sql). Cukup impor berkas itu.
+
+> ⚠️ Impor ini akan **menghapus lalu membuat ulang** database `facultyware`
+> (perintah `DROP DATABASE`/`CREATE DATABASE` ada di dalam dump). Pastikan tidak
+> ada data lokal `facultyware` yang ingin Anda pertahankan.
+
+**Cara A — lewat command line** (paling cepat dan pasti):
+
+```bash
+# Jika `mysql` sudah ada di PATH:
+mysql -u root facultyware < database/facultyware.sql
+
+# Atau panggil mysql bawaan XAMPP langsung (sesuaikan path instalasi Anda):
+"E:\xampp\mysql\bin\mysql.exe" -u root < database/facultyware.sql
+```
+
+Dump sudah memuat `CREATE DATABASE IF NOT EXISTS facultyware`, jadi Anda **tidak
+perlu** membuat database-nya dulu secara manual.
+
+**Cara B — lewat phpMyAdmin** (kalau lebih nyaman dengan GUI):
+
+1. Buka `http://localhost/phpmyadmin`.
+2. Menu **Import** → pilih berkas `database/facultyware.sql` → **Go**.
+
+Selesai. Database Anda kini identik dengan milik tim, lengkap dengan akun login
+di bagian 6.
+
+---
+
+## 6. Jalankan aplikasi
+
+```bash
+npm run dev     # mode dev (auto-reload via nodemon)
+# atau
+npm start       # mode biasa
+```
+
+Buka **http://localhost:3000**.
+
+### Akun tes (sudah ada di dalam dump)
 
 | Peran        | Email                | Password  |
 |--------------|----------------------|-----------|
 | Admin        | admin@unand.ac.id    | admin123  |
 | Wakil Dekan  | wadir@unand.ac.id    | wadir123  |
 
-> Login pakai **email**, bukan username.
+> Login memakai **email**, bukan username.
 
 ### `DEV_NO_AUTH` — kapan 1, kapan 0?
 
-`DEV_NO_AUTH=1` **mem-bypass semua auth** (login + permission). Itu cuma alat bantu
-dev, **bukan** pengganti akun. Begitu `seed_rbac.js` dijalankan, RBAC sudah jalan
-sendiri tanpa flag ini.
+`DEV_NO_AUTH=1` mem-bypass **semua** pengecekan (login + permission). Itu hanya
+alat bantu preview cepat, **bukan** pengganti akun.
 
 | Nilai | Kapan dipakai |
 |-------|---------------|
-| `DEV_NO_AUTH=1` | Preview tampilan modul cepat tanpa login; atau seed RBAC belum dijalankan. **Tidak menguji hak akses.** |
-| `DEV_NO_AUTH=0` | Menguji/demo RBAC sungguhan: login pakai akun di atas, buktikan admin → Pengadaan+Penerimaan, wadir → Approval, dan saling-tolak modul yang bukan haknya. **Pakai ini sebelum kumpul/demo.** |
+| `DEV_NO_AUTH=0` | **Default.** Menguji/demo hak akses sungguhnya: admin bisa Pengadaan/PO/Penerimaan, wadir hanya Approval, dan modul yang bukan haknya akan ditolak (403). Pakai ini sebelum demo. |
+| `DEV_NO_AUTH=1` | Sekadar melihat tampilan modul tanpa login. **Tidak menguji hak akses.** |
 
-> Catatan: route **PO (purchase.js)** `checkPermission`-nya masih di-comment
-> ("removed for testing"), jadi modul PO belum terproteksi — perlu diaktifkan
-> sebelum final.
+Pembuktian hak akses cepat:
 
----
-
-## 5. Struktur singkat
-
-| Folder         | Isi                                              |
-|----------------|--------------------------------------------------|
-| `routes/`      | Route Express per modul (receiving, approval, …) |
-| `controllers/` | Logika controller                                |
-| `views/`       | Template EJS (tampilan)                           |
-| `lib/db.js`    | Koneksi MySQL (pakai `mysql2`)                    |
-| `scripts/`     | Skrip migrasi & seed database                    |
-| `public/`      | Aset statis & folder upload bukti penerimaan     |
+- Login **admin** → buka `/purchase` → **bisa** (admin punya `manage_po`).
+- Login **wadir** → buka `/purchase` → **403** (wadir hanya `manage_approval`).
 
 ---
 
-## 6. Catatan penting
+## 7. Struktur singkat
 
-- **Jangan commit `.env`** (apalagi dengan `DEV_NO_AUTH=1`).
-- File hasil upload di `public/assets/uploads/` adalah **data runtime** —
-  tidak perlu di-commit/push (yang di-track hanya `.gitkeep`).
-- RBAC sudah jalan setelah `seed_rbac.js`; `DEV_NO_AUTH=1` hanya alat bantu dev
-  yang mem-bypass auth (otomatis nonaktif bila `NODE_ENV=production`). Lihat bagian 4.
+| Folder / berkas             | Isi                                                  |
+|-----------------------------|------------------------------------------------------|
+| `routes/`                   | Route Express per modul (purchase, approval, …)      |
+| `controllers/`              | Logika controller                                    |
+| `views/`                    | Template EJS (tampilan)                              |
+| `middlewares/acl.js`        | Pengecekan permission (RBAC)                         |
+| `lib/db.js`                 | Koneksi MySQL (pool `mysql2`)                        |
+| `scripts/`                  | Skrip migrasi & seed database (lihat bagian 9)       |
+| `database/facultyware.sql`  | **Dump database lengkap** untuk reproduksi           |
+| `public/`                   | Aset statis & folder upload bukti penerimaan         |
 
 ---
 
-## 7. Troubleshooting cepat
+## 8. (Lanjutan) Membangun ulang DB dari skrip — opsional
 
-| Masalah                          | Solusi                                              |
-|----------------------------------|-----------------------------------------------------|
-| `ECONNREFUSED` / DB tak konek    | Pastikan MySQL jalan & `.env` benar                 |
-| Login error "tabel tidak ada"    | Jalankan `node scripts/migrate_sessions_table.js`   |
-| Port 3000 dipakai                | Ubah `PORT` di `.env`                               |
-| Halaman modul kosong/forbidden   | Pastikan `DEV_NO_AUTH=1` di `.env`                  |
+Jalur normal cukup impor dump (bagian 5). Bagian ini hanya untuk yang ingin
+membangun ulang dari skema mentah dosen, mis. saat menambah perubahan skema baru.
+
+Urutan skrip (idempoten, jalankan dari root proyek):
+
+```bash
+node scripts/migrate_sessions_table.js    # tabel sesi login: express_sessions
+node scripts/migrate_receiving_schema.js  # skema modul Penerimaan (lampiran + verifikasi)
+node scripts/seed_rbac.js                 # roles, permissions, dan akun login
+node scripts/seed_employees.js            # data employees (FK modul Pengadaan/Approval)
+node scripts/migrate_suppliers_schema.js  # tabel supplier + arahkan FK inventory_purchases ke inventory_requests
+```
+
+> Catatan: `migrate_suppliers_schema.js` selain membuat tabel `suppliers` juga
+> memindahkan FK `inventory_purchases.inventory_procurement_id` dari tabel lama
+> `inventory_procurements` ke `inventory_requests`. **Wajib dijalankan ulang
+> meski DB Anda sudah disetup sebelumnya** — jika tidak, pembuatan PO akan gagal
+> dengan error `ER_NO_REFERENCED_ROW_2`. Skrip idempoten, aman dijalankan berulang.
+
+Skrip-skrip di atas mengandaikan skema dasar (tabel-tabel gaya Laravel dari dosen)
+sudah ada. Skema dasar itu hanya tersedia lewat dump dosen / [`database/facultyware.sql`](database/facultyware.sql).
+
+---
+
+## 9. Catatan penting
+
+- **Jangan commit `.env`.**
+- Berkas hasil upload di `public/assets/uploads/` adalah **data runtime** —
+  tidak perlu di-commit (yang di-track hanya `.gitkeep`).
+- Setelah menambah perubahan skema/seed yang ingin dibagikan ke tim, **perbarui
+  dump** agar tetap sinkron:
+
+  ```bash
+  "E:\xampp\mysql\bin\mysqldump.exe" -u root --databases facultyware \
+    --default-character-set=utf8mb4 --add-drop-database \
+    --result-file=database/facultyware.sql
+  ```

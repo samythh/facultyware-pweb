@@ -50,7 +50,7 @@ const checkPermission = (requiredPermissions) => {
         return res.status(403).json({ message: "Forbidden" });
       } else {
         return res.status(403).render("error", {
-          message: "Forbidden: You do not have permission to access this resource.",
+          message: "Akunmu tidak memiliki izin untuk membuka halaman ini.",
           error: { status: 403, stack: "" }
         });
       }
