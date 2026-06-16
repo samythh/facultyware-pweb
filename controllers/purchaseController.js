@@ -36,8 +36,9 @@ exports.index = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const [procurements] = await db.query(
-      `SELECT *, (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id LIMIT 1) as title 
-       FROM inventory_requests 
+      `SELECT *, 
+              COALESCE(title, (SELECT item_name FROM inventory_procurement_items WHERE inventory_procurement_id = inventory_procurements.id LIMIT 1)) as title 
+       FROM inventory_procurements 
        WHERE status='approved' 
        AND id NOT IN (SELECT inventory_procurement_id FROM inventory_purchases WHERE inventory_procurement_id IS NOT NULL)`
     );
@@ -63,8 +64,9 @@ exports.store = async (req, res, next) => {
 
     const [suppliers] = await db.query('SELECT id, name FROM suppliers ORDER BY name ASC');
     const [procurements] = await db.query(
-      `SELECT *, (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id LIMIT 1) as title 
-       FROM inventory_requests 
+      `SELECT *, 
+              COALESCE(title, (SELECT item_name FROM inventory_procurement_items WHERE inventory_procurement_id = inventory_procurements.id LIMIT 1)) as title 
+       FROM inventory_procurements 
        WHERE status='approved' 
        AND id NOT IN (SELECT inventory_procurement_id FROM inventory_purchases WHERE inventory_procurement_id IS NOT NULL)`
     );
@@ -111,7 +113,7 @@ exports.store = async (req, res, next) => {
     const [countRows] = await db.query(`SELECT COUNT(*) as cnt FROM inventory_purchases`);
     const purchase_number = `${prefix}-${String(countRows[0].cnt+1).padStart(4,'0')}`;
 
-    // Simpan supplier_id dan supplier name (ke kolom supplier untuk kompatibilitas ke belakang)
+    // Simpan supplier_id dan supplier name
     const [result] = await db.query(
       `INSERT INTO inventory_purchases (purchase_number, inventory_procurement_id, purchase_date, supplier, supplier_id, status, created_at, updated_at)
        VALUES (?,?,?,?,?,?, NOW(), NOW())`,
@@ -119,7 +121,7 @@ exports.store = async (req, res, next) => {
     );
 
     const [items] = await db.query(
-      `SELECT * FROM inventory_request_details WHERE inventory_request_id=? ORDER BY id ASC`,
+      `SELECT * FROM inventory_procurement_items WHERE inventory_procurement_id=? ORDER BY id ASC`,
       [inventory_procurement_id]
     );
 
@@ -196,26 +198,26 @@ exports.exportPDF = async (req, res, next) => {
 
     // Header institusi
     doc.fontSize(14).font("Helvetica-Bold")
-       .text("Fakultas Teknologi Informasi - Universitas Andalas", { align: "center" });
+      .text("Fakultas Teknologi Informasi - Universitas Andalas", { align: "center" });
     doc.moveDown(0.5);
 
     // Judul dokumen
     doc.fontSize(18).font("Helvetica-Bold")
-       .text("FORMULIR PURCHASE ORDER", { align: "center" });
+      .text("FORMULIR PURCHASE ORDER", { align: "center" });
     doc.moveDown();
 
     // Informasi PO
     doc.fontSize(12).font("Helvetica")
-       .text(`Nomor PO   : ${po.purchase_number}`)
-       .text(`Tanggal    : ${po.purchase_date}`)
-       .text(`Supplier   : ${po.supplier}`)
-       .text(`Status     : ${po.status}`);
+      .text(`Nomor PO   : ${po.purchase_number}`)
+      .text(`Tanggal    : ${po.purchase_date}`)
+      .text(`Supplier   : ${po.supplier}`)
+      .text(`Status     : ${po.status}`);
     doc.moveDown();
 
     // Tabel barang
     const tableTop = doc.y + 10;
     const startX = 50;
-    const colWidths = [40, 200, 80, 100, 100]; // No, Item, Qty, Harga, Subtotal
+    const colWidths = [40, 200, 80, 100, 100];
 
     // Header tabel
     const headers = ["No", "Item", "Qty", "Harga", "Subtotal"];
@@ -223,7 +225,7 @@ exports.exportPDF = async (req, res, next) => {
     headers.forEach((h, i) => {
       doc.rect(x, tableTop, colWidths[i], 20).stroke();
       doc.font("Helvetica-Bold")
-         .text(h, x + 5, tableTop + 5, { width: colWidths[i] - 10, align: "center" });
+        .text(h, x + 5, tableTop + 5, { width: colWidths[i] - 10, align: "center" });
       x += colWidths[i];
     });
 
@@ -241,7 +243,7 @@ exports.exportPDF = async (req, res, next) => {
       row.forEach((val, i) => {
         doc.rect(x, y, colWidths[i], 20).stroke();
         doc.font("Helvetica")
-           .text(val.toString(), x + 5, y + 5, { width: colWidths[i] - 10, align: "center" });
+          .text(val.toString(), x + 5, y + 5, { width: colWidths[i] - 10, align: "center" });
         x += colWidths[i];
       });
       y += 20;
@@ -251,7 +253,7 @@ exports.exportPDF = async (req, res, next) => {
     const totalLabelWidth = colWidths.slice(0, 4).reduce((a, b) => a + b, 0);
     doc.rect(startX, y, totalLabelWidth, 20).stroke();
     doc.font("Helvetica-Bold")
-       .text("Total", startX + 5, y + 5, { width: totalLabelWidth - 10, align: "right" });
+      .text("Total", startX + 5, y + 5, { width: totalLabelWidth - 10, align: "right" });
     doc.rect(startX + totalLabelWidth, y, colWidths[4], 20).stroke();
     doc.text(
       Number(total).toLocaleString('id-ID', { minimumFractionDigits: 2 }),
@@ -260,7 +262,7 @@ exports.exportPDF = async (req, res, next) => {
       { width: colWidths[4] - 10, align: "center" }
     );
 
-    // Footer tanda tangan
+    // Footer
     doc.moveDown(3);
     doc.fontSize(12).text("Disiapkan oleh,", startX, doc.y);
     doc.text("Disetujui,", startX + 300, doc.y);
@@ -305,9 +307,9 @@ exports.procurementItems = async (req, res, next) => {
     const id = req.params.id;
     const [items] = await db.query(
       `SELECT pi.item_id, COALESCE(pi.item_name, i.name) as name, pi.quantity
-       FROM inventory_request_details pi
+       FROM inventory_procurement_items pi
        LEFT JOIN items i ON pi.item_id = i.id
-       WHERE pi.inventory_request_id = ?
+       WHERE pi.inventory_procurement_id = ?
        ORDER BY pi.id ASC`,
       [id]
     );
@@ -328,14 +330,14 @@ async function safeCount(sql, params = []) {
 
 exports.dashboard = async (req, res, next) => {
   try {
-    // 1. Hitung data untuk Card & Doughnut Chart
+    // 1. DIKEMBALIKAN KE inventory_requests agar sinkron dengan inputan Admin
     const totalReq = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests`);
     const pending = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='pending'`);
     const approved = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='approved'`);
     const rejected = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='rejected'`);
     const totalPO = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_purchases`);
 
-    // 2. Hitung data untuk Bar Chart (6 bulan terakhir)
+    // 2. Data Grafik
     const trendLabels = [];
     const trendData = [];
     
@@ -356,12 +358,16 @@ exports.dashboard = async (req, res, next) => {
       trendData.push(count);
     }
 
-    // 3. AMBIL 5 PERMINTAAN TERBARU (Baru Ditambahkan)
+    // 3. AMBIL 5 PERMINTAAN TERBARU (Ditambah JOIN ke tabel employees untuk nama pemohon)
     const [recentRequests] = await db.query(
-      `SELECT * FROM inventory_requests ORDER BY created_at DESC LIMIT 5`
+      `SELECT r.id, r.request_number, r.created_at, r.status, e.name AS pemohon_name 
+       FROM inventory_requests r
+       LEFT JOIN employees e ON r.employee_id = e.id
+       ORDER BY r.created_at DESC 
+       LIMIT 5`
     );
 
-    // 4. Kirim semua variabel ke EJS
+    // 4. Render ke Dashboard EJS
     res.render('dashboard', {
       title: 'Dashboard',
       user: req.session.username,
@@ -372,7 +378,7 @@ exports.dashboard = async (req, res, next) => {
       totalPO,
       trendLabels: JSON.stringify(trendLabels),
       trendData: JSON.stringify(trendData),
-      recentRequests // Variabel tabel kita kirim ke sini
+      recentRequests
     });
   } catch (err) { next(err); }
 };
