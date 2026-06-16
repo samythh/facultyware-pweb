@@ -15,7 +15,7 @@
           <span class="text-foreground">Buat Baru</span>
         </div>
         <h1 class="text-2xl font-bold tracking-tight">Buat Permintaan Pengadaan Baru</h1>
-        <p class="text-sm text-muted-foreground">Isi judul dan tambahkan barang yang ingin diajukan.</p>
+        <p class="text-sm text-muted-foreground">Isi judul dan tambahkan barang yang ingin diajukan. Status awal otomatis <strong>Pending</strong>.</p>
       </div>
 
       <!-- Error Alert -->
@@ -34,7 +34,6 @@
       <% } %>
 
       <form action="/procurement/create" method="POST" id="procurement-form" class="space-y-6">
-        <input type="hidden" name="action" id="form-action" value="draft" />
 
         <!-- Header Card -->
         <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
@@ -64,8 +63,9 @@
                 <tr class="border-b text-muted-foreground font-semibold">
                   <th class="pb-3 w-[50px]">No</th>
                   <th class="pb-3 pr-4">Nama Barang</th>
-                  <th class="pb-3 pr-4 w-[180px]">Jumlah (Quantity)</th>
-                  <th class="pb-3 w-[80px] text-right">Aksi</th>
+                  <th class="pb-3 pr-4">Spesifikasi</th>
+                  <th class="pb-3 pr-4 w-[140px]">Jumlah (Qty)</th>
+                  <th class="pb-3 w-[60px] text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody class="divide-y" id="items-tbody">
@@ -78,8 +78,7 @@
         <!-- Action Buttons -->
         <div class="flex justify-end gap-3">
           <a href="/procurement" class="btn-outline" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Batal</a>
-          <button type="button" onclick="window.submitForm('draft')" class="btn-secondary">Simpan Draf</button>
-          <button type="button" onclick="window.submitForm('submit')" class="btn">Kirim ke Wadir</button>
+          <button type="button" onclick="window.submitForm()" class="btn">Simpan Permintaan</button>
         </div>
       </form>
 
@@ -91,7 +90,7 @@
     (() => {
       let rowCount = 0;
 
-      window.addItemRow = function(name = '', qty = 1) {
+      window.addItemRow = function(name = '', spec = '', qty = 1) {
         rowCount++;
         const tbody = document.getElementById('items-tbody');
         
@@ -101,10 +100,13 @@
 
         tr.innerHTML = `
           <td class="py-3 font-medium align-middle row-index">${tbody.children.length + 1}</td>
-          <td class="py-2 pr-4 align-middle">
+          <td class="py-2 pr-3 align-middle">
             <input type="text" name="item_name" class="input w-full" placeholder="Nama barang..." value="${name}" required />
           </td>
-          <td class="py-2 pr-4 align-middle">
+          <td class="py-2 pr-3 align-middle">
+            <input type="text" name="specification" class="input w-full" placeholder="Spesifikasi (opsional)" value="${spec}" />
+          </td>
+          <td class="py-2 pr-3 align-middle">
             <input type="number" name="quantity" class="input w-full" min="1" placeholder="Qty" value="${qty}" required />
           </td>
           <td class="py-2 align-middle text-right">
@@ -137,9 +139,7 @@
         });
       };
 
-      window.submitForm = function(actionValue) {
-        document.getElementById('form-action').value = actionValue;
-        
+      window.submitForm = function() {
         // Basic validations
         const title = document.getElementById('title').value;
         if (!title || title.trim() === '') {

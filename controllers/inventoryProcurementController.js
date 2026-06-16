@@ -28,7 +28,7 @@ async function generateRequestNumber() {
   const prefix = `PRQ-${dateStr}-`;
 
   const [rows] = await db.query(
-    'SELECT request_number FROM permintaan_pengadaan WHERE request_number LIKE ? ORDER BY id DESC LIMIT 1',
+    'SELECT request_number FROM inventory_requests WHERE request_number LIKE ? ORDER BY id DESC LIMIT 1',
     [`${prefix}%`]
   );
 
@@ -55,7 +55,7 @@ const index = async (req, res, next) => {
 
     const employeeId = await resolveEmployeeId(req.session.userId);
 
-    let query = 'SELECT * FROM permintaan_pengadaan WHERE created_by = ?';
+    let query = 'SELECT * FROM inventory_requests WHERE created_by = ?';
     let queryParams = [employeeId];
 
     if (search) {
@@ -69,7 +69,7 @@ const index = async (req, res, next) => {
     const [procurements] = await db.query(query, queryParams);
 
     // Get total count for pagination
-    let countQuery = 'SELECT COUNT(*) as total FROM permintaan_pengadaan WHERE created_by = ?';
+    let countQuery = 'SELECT COUNT(*) as total FROM inventory_requests WHERE created_by = ?';
     let countParams = [employeeId];
 
     if (search) {
@@ -110,7 +110,7 @@ const create = async (req, res, next) => {
 
 // POST /procurement/create -> simpan
 const store = async (req, res, next) => {
-  const { title, action, item_name, quantity } = req.body;
+  const { title, item_name, quantity, specification } = req.body;
   const employeeId = await resolveEmployeeId(req.session.userId);
 
   // Validation
@@ -128,6 +128,7 @@ const store = async (req, res, next) => {
     for (let i = 0; i < item_name.length; i++) {
       const name = item_name[i]?.trim();
       const qty = parseInt(quantity[i]);
+      const spec = Array.isArray(specification) ? (specification[i]?.trim() || '') : '';
       if (name) {
         if (isNaN(qty) || qty <= 0) {
           return res.render('inventory-procurement/create', {
@@ -136,11 +137,12 @@ const store = async (req, res, next) => {
             error: 'Jumlah barang (quantity) harus berupa angka lebih dari 0.'
           });
         }
-        items.push({ name, qty });
+        items.push({ name, qty, spec });
       }
     }
   } else if (item_name && item_name.trim() !== '') {
     const qty = parseInt(quantity);
+    const spec = typeof specification === 'string' ? specification.trim() : '';
     if (isNaN(qty) || qty <= 0) {
       return res.render('inventory-procurement/create', {
         title: 'Buat Permintaan Pengadaan',
@@ -148,7 +150,7 @@ const store = async (req, res, next) => {
         error: 'Jumlah barang (quantity) harus berupa angka lebih dari 0.'
       });
     }
-    items.push({ name: item_name.trim(), qty });
+    items.push({ name: item_name.trim(), qty, spec });
   }
 
   if (items.length === 0) {
@@ -159,7 +161,8 @@ const store = async (req, res, next) => {
     });
   }
 
-  const status = action === 'submit' ? 'submitted' : 'draft';
+  // Status awal selalu pending
+  const status = 'pending';
   const requestNumber = await generateRequestNumber();
 
   // Transaction
@@ -167,18 +170,18 @@ const store = async (req, res, next) => {
     await db.query('START TRANSACTION');
 
     const [headerResult] = await db.query(
-      `INSERT INTO permintaan_pengadaan (request_number, title, status, created_by, employee_id, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-      [requestNumber, title.trim(), status, employeeId, employeeId]
+      `INSERT INTO inventory_requests (request_number, title, status, created_by, employee_id, request_date, approved_by_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, CURDATE(), ?, NOW(), NOW())`,
+      [requestNumber, title.trim(), status, employeeId, employeeId, employeeId]
     );
 
-    const procurementId = headerResult.insertId;
+    const requestId = headerResult.insertId;
 
     for (const item of items) {
       await db.query(
-        `INSERT INTO permintaan_items (permintaan_pengadaan_id, item_name, quantity, created_at, updated_at)
-         VALUES (?, ?, ?, NOW(), NOW())`,
-        [procurementId, item.name, item.qty]
+        `INSERT INTO inventory_request_details (inventory_request_id, item_name, quantity, specification, created_at, updated_at)
+         VALUES (?, ?, ?, ?, NOW(), NOW())`,
+        [requestId, item.name, item.qty, item.spec]
       );
     }
 
@@ -197,7 +200,7 @@ const detail = async (req, res, next) => {
 
   try {
     const [procurementRows] = await db.query(
-      'SELECT * FROM permintaan_pengadaan WHERE id = ? AND created_by = ?',
+      'SELECT * FROM inventory_requests WHERE id = ? AND created_by = ?',
       [id, employeeId]
     );
 
@@ -211,7 +214,7 @@ const detail = async (req, res, next) => {
     const procurement = procurementRows[0];
 
     const [items] = await db.query(
-      'SELECT * FROM permintaan_items WHERE permintaan_pengadaan_id = ?',
+      'SELECT * FROM inventory_request_details WHERE inventory_request_id = ?',
       [id]
     );
 
@@ -226,20 +229,20 @@ const detail = async (req, res, next) => {
   }
 };
 
-// POST /procurement/:id/edit -> update draf (modal)
+// POST /procurement/:id/edit -> update pending (modal)
 const update = async (req, res, next) => {
   const { id } = req.params;
-  const { title, item_name, quantity } = req.body;
+  const { title, item_name, quantity, specification } = req.body;
   const employeeId = await resolveEmployeeId(req.session.userId);
 
   try {
-    const [rows] = await db.query('SELECT status FROM permintaan_pengadaan WHERE id = ? AND created_by = ?', [id, employeeId]);
+    const [rows] = await db.query('SELECT status FROM inventory_requests WHERE id = ? AND created_by = ?', [id, employeeId]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
     }
 
-    if (rows[0].status !== 'draft') {
-      return res.status(400).json({ success: false, message: 'Hanya permintaan dengan status Draft yang dapat diubah.' });
+    if (rows[0].status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Hanya permintaan dengan status Pending yang dapat diubah.' });
     }
 
     // Validation
@@ -252,19 +255,21 @@ const update = async (req, res, next) => {
       for (let i = 0; i < item_name.length; i++) {
         const name = item_name[i]?.trim();
         const qty = parseInt(quantity[i]);
+        const spec = Array.isArray(specification) ? (specification[i]?.trim() || '') : '';
         if (name) {
           if (isNaN(qty) || qty <= 0) {
             return res.status(400).json({ success: false, message: 'Jumlah barang harus lebih dari 0.' });
           }
-          items.push({ name, qty });
+          items.push({ name, qty, spec });
         }
       }
     } else if (item_name && item_name.trim() !== '') {
       const qty = parseInt(quantity);
+      const spec = typeof specification === 'string' ? specification.trim() : '';
       if (isNaN(qty) || qty <= 0) {
         return res.status(400).json({ success: false, message: 'Jumlah barang harus lebih dari 0.' });
       }
-      items.push({ name: item_name.trim(), qty });
+      items.push({ name: item_name.trim(), qty, spec });
     }
 
     if (items.length === 0) {
@@ -275,51 +280,51 @@ const update = async (req, res, next) => {
     await db.query('START TRANSACTION');
 
     await db.query(
-      'UPDATE permintaan_pengadaan SET title = ?, updated_at = NOW() WHERE id = ?',
+      'UPDATE inventory_requests SET title = ?, updated_at = NOW() WHERE id = ?',
       [title.trim(), id]
     );
 
     // Remove old items
-    await db.query('DELETE FROM permintaan_items WHERE permintaan_pengadaan_id = ?', [id]);
+    await db.query('DELETE FROM inventory_request_details WHERE inventory_request_id = ?', [id]);
 
     // Insert new items
     for (const item of items) {
       await db.query(
-        `INSERT INTO permintaan_items (permintaan_pengadaan_id, item_name, quantity, created_at, updated_at)
-         VALUES (?, ?, ?, NOW(), NOW())`,
-        [id, item.name, item.qty]
+        `INSERT INTO inventory_request_details (inventory_request_id, item_name, quantity, specification, created_at, updated_at)
+         VALUES (?, ?, ?, ?, NOW(), NOW())`,
+        [id, item.name, item.qty, item.spec]
       );
     }
 
     await db.query('COMMIT');
-    res.json({ success: true, message: 'Berhasil memperbarui draf.' });
+    res.json({ success: true, message: 'Berhasil memperbarui permintaan.' });
   } catch (error) {
     await db.query('ROLLBACK');
     next(error);
   }
 };
 
-// POST /procurement/:id/delete -> hapus draf (modal)
+// POST /procurement/:id/delete -> hapus pending (modal)
 const destroy = async (req, res, next) => {
   const { id } = req.params;
   const employeeId = await resolveEmployeeId(req.session.userId);
 
   try {
-    const [rows] = await db.query('SELECT status FROM permintaan_pengadaan WHERE id = ? AND created_by = ?', [id, employeeId]);
+    const [rows] = await db.query('SELECT status FROM inventory_requests WHERE id = ? AND created_by = ?', [id, employeeId]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
     }
 
-    if (rows[0].status !== 'draft') {
-      return res.status(400).json({ success: false, message: 'Hanya permintaan dengan status Draft yang dapat dihapus.' });
+    if (rows[0].status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Hanya permintaan dengan status Pending yang dapat dihapus.' });
     }
 
     await db.query('START TRANSACTION');
-    await db.query('DELETE FROM permintaan_items WHERE permintaan_pengadaan_id = ?', [id]);
-    await db.query('DELETE FROM permintaan_pengadaan WHERE id = ?', [id]);
+    await db.query('DELETE FROM inventory_request_details WHERE inventory_request_id = ?', [id]);
+    await db.query('DELETE FROM inventory_requests WHERE id = ?', [id]);
     await db.query('COMMIT');
 
-    res.json({ success: true, message: 'Berhasil menghapus draf.' });
+    res.json({ success: true, message: 'Berhasil menghapus permintaan.' });
   } catch (error) {
     await db.query('ROLLBACK');
     next(error);
@@ -332,17 +337,17 @@ const submit = async (req, res, next) => {
   const employeeId = await resolveEmployeeId(req.session.userId);
 
   try {
-    const [rows] = await db.query('SELECT status FROM permintaan_pengadaan WHERE id = ? AND created_by = ?', [id, employeeId]);
+    const [rows] = await db.query('SELECT status FROM inventory_requests WHERE id = ? AND created_by = ?', [id, employeeId]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
     }
 
-    if (rows[0].status !== 'draft') {
-      return res.status(400).json({ success: false, message: 'Hanya permintaan status Draft yang dapat diajukan.' });
+    if (rows[0].status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Hanya permintaan status Pending yang dapat diajukan.' });
     }
 
     await db.query(
-      "UPDATE permintaan_pengadaan SET status = 'submitted', updated_at = NOW() WHERE id = ?",
+      "UPDATE inventory_requests SET status = 'submitted', updated_at = NOW() WHERE id = ?",
       [id]
     );
 
@@ -359,7 +364,7 @@ const exportPDF = async (req, res, next) => {
 
   try {
     const [procurementRows] = await db.query(
-      'SELECT ip.*, e.name as requester_name FROM permintaan_pengadaan ip JOIN employees e ON ip.created_by = e.id WHERE ip.id = ? AND ip.created_by = ?',
+      'SELECT ir.*, e.name as requester_name FROM inventory_requests ir JOIN employees e ON ir.created_by = e.id WHERE ir.id = ? AND ir.created_by = ?',
       [id, employeeId]
     );
 
@@ -372,7 +377,7 @@ const exportPDF = async (req, res, next) => {
 
     const procurement = procurementRows[0];
     const [items] = await db.query(
-      'SELECT * FROM permintaan_items WHERE permintaan_pengadaan_id = ?',
+      'SELECT * FROM inventory_request_details WHERE inventory_request_id = ?',
       [id]
     );
 
@@ -422,12 +427,13 @@ const exportPDF = async (req, res, next) => {
     doc.moveDown(0.5);
 
     // Draw Table Header
-    const tableTop = 260;
+    const tableTop = 270;
     doc.rect(50, tableTop, 512, 20).fill('#f1f5f9');
     doc.fillColor('#0f172a').font('Helvetica-Bold');
     doc.text('No.', 60, tableTop + 5, { width: 30 });
-    doc.text('Nama Barang', 110, tableTop + 5, { width: 300 });
-    doc.text('Jumlah (Quantity)', 430, tableTop + 5, { width: 120, align: 'right' });
+    doc.text('Nama Barang', 100, tableTop + 5, { width: 200 });
+    doc.text('Spesifikasi', 310, tableTop + 5, { width: 120 });
+    doc.text('Jumlah', 440, tableTop + 5, { width: 100, align: 'right' });
 
     let currentY = tableTop + 20;
     doc.font('Helvetica').fillColor('#334155');
@@ -437,8 +443,9 @@ const exportPDF = async (req, res, next) => {
       // Row borders
       doc.rect(50, currentY, 512, 20).stroke('#e2e8f0');
       doc.text(String(index + 1), 60, currentY + 5, { width: 30 });
-      doc.text(item.item_name, 110, currentY + 5, { width: 300 });
-      doc.text(String(item.quantity), 430, currentY + 5, { width: 120, align: 'right' });
+      doc.text(item.item_name, 100, currentY + 5, { width: 200 });
+      doc.text(item.specification || '-', 310, currentY + 5, { width: 120 });
+      doc.text(String(item.quantity), 440, currentY + 5, { width: 100, align: 'right' });
       currentY += 20;
     });
 
@@ -471,12 +478,12 @@ const apiList = async (req, res, next) => {
     const employeeId = await resolveEmployeeId(req.session.userId);
 
     const [items] = await db.query(
-      'SELECT * FROM permintaan_pengadaan WHERE created_by = ? ORDER BY id DESC LIMIT ? OFFSET ?',
+      'SELECT * FROM inventory_requests WHERE created_by = ? ORDER BY id DESC LIMIT ? OFFSET ?',
       [employeeId, limit, offset]
     );
 
     const [countRows] = await db.query(
-      'SELECT COUNT(*) as total FROM permintaan_pengadaan WHERE created_by = ?',
+      'SELECT COUNT(*) as total FROM inventory_requests WHERE created_by = ?',
       [employeeId]
     );
 

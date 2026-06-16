@@ -37,28 +37,28 @@
         <h3 class="text-sm font-semibold text-center text-muted-foreground uppercase tracking-wider mb-6">Status Perkembangan Pengajuan</h3>
         
         <div class="flex items-center justify-between w-full max-w-lg mx-auto my-6">
-          <!-- Step 1: Draft -->
+          <!-- Step 1: Pending -->
           <div class="flex flex-col items-center">
             <div class="size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow">✓</div>
-            <span class="text-xs font-semibold mt-2 text-foreground">Draft</span>
+            <span class="text-xs font-semibold mt-2 text-foreground">Pending</span>
           </div>
           
           <!-- Connector 1 -->
           <div class="flex-1 h-1 bg-muted relative mx-2">
-            <div class="absolute left-0 top-0 bottom-0 bg-primary transition-all duration-300" style="width: <%= (procurement.status !== 'draft') ? '100%' : '0%' %>"></div>
+            <div class="absolute left-0 top-0 bottom-0 bg-primary transition-all duration-300" style="width: <%= (procurement.status !== 'pending') ? '100%' : '0%' %>"></div>
           </div>
           
           <!-- Step 2: Submitted -->
           <div class="flex flex-col items-center">
-            <div class="size-8 rounded-full flex items-center justify-center font-bold text-sm shadow <%= (procurement.status !== 'draft') ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground' %>">
-              <%= (procurement.status !== 'draft') ? '✓' : '2' %>
+            <div class="size-8 rounded-full flex items-center justify-center font-bold text-sm shadow <%= (procurement.status !== 'pending') ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground' %>">
+              <%= (procurement.status !== 'pending') ? '✓' : '2' %>
             </div>
-            <span class="text-xs font-semibold mt-2 <%= (procurement.status !== 'draft') ? 'text-foreground' : 'text-muted-foreground' %>">Submitted</span>
+            <span class="text-xs font-semibold mt-2 <%= (procurement.status !== 'pending') ? 'text-foreground' : 'text-muted-foreground' %>">Submitted</span>
           </div>
           
           <!-- Connector 2 -->
           <div class="flex-1 h-1 bg-muted relative mx-2">
-            <div class="absolute left-0 top-0 bottom-0 bg-primary transition-all duration-300" style="width: <%= (procurement.status === 'approved') ? '100%' : '0%' %>"></div>
+            <div class="absolute left-0 top-0 bottom-0 bg-primary transition-all duration-300" style="width: <%= (procurement.status === 'approved' || procurement.status === 'rejected') ? '100%' : '0%' %>"></div>
           </div>
           
           <!-- Step 3: Approved / Rejected -->
@@ -87,9 +87,10 @@
             <table class="w-full text-left text-sm">
               <thead>
                 <tr class="border-b text-muted-foreground font-semibold">
-                  <th class="pb-3 w-[60px]">No</th>
-                  <th class="pb-3">Nama Barang</th>
-                  <th class="pb-3 text-right w-[150px]">Jumlah (Quantity)</th>
+                  <th class="pb-3 w-[50px]">No</th>
+                  <th class="pb-3 pr-4">Nama Barang</th>
+                  <th class="pb-3 pr-4">Spesifikasi</th>
+                  <th class="pb-3 text-right w-[100px]">Qty</th>
                 </tr>
               </thead>
               <tbody class="divide-y">
@@ -97,6 +98,7 @@
                   <tr class="hover:bg-muted/10">
                     <td class="py-3 font-medium text-muted-foreground"><%= index + 1 %></td>
                     <td class="py-3"><%= item.item_name %></td>
+                    <td class="py-3 text-muted-foreground"><%= item.specification || '-' %></td>
                     <td class="py-3 text-right font-medium"><%= item.quantity %></td>
                   </tr>
                 <% }) %>
@@ -128,8 +130,8 @@
               </div>
             </div>
 
-            <!-- Conditional Actions for Draft status -->
-            <% if (procurement.status === 'draft') { %>
+            <!-- Conditional Actions for Pending status -->
+            <% if (procurement.status === 'pending') { %>
               <div class="border-t pt-4 flex flex-col gap-2">
                 <button type="button" onclick="window.openConfirmSubmitModal()" class="btn w-full justify-center">Kirim ke Wadir</button>
                 <div class="flex gap-2">
@@ -148,10 +150,12 @@
 
   <!-- EDIT MODAL -->
   <dialog id="edit-modal" class="dialog">
-    <div class="w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh]">
+    <div class="w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
       <header class="p-4 border-b flex justify-between items-center">
-        <h2 class="font-semibold text-lg">Edit Permintaan Pengadaan</h2>
-        <p class="text-sm text-muted-foreground">Ubah judul dan barang permintaan pengadaan.</p>
+        <div>
+          <h2 class="font-semibold text-lg">Edit Permintaan Pengadaan</h2>
+          <p class="text-sm text-muted-foreground">Ubah judul dan barang permintaan pengadaan.</p>
+        </div>
         <form method="dialog">
           <button type="submit" class="btn-xs-icon-ghost">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -178,8 +182,9 @@
                 <tr class="border-b text-muted-foreground">
                   <th class="pb-2 w-[40px]">No</th>
                   <th class="pb-2">Nama Barang</th>
-                  <th class="pb-2 w-[120px]">Quantity</th>
-                  <th class="pb-2 w-[50px] text-right"></th>
+                  <th class="pb-2">Spesifikasi</th>
+                  <th class="pb-2 w-[100px]">Qty</th>
+                  <th class="pb-2 w-[40px] text-right"></th>
                 </tr>
               </thead>
               <tbody class="divide-y" id="edit-items-tbody">
@@ -201,7 +206,7 @@
     <div class="w-full max-w-sm space-y-4">
       <header>
         <h2 class="font-semibold text-lg text-destructive">Konfirmasi Hapus</h2>
-        <p class="text-sm text-muted-foreground">Apakah Anda yakin ingin menghapus berkas draf permintaan pengadaan ini? Tindakan ini tidak dapat dibatalkan.</p>
+        <p class="text-sm text-muted-foreground">Apakah Anda yakin ingin menghapus berkas permintaan pengadaan ini? Tindakan ini tidak dapat dibatalkan.</p>
       </header>
       <footer class="flex justify-end gap-2 pt-2">
         <button type="button" onclick="window.closeDeleteModal()" class="btn-outline">Batal</button>
@@ -304,9 +309,9 @@
             }, 1000);
           } else {
             if (window.showToast) {
-              window.showToast('Gagal', result.message || 'Gagal menghapus draf.', 'error');
+              window.showToast('Gagal', result.message || 'Gagal menghapus permintaan.', 'error');
             } else {
-              alert(result.message || 'Gagal menghapus draf.');
+              alert(result.message || 'Gagal menghapus permintaan.');
             }
           }
         } catch (err) {
@@ -333,7 +338,7 @@
         editRowCount = 0;
 
         <% items.forEach(item => { %>
-          window.addEditRow('<%= item.item_name %>', <%= item.quantity %>);
+          window.addEditRow('<%= item.item_name %>', '<%= (item.specification || '').replace(/'/g, "\\'") %>', <%= item.quantity %>);
         <% }) %>
       };
 
@@ -348,7 +353,7 @@
         }
       };
 
-      window.addEditRow = function(name = '', qty = 1) {
+      window.addEditRow = function(name = '', spec = '', qty = 1) {
         editRowCount++;
         const tbody = document.getElementById('edit-items-tbody');
         const tr = document.createElement('tr');
@@ -359,6 +364,9 @@
           <td class="py-2 text-muted-foreground edit-row-index align-middle">${tbody.children.length + 1}</td>
           <td class="py-1 pr-2 align-middle">
             <input type="text" name="item_name" class="input w-full" placeholder="Nama barang..." value="${name}" required />
+          </td>
+          <td class="py-1 pr-2 align-middle">
+            <input type="text" name="specification" class="input w-full" placeholder="Spesifikasi (opsional)" value="${spec}" />
           </td>
           <td class="py-1 pr-2 align-middle">
             <input type="number" name="quantity" class="input w-full" min="1" placeholder="Qty" value="${qty}" required />
