@@ -34,7 +34,14 @@
       <% } %>
 
       <form action="/procurement/create" method="POST" id="procurement-form" class="space-y-6">
-        
+
+        <!-- Judul Card -->
+        <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-2">
+          <label for="title" class="text-base font-semibold">Judul Permintaan</label>
+          <input type="text" id="title" name="title" class="input w-full" placeholder="Mis. Kebutuhan Lab Komputer (opsional)" />
+          <p class="text-xs text-muted-foreground">Kosongkan untuk memakai ringkasan otomatis dari daftar barang.</p>
+        </div>
+
         <!-- Items Card -->
         <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
           <div class="flex justify-between items-center gap-4">

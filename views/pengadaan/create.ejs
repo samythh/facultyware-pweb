@@ -6,7 +6,7 @@
 
   <div class="p-4 md:p-6 xl:p-12">
     <div class="max-w-screen-lg mx-auto">
-      
+
       <!-- Breadcrumb & Title -->
       <div class="mb-6 flex flex-col gap-2">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
@@ -15,7 +15,7 @@
           <span class="text-foreground">Buat Pengadaan</span>
         </div>
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Buat Pengadaan Baru</h1>
-        <p class="text-sm text-muted-foreground">Pilih permintaan disetujui yang belum diproses untuk dibuatkan pengadaannya.</p>
+        <p class="text-sm text-muted-foreground">Gabungkan satu atau beberapa permintaan disetujui menjadi satu paket pengadaan.</p>
       </div>
 
       <% if (locals.error) { %>
@@ -32,115 +32,74 @@
         </div>
       <% } %>
 
+      <% if (!requests || requests.length === 0) { %>
+        <div class="card p-6 bg-card rounded-xl border shadow-sm text-center py-12 text-muted-foreground text-sm">
+          Tidak ada permintaan disetujui yang menunggu pengadaan.
+        </div>
+      <% } else { %>
       <form method="post" action="/pengadaan/create" class="space-y-6">
-        
-        <!-- Main Form Card -->
+
+        <!-- Judul paket -->
         <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
           <h3 class="text-base font-semibold">Informasi Pengadaan</h3>
-          
           <div class="grid gap-2">
-            <label for="request_number" class="text-sm font-medium">Permintaan Asal (Approved) <span class="text-destructive">*</span></label>
-            <select name="request_number" id="request_number" class="select w-full" required>
-              <option value="">-- Pilih Permintaan Asal --</option>
-              <% requests.forEach(function (r) { %>
-                <option value="<%= r.request_number %>" data-title="Pengadaan untuk <%= r.request_number %> - <%= r.first_item_name %>"><%= r.request_number %> (<%= r.requester_name %> - <%= fmtDate(r.request_date) %>)</option>
-              <% }) %>
-            </select>
-          </div>
-
-          <div class="grid gap-2">
-            <label for="title" class="text-sm font-medium">Judul Pengadaan <span class="text-destructive">*</span></label>
-            <input type="text" id="title" name="title" placeholder="Masukkan judul pengadaan barang..." class="input w-full" required />
+            <label for="title" class="text-sm font-medium">Judul Paket Pengadaan <span class="text-destructive">*</span></label>
+            <input type="text" id="title" name="title" placeholder="Mis. Pengadaan IT - Juni 2026" class="input w-full" required />
           </div>
         </div>
 
-        <!-- Dynamic Items Container -->
-        <div id="request_items">
-          <div class="card p-6 bg-card rounded-xl border shadow-sm text-center py-8 text-muted-foreground text-sm">
-            Silakan pilih nomor permintaan asal di atas untuk memuat daftar barang.
+        <!-- Pilih permintaan (multi) -->
+        <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold">Pilih Permintaan untuk Digabung <span class="text-destructive">*</span></h3>
+            <span id="selCount" class="text-xs text-muted-foreground">0 dipilih</span>
+          </div>
+
+          <div class="space-y-3">
+            <% requests.forEach(function (r) { %>
+              <label class="flex gap-3 items-start rounded-xl border p-4 cursor-pointer hover:bg-muted/10 transition">
+                <input type="checkbox" name="request_number" value="<%= r.request_number %>" class="req-check mt-1" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-semibold text-sm"><%= r.request_number %></span>
+                    <span class="text-xs text-muted-foreground"><%= r.requester_name || 'Staf' %> &middot; <%= fmtDate(r.request_date) %></span>
+                    <span class="text-xs rounded-full bg-muted px-2 py-0.5"><%= r.items.length %> barang</span>
+                  </div>
+                  <ul class="mt-2 text-sm text-muted-foreground list-disc pl-5">
+                    <% r.items.forEach(function (it) { %>
+                      <li><%= it.item_name %> <span class="font-mono">&times;<%= it.quantity %></span></li>
+                    <% }) %>
+                  </ul>
+                </div>
+              </label>
+            <% }) %>
           </div>
         </div>
 
-        <!-- Actions Card -->
-        <div class="card p-6 bg-card rounded-xl border shadow-sm flex flex-col sm:flex-row items-center justify-end gap-4">
-          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <a href="/pengadaan" class="btn-outline" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Batal</a>
-            <button type="submit" class="btn">Simpan &amp; Ajukan Pengadaan</button>
-          </div>
+        <!-- Actions -->
+        <div class="card p-6 bg-card rounded-xl border shadow-sm flex items-center justify-end gap-2">
+          <a href="/pengadaan" class="btn-outline" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Batal</a>
+          <button type="submit" class="btn">Simpan &amp; Ajukan Pengadaan</button>
         </div>
-
       </form>
+      <% } %>
+
     </div>
   </div>
 </main>
 
 <script>
-  document.getElementById('request_number').addEventListener('change', async function () {
-    const requestNumber = this.value;
-    const titleInput = document.getElementById('title');
-    const target = document.getElementById('request_items');
-    target.innerHTML = '';
-    
-    if (!requestNumber) {
-      titleInput.value = '';
-      target.innerHTML = `
-        <div class="card p-6 bg-card rounded-xl border shadow-sm text-center py-8 text-muted-foreground text-sm">
-          Silakan pilih nomor permintaan asal di atas untuk memuat daftar barang.
-        </div>`;
-      return;
+  (function () {
+    const counter = document.getElementById('selCount');
+    function update() {
+      const n = document.querySelectorAll('.req-check:checked').length;
+      if (counter) counter.textContent = n + ' dipilih';
     }
-
-    // Set default title based on selected request
-    const selectedOption = this.options[this.selectedIndex];
-    titleInput.value = selectedOption.dataset.title || '';
-
-    try {
-      const res = await fetch(`/pengadaan/api/request/${requestNumber}/items`);
-      if (!res.ok) throw new Error('Fetch request items failed');
-      const data = await res.json();
-      
-      if (!data.items || !data.items.length) {
-        target.innerHTML = `
-          <div class="card p-6 bg-card rounded-xl border shadow-sm text-center py-8 text-muted-foreground text-sm">
-            Tidak ada item dalam permintaan ini.
-          </div>`;
-        return;
-      }
-      
-      const wrapper = document.createElement('div');
-      wrapper.className = 'card p-6 bg-card rounded-xl border shadow-sm space-y-4';
-      wrapper.innerHTML = '<h3 class="text-base font-semibold">Daftar Rincian Barang</h3>';
-      
-      const tableWrap = document.createElement('div');
-      tableWrap.className = 'overflow-x-auto';
-      
-      const table = document.createElement('table');
-      table.className = 'w-full text-left text-sm border-collapse';
-      table.innerHTML = `
-        <thead>
-          <tr class="border-b text-muted-foreground font-semibold">
-            <th class="pb-3 pr-4">Nama Barang</th>
-            <th class="pb-3 text-right w-[150px]">Jumlah (Quantity)</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y">
-          ${data.items.map(i => `
-            <tr class="hover:bg-muted/10">
-              <td class="py-3 font-medium align-middle text-foreground">${i.name}</td>
-              <td class="py-3 text-right align-middle font-mono font-medium text-muted-foreground">${i.quantity}</td>
-            </tr>`).join('')}
-        </tbody>
-      `;
-      tableWrap.appendChild(table);
-      wrapper.appendChild(tableWrap);
-      target.appendChild(wrapper);
-    } catch (e) {
-      target.innerHTML = `
-        <div class="card p-6 bg-card rounded-xl border border-destructive/20 text-destructive text-center py-8 text-sm">
-          Gagal memuat item barang. Silakan pilih ulang nomor permintaan asal.
-        </div>`;
-    }
-  });
+    document.querySelectorAll('.req-check').forEach(function (c) {
+      c.addEventListener('change', update);
+    });
+    update();
+  })();
 </script>
 
 <%- include('../partials/footer') %>

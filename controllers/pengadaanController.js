@@ -22,7 +22,25 @@ async function resolveEmployeeId(userId) {
   return null;
 }
 
-// GET /pengadaan -> index
+// Nomor pengadaan sendiri (PGD-YYYYMMDD-XXXX). Pengadaan kini bisa menggabungkan
+// banyak permintaan, jadi tidak lagi memakai request_number salah satu permintaan.
+async function generateProcurementNumber() {
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+  const prefix = `PGD-${dateStr}-`;
+  const [rows] = await db.query(
+    'SELECT request_number FROM inventory_procurements WHERE request_number LIKE ? ORDER BY id DESC LIMIT 1',
+    [`${prefix}%`]
+  );
+  let seq = 1;
+  if (rows.length) {
+    const n = parseInt(rows[0].request_number.slice(prefix.length), 10);
+    if (!isNaN(n)) seq = n + 1;
+  }
+  return `${prefix}${String(seq).padStart(4, '0')}`;
+}
+
+// GET /pengadaan -> daftar pengadaan (+ jumlah permintaan yang digabung)
 exports.index = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -30,38 +48,27 @@ exports.index = async (req, res, next) => {
     const offset = (page - 1) * limit;
     const search = req.query.search || '';
 
-    let query = `
-      SELECT p.*, r.request_date, e_req.name AS requester_name, e_proc.name AS creator_name
-      FROM inventory_procurements p
-      LEFT JOIN inventory_requests r ON p.request_number = r.request_number
-      LEFT JOIN employees e_req ON r.employee_id = e_req.id
-      LEFT JOIN employees e_proc ON p.employee_id = e_proc.id
-    `;
-    let queryParams = [];
-
+    let where = '';
+    const params = [];
     if (search) {
-      query += ` WHERE p.request_number LIKE ? OR p.title LIKE ?`;
-      queryParams.push(`%${search}%`, `%${search}%`);
+      where = 'WHERE p.request_number LIKE ? OR p.title LIKE ?';
+      params.push(`%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY p.id DESC LIMIT ? OFFSET ?';
-    queryParams.push(limit, offset);
+    const [procurements] = await db.query(
+      `SELECT p.*, e.name AS creator_name,
+              (SELECT COUNT(*) FROM inventory_requests r WHERE r.inventory_procurement_id = p.id) AS request_count
+         FROM inventory_procurements p
+         LEFT JOIN employees e ON p.employee_id = e.id
+         ${where}
+         ORDER BY p.id DESC LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
 
-    const [procurements] = await db.query(query, queryParams);
-
-    // Get total count for pagination
-    let countQuery = `
-      SELECT COUNT(*) as total 
-      FROM inventory_procurements p
-    `;
-    let countParams = [];
-
-    if (search) {
-      countQuery += ` WHERE p.request_number LIKE ? OR p.title LIKE ?`;
-      countParams.push(`%${search}%`, `%${search}%`);
-    }
-
-    const [countRows] = await db.query(countQuery, countParams);
+    const [countRows] = await db.query(
+      `SELECT COUNT(*) AS total FROM inventory_procurements p ${where}`,
+      params
+    );
     const totalItems = countRows[0].total;
     const totalPages = Math.ceil(totalItems / limit) || 1;
 
@@ -79,25 +86,11 @@ exports.index = async (req, res, next) => {
   }
 };
 
-// GET /pengadaan/create -> form
+// GET /pengadaan/create -> daftar permintaan approved yang BELUM dikonsolidasi,
+// lengkap dengan barangnya, untuk dipilih (multi) dan digabung jadi satu pengadaan.
 exports.create = async (req, res, next) => {
   try {
-    // Tampilkan permintaan ber-status='approved' yang belum punya pengadaan
-    const query = `
-      SELECT r.*, e.name AS requester_name,
-             COALESCE(
-               (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = r.id LIMIT 1), 
-               'Permintaan Barang'
-             ) AS first_item_name
-      FROM inventory_requests r
-      LEFT JOIN employees e ON r.employee_id = e.id
-      LEFT JOIN inventory_procurements p ON r.request_number = p.request_number
-      WHERE r.status = 'approved' AND p.id IS NULL
-      ORDER BY r.id DESC
-    `;
-
-    const [requests] = await db.query(query);
-
+    const requests = await getConsolidatableRequests();
     res.render('pengadaan/create', {
       title: 'Buat Pengadaan Baru',
       user: req.session.username,
@@ -109,73 +102,100 @@ exports.create = async (req, res, next) => {
   }
 };
 
-// POST /pengadaan/create -> store
+// Ambil permintaan approved yang belum tergabung ke pengadaan mana pun + barangnya.
+async function getConsolidatableRequests() {
+  const [requests] = await db.query(
+    `SELECT r.id, r.request_number, r.request_date, e.name AS requester_name
+       FROM inventory_requests r
+       LEFT JOIN employees e ON r.employee_id = e.id
+      WHERE r.status = 'approved' AND r.inventory_procurement_id IS NULL
+      ORDER BY r.id DESC`
+  );
+  for (const r of requests) {
+    const [items] = await db.query(
+      'SELECT item_name, quantity FROM inventory_request_details WHERE inventory_request_id = ? ORDER BY id ASC',
+      [r.id]
+    );
+    r.items = items;
+  }
+  return requests;
+}
+
+// POST /pengadaan/create -> buat SATU pengadaan dari BANYAK permintaan terpilih.
 exports.store = async (req, res, next) => {
-  const { request_number, title } = req.body;
+  const title = (req.body.title || '').trim();
+  // Checkbox dengan nama sama: bisa string (1 dipilih) atau array (banyak).
+  let selected = req.body.request_number || [];
+  if (!Array.isArray(selected)) selected = [selected];
+  selected = selected.filter(Boolean);
+
   const currentEmployeeId = await resolveEmployeeId(req.session.userId);
 
-  if (!request_number) {
-    try {
-      const [requests] = await db.query(`
-        SELECT r.*, e.name AS requester_name
-        FROM inventory_requests r
-        LEFT JOIN employees e ON r.employee_id = e.id
-        LEFT JOIN inventory_procurements p ON r.request_number = p.request_number
-        WHERE r.status = 'approved' AND p.id IS NULL
-        ORDER BY r.id DESC
-      `);
-      return res.render('pengadaan/create', {
-        title: 'Buat Pengadaan Baru',
-        user: req.session.username,
-        requests,
-        error: 'Pilih nomor permintaan asal terlebih dahulu.'
-      });
-    } catch (err) {
-      return next(err);
-    }
-  }
+  const renderError = async (message) => {
+    const requests = await getConsolidatableRequests();
+    res.render('pengadaan/create', {
+      title: 'Buat Pengadaan Baru',
+      user: req.session.username,
+      requests,
+      error: message
+    });
+  };
+
+  if (!title) return renderError('Judul pengadaan wajib diisi.');
+  if (selected.length === 0) return renderError('Pilih minimal satu permintaan untuk digabung.');
 
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
 
-    // Pastikan request valid dan status approved, dan belum diproses pengadaan
-    const [reqRows] = await conn.execute(
-      `SELECT r.id, r.employee_id, r.request_number 
-       FROM inventory_requests r
-       LEFT JOIN inventory_procurements p ON r.request_number = p.request_number
-       WHERE r.request_number = ? AND r.status = 'approved' AND p.id IS NULL`,
-      [request_number]
-    );
-
-    if (reqRows.length === 0) {
-      throw new Error('Permintaan tidak ditemukan, tidak berstatus disetujui, atau sudah memiliki pengadaan.');
-    }
-
-    const requestObj = reqRows[0];
-    const procTitle = (title && title.trim()) || `Pengadaan untuk Permintaan ${request_number}`;
-
-    // Buat pengadaan baru di inventory_procurements
+    // Pengadaan = konsolidasi murni (tanpa gerbang approval tersendiri). Dibuat
+    // langsung 'approved' sehingga siap dijadikan sumber PO. Persetujuan ada di
+    // tahap Permintaan (kebutuhan) dan tahap PO (belanja/harga).
+    const procNumber = await generateProcurementNumber();
     const [procResult] = await conn.execute(
       `INSERT INTO inventory_procurements (request_number, title, status, created_by, employee_id, created_at, updated_at)
-       VALUES (?, ?, 'submitted', ?, ?, NOW(), NOW())`,
-      [request_number, procTitle, currentEmployeeId, currentEmployeeId]
+       VALUES (?, ?, 'approved', ?, ?, NOW(), NOW())`,
+      [procNumber, title, currentEmployeeId, currentEmployeeId]
     );
-
     const procurementId = procResult.insertId;
 
-    // Salin item dari inventory_request_details ke inventory_procurement_items
-    const [itemRows] = await conn.execute(
-      'SELECT item_id, item_name, quantity FROM inventory_request_details WHERE inventory_request_id = ?',
-      [requestObj.id]
-    );
-
-    for (const item of itemRows) {
-      await conn.execute(
-        `INSERT INTO inventory_procurement_items (inventory_procurement_id, item_id, item_name, quantity, created_at, updated_at)
-         VALUES (?, ?, ?, ?, NOW(), NOW())`,
-        [procurementId, item.item_id, item.item_name, item.quantity]
+    let totalItems = 0;
+    for (const reqNumber of selected) {
+      // Pastikan permintaan approved & belum dikonsolidasi (kunci baris).
+      const [reqRows] = await conn.execute(
+        `SELECT id FROM inventory_requests
+          WHERE request_number = ? AND status = 'approved' AND inventory_procurement_id IS NULL
+          FOR UPDATE`,
+        [reqNumber]
       );
+      if (reqRows.length === 0) {
+        throw new Error(`Permintaan ${reqNumber} tidak valid (sudah dikonsolidasi atau tidak disetujui).`);
+      }
+      const reqId = reqRows[0].id;
+
+      // Tandai permintaan tergabung ke pengadaan ini.
+      await conn.execute(
+        'UPDATE inventory_requests SET inventory_procurement_id = ?, updated_at = NOW() WHERE id = ?',
+        [procurementId, reqId]
+      );
+
+      // Salin barang permintaan ke item pengadaan.
+      const [itemRows] = await conn.execute(
+        'SELECT item_id, item_name, quantity FROM inventory_request_details WHERE inventory_request_id = ?',
+        [reqId]
+      );
+      for (const item of itemRows) {
+        await conn.execute(
+          `INSERT INTO inventory_procurement_items (inventory_procurement_id, item_id, item_name, quantity, created_at, updated_at)
+           VALUES (?, ?, ?, ?, NOW(), NOW())`,
+          [procurementId, item.item_id, item.item_name, item.quantity]
+        );
+        totalItems++;
+      }
+    }
+
+    if (totalItems === 0) {
+      throw new Error('Permintaan terpilih tidak memiliki barang.');
     }
 
     await conn.commit();
@@ -183,59 +203,46 @@ exports.store = async (req, res, next) => {
   } catch (error) {
     await conn.rollback();
     console.error('Error saving procurement:', error);
-    try {
-      const [requests] = await db.query(`
-        SELECT r.*, e.name AS requester_name
-        FROM inventory_requests r
-        LEFT JOIN employees e ON r.employee_id = e.id
-        LEFT JOIN inventory_procurements p ON r.request_number = p.request_number
-        WHERE r.status = 'approved' AND p.id IS NULL
-        ORDER BY r.id DESC
-      `);
-      res.render('pengadaan/create', {
-        title: 'Buat Pengadaan Baru',
-        user: req.session.username,
-        requests,
-        error: error.message
-      });
-    } catch (err) {
-      next(err);
-    }
+    await renderError(error.message);
   } finally {
     conn.release();
   }
 };
 
-// GET /pengadaan/:id -> detail
+// GET /pengadaan/:id -> detail pengadaan + permintaan yang digabung + barang
 exports.detail = async (req, res, next) => {
   const { id } = req.params;
-
   try {
     const [procurementRows] = await db.query(
-      `SELECT p.*, r.request_date, e_req.name AS requester_name, e_proc.name AS creator_name
-       FROM inventory_procurements p
-       LEFT JOIN inventory_requests r ON p.request_number = r.request_number
-       LEFT JOIN employees e_req ON r.employee_id = e_req.id
-       LEFT JOIN employees e_proc ON p.employee_id = e_proc.id
-       WHERE p.id = ?`,
+      `SELECT p.*, e.name AS creator_name
+         FROM inventory_procurements p
+         LEFT JOIN employees e ON p.employee_id = e.id
+        WHERE p.id = ?`,
       [id]
     );
-
     if (procurementRows.length === 0) {
       return res.status(404).render('error', {
         message: 'Data pengadaan tidak ditemukan.',
         error: { status: 404, stack: '' }
       });
     }
-
     const procurement = procurementRows[0];
+
+    const [requests] = await db.query(
+      `SELECT r.request_number, r.request_date, r.status, e.name AS requester_name
+         FROM inventory_requests r
+         LEFT JOIN employees e ON r.employee_id = e.id
+        WHERE r.inventory_procurement_id = ?
+        ORDER BY r.id ASC`,
+      [id]
+    );
 
     const [items] = await db.query(
       `SELECT pi.*, i.code AS item_code
-       FROM inventory_procurement_items pi
-       LEFT JOIN items i ON pi.item_id = i.id
-       WHERE pi.inventory_procurement_id = ?
-       ORDER BY pi.id ASC`,
+         FROM inventory_procurement_items pi
+         LEFT JOIN items i ON pi.item_id = i.id
+        WHERE pi.inventory_procurement_id = ?
+        ORDER BY pi.id ASC`,
       [id]
     );
 
@@ -243,6 +250,7 @@ exports.detail = async (req, res, next) => {
       title: `Detail Pengadaan ${procurement.request_number}`,
       user: req.session.username,
       procurement,
+      requests,
       items
     });
   } catch (error) {
@@ -250,39 +258,7 @@ exports.detail = async (req, res, next) => {
   }
 };
 
-// POST /pengadaan/:id/approve -> approve
-exports.approve = async (req, res, next) => {
-  const { id } = req.params;
-  try {
-    await db.query(
-      `UPDATE inventory_procurements 
-       SET status = 'approved', approved_at = NOW(), updated_at = NOW() 
-       WHERE id = ? AND status = 'submitted'`,
-      [id]
-    );
-    res.redirect(`/pengadaan/${id}`);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// POST /pengadaan/:id/reject -> reject
-exports.reject = async (req, res, next) => {
-  const { id } = req.params;
-  try {
-    await db.query(
-      `UPDATE inventory_procurements 
-       SET status = 'rejected', updated_at = NOW() 
-       WHERE id = ? AND status = 'submitted'`,
-      [id]
-    );
-    res.redirect(`/pengadaan/${id}`);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// GET /pengadaan/api/request/:requestNumber/items -> AJAX lookup
+// GET /pengadaan/api/request/:requestNumber/items -> AJAX lookup (dipertahankan)
 exports.requestItems = async (req, res, next) => {
   try {
     const { requestNumber } = req.params;
