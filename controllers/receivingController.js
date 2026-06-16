@@ -311,6 +311,38 @@ const confirm = async (req, res, next) => {
       [id]
     );
 
+    // Tutup loop: tandai permintaan asal sebagai 'fulfilled'.
+    // Jejak mengikuti kontrak pipeline (PO -> pengadaan -> permintaan via
+    // request_number). Fallback ke tautan langsung PO->permintaan bila modul
+    // Pengadaan belum terpasang. Tidak menyentuh tabel inventories (milik B11).
+    let reqId = null;
+    const [viaProc] = await conn.query(
+      `SELECT r.id
+         FROM inventory_purchases po
+         JOIN inventory_procurements pr ON pr.id = po.inventory_procurement_id
+         JOIN inventory_requests r ON r.request_number = pr.request_number
+        WHERE po.id = ? LIMIT 1`,
+      [id]
+    );
+    if (viaProc.length) {
+      reqId = viaProc[0].id;
+    } else {
+      const [direct] = await conn.query(
+        `SELECT r.id
+           FROM inventory_purchases po
+           JOIN inventory_requests r ON r.id = po.inventory_procurement_id
+          WHERE po.id = ? LIMIT 1`,
+        [id]
+      );
+      if (direct.length) reqId = direct[0].id;
+    }
+    if (reqId != null) {
+      await conn.query(
+        "UPDATE inventory_requests SET status = 'fulfilled', updated_at = NOW() WHERE id = ? AND status = 'approved'",
+        [reqId]
+      );
+    }
+
     await conn.commit();
     res.redirect(`/receiving/${id}/detail`);
   } catch (err) {
