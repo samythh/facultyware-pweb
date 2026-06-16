@@ -46,10 +46,10 @@
             <thead>
               <tr class="bg-muted/50 border-b">
                 <th class="p-4 font-semibold text-muted-foreground w-[60px]">No</th>
-                <th class="p-4 font-semibold text-muted-foreground w-[180px]">No. Permintaan</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[180px]">No. Pengadaan</th>
                 <th class="p-4 font-semibold text-muted-foreground">Judul Pengadaan</th>
-                <th class="p-4 font-semibold text-muted-foreground w-[150px]">Pemohon</th>
-                <th class="p-4 font-semibold text-muted-foreground w-[150px]">Tanggal Request</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[150px]">Pembuat</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[160px]">Permintaan Digabung</th>
                 <th class="p-4 font-semibold text-muted-foreground w-[150px]">Status</th>
                 <th class="p-4 font-semibold text-muted-foreground w-[100px] text-right">Aksi</th>
               </tr>
@@ -61,8 +61,8 @@
                     <td class="p-4 font-medium text-muted-foreground"><%= ((currentPage - 1) * limit) + idx + 1 %></td>
                     <td class="p-4 font-mono font-semibold text-primary"><%= proc.request_number %></td>
                     <td class="p-4 font-medium"><%= proc.title %></td>
-                    <td class="p-4 text-muted-foreground"><%= proc.requester_name || '-' %></td>
-                    <td class="p-4 text-muted-foreground"><%= fmtDate(proc.request_date) %></td>
+                    <td class="p-4 text-muted-foreground"><%= proc.creator_name || '-' %></td>
+                    <td class="p-4 text-muted-foreground"><%= proc.request_count %> permintaan</td>
                     <td class="p-4"><%- include('../partials/status-badge', { status: proc.status }) %></td>
                     <td class="p-4 text-right">
                       <a href="/pengadaan/<%= proc.id %>" class="btn-xs-outline inline-flex items-center" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">

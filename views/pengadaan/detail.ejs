@@ -6,7 +6,7 @@
 
   <div class="p-4 md:p-6 xl:p-12">
     <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
-      
+
       <!-- Breadcrumb & Actions -->
       <div class="flex flex-col gap-2">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
@@ -17,17 +17,9 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Detail Pengadaan Barang</h1>
-            <p class="text-sm text-muted-foreground">Rincian data pengadaan yang diusulkan beserta status approval.</p>
+            <p class="text-sm text-muted-foreground">Paket pengadaan hasil konsolidasi permintaan beserta status approval.</p>
           </div>
           <div class="flex gap-2 shrink-0">
-            <% if (procurement.status === 'submitted') { %>
-              <form method="POST" action="/pengadaan/<%= procurement.id %>/approve" class="inline">
-                <button type="submit" class="btn bg-emerald-600 hover:bg-emerald-700 text-white">Setujui Pengadaan</button>
-              </form>
-              <form method="POST" action="/pengadaan/<%= procurement.id %>/reject" class="inline">
-                <button type="submit" class="btn bg-rose-600 hover:bg-rose-700 text-white">Tolak Pengadaan</button>
-              </form>
-            <% } %>
             <a href="/pengadaan" class="btn-outline inline-flex items-center" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -39,12 +31,12 @@
         </div>
       </div>
 
-      <!-- Info Pengadaan Grid Card -->
+      <!-- Info Pengadaan -->
       <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
         <h3 class="text-base font-semibold">Informasi Pengadaan</h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Nomor Permintaan Asal</span>
+            <span class="text-xs uppercase tracking-wider text-muted-foreground">Nomor Pengadaan</span>
             <span class="font-bold font-mono text-primary text-base"><%= procurement.request_number %></span>
           </div>
           <div class="flex flex-col gap-1.5 col-span-2">
@@ -52,16 +44,8 @@
             <span class="font-semibold text-foreground text-base"><%= procurement.title %></span>
           </div>
           <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Status Pengadaan</span>
+            <span class="text-xs uppercase tracking-wider text-muted-foreground">Status</span>
             <span><%- include('../partials/status-badge', { status: procurement.status }) %></span>
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Tanggal Permintaan Asal</span>
-            <span class="font-medium text-foreground text-base"><%= fmtDate(procurement.request_date) %></span>
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Pemohon Permintaan</span>
-            <span class="font-medium text-foreground text-base"><%= procurement.requester_name || '-' %></span>
           </div>
           <div class="flex flex-col gap-1.5">
             <span class="text-xs uppercase tracking-wider text-muted-foreground">Pembuat Pengadaan</span>
@@ -71,12 +55,43 @@
             <span class="text-xs uppercase tracking-wider text-muted-foreground">Disetujui Tanggal</span>
             <span class="font-medium text-foreground text-base"><%= fmtDate(procurement.approved_at) %></span>
           </div>
+          <div class="flex flex-col gap-1.5">
+            <span class="text-xs uppercase tracking-wider text-muted-foreground">Jumlah Permintaan</span>
+            <span class="font-medium text-foreground text-base"><%= requests.length %> permintaan</span>
+          </div>
         </div>
       </div>
 
-      <!-- Item Table Card -->
+      <!-- Permintaan yang Digabung -->
       <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
-        <h3 class="text-base font-semibold">Rincian Barang yang Diajukan</h3>
+        <h3 class="text-base font-semibold">Permintaan yang Digabung</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr class="border-b text-muted-foreground font-semibold">
+                <th class="pb-3 pr-4">No. Permintaan</th>
+                <th class="pb-3 pr-4">Pemohon</th>
+                <th class="pb-3 pr-4">Tanggal</th>
+                <th class="pb-3">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <% requests.forEach(function (r) { %>
+                <tr class="hover:bg-muted/10">
+                  <td class="py-3 font-mono font-medium text-foreground"><%= r.request_number %></td>
+                  <td class="py-3 text-muted-foreground"><%= r.requester_name || '-' %></td>
+                  <td class="py-3 text-muted-foreground"><%= fmtDate(r.request_date) %></td>
+                  <td class="py-3"><%- include('../partials/status-badge', { status: r.status }) %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Rincian Barang (gabungan) -->
+      <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
+        <h3 class="text-base font-semibold">Rincian Barang (Gabungan)</h3>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm border-collapse">
             <thead>

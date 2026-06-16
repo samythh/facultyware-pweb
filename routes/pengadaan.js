@@ -14,7 +14,5 @@ router.get('/create', controller.create);
 router.post('/create', controller.store);
 router.get('/api/request/:requestNumber/items', controller.requestItems);
 router.get('/:id', controller.detail);
-router.post('/:id/approve', controller.approve);
-router.post('/:id/reject', controller.reject);
 
 module.exports = router;
