@@ -169,8 +169,14 @@ node scripts/migrate_sessions_table.js    # tabel sesi login: express_sessions
 node scripts/migrate_receiving_schema.js  # skema modul Penerimaan (lampiran + verifikasi)
 node scripts/seed_rbac.js                 # roles, permissions, dan akun login
 node scripts/seed_employees.js            # data employees (FK modul Pengadaan/Approval)
-node scripts/migrate_suppliers_schema.js  # menambahkan tabel supplier ke database
+node scripts/migrate_suppliers_schema.js  # tabel supplier + arahkan FK inventory_purchases ke inventory_requests
 ```
+
+> Catatan: `migrate_suppliers_schema.js` selain membuat tabel `suppliers` juga
+> memindahkan FK `inventory_purchases.inventory_procurement_id` dari tabel lama
+> `inventory_procurements` ke `inventory_requests`. **Wajib dijalankan ulang
+> meski DB Anda sudah disetup sebelumnya** — jika tidak, pembuatan PO akan gagal
+> dengan error `ER_NO_REFERENCED_ROW_2`. Skrip idempoten, aman dijalankan berulang.
 
 Skrip-skrip di atas mengandaikan skema dasar (tabel-tabel gaya Laravel dari dosen)
 sudah ada. Skema dasar itu hanya tersedia lewat dump dosen / [`database/facultyware.sql`](database/facultyware.sql).
