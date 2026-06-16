@@ -90,6 +90,51 @@ async function main() {
     console.log(`+ foreign key ${fkName} berhasil ditambahkan`);
   }
 
+  // 4) Arahkan ulang FK inventory_purchases.inventory_procurement_id
+  //    dari tabel lama inventory_procurements -> inventory_requests.
+  //    Modul procurement kini memakai inventory_requests sebagai sumber
+  //    permintaan, jadi kolom ini menyimpan inventory_requests.id.
+  const reqFkName = "fk_ip_request";
+  if (await foreignKeyExists("inventory_purchases", reqFkName)) {
+    console.log(`- foreign key ${reqFkName} sudah ada (lewati)`);
+  } else {
+    // Hapus FK lama yang masih menunjuk ke inventory_procurements (apa pun namanya)
+    const [oldFks] = await pool.query(
+      `SELECT constraint_name AS cn
+         FROM information_schema.referential_constraints
+        WHERE constraint_schema = DATABASE()
+          AND table_name = 'inventory_purchases'
+          AND referenced_table_name = 'inventory_procurements'`
+    );
+    for (const row of oldFks) {
+      await pool.query(
+        `ALTER TABLE inventory_purchases DROP FOREIGN KEY \`${row.cn}\``
+      );
+      console.log(`+ FK lama ${row.cn} (-> inventory_procurements) dihapus`);
+    }
+
+    // Putuskan tautan PO yang menggantung: id yang tidak ada di inventory_requests
+    const [upd] = await pool.query(
+      `UPDATE inventory_purchases ip
+          LEFT JOIN inventory_requests r ON r.id = ip.inventory_procurement_id
+          SET ip.inventory_procurement_id = NULL
+        WHERE ip.inventory_procurement_id IS NOT NULL AND r.id IS NULL`
+    );
+    if (upd.affectedRows > 0) {
+      console.log(`+ ${upd.affectedRows} PO dengan tautan menggantung di-NULL-kan`);
+    }
+
+    // Pasang FK baru ke inventory_requests
+    await pool.query(
+      `ALTER TABLE inventory_purchases
+       ADD CONSTRAINT ${reqFkName}
+       FOREIGN KEY (inventory_procurement_id)
+       REFERENCES inventory_requests (id)
+       ON DELETE SET NULL`
+    );
+    console.log(`+ foreign key ${reqFkName} (-> inventory_requests) ditambahkan`);
+  }
+
   console.log("=== Migrasi Supplier Selesai ===");
   await pool.end();
 }
