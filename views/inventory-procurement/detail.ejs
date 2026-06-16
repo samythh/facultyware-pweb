@@ -55,14 +55,14 @@
           <!-- Step 2: Approved / Rejected -->
           <div class="flex flex-col items-center">
             <% if (procurement.status === 'approved') { %>
-              <div class="size-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow">✓</div>
-              <span class="text-xs font-semibold mt-2 text-emerald-600">Approved</span>
+              <div class="size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow">✓</div>
+              <span class="text-xs font-semibold mt-2 text-primary">Approved</span>
             <% } else if (procurement.status === 'rejected') { %>
-              <div class="size-8 rounded-full bg-rose-600 text-white flex items-center justify-center font-bold text-sm shadow">✗</div>
-              <span class="text-xs font-semibold mt-2 text-rose-600">Rejected</span>
+              <div class="size-8 rounded-full flex items-center justify-center font-bold text-sm shadow" style="background-color: #ef4444; color: #ffffff;">✗</div>
+              <span class="text-xs font-semibold mt-2" style="color: #ef4444;">Rejected</span>
             <% } else if (procurement.status === 'fulfilled') { %>
-              <div class="size-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow">✓</div>
-              <span class="text-xs font-semibold mt-2 text-blue-600">Fulfilled</span>
+              <div class="size-8 rounded-full flex items-center justify-center font-bold text-sm shadow" style="background-color: #3b82f6; color: #ffffff;">✓</div>
+              <span class="text-xs font-semibold mt-2" style="color: #3b82f6;">Fulfilled</span>
             <% } else { %>
               <div class="size-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold text-sm shadow">2</div>
               <span class="text-xs font-semibold mt-2 text-muted-foreground">Keputusan</span>

@@ -36,8 +36,7 @@ exports.index = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const [procurements] = await db.query(
-      `SELECT *, (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id LIMIT 1) as title 
-       FROM inventory_requests 
+      `SELECT * FROM inventory_procurements 
        WHERE status='approved' 
        AND id NOT IN (SELECT inventory_procurement_id FROM inventory_purchases WHERE inventory_procurement_id IS NOT NULL)`
     );
@@ -63,8 +62,7 @@ exports.store = async (req, res, next) => {
 
     const [suppliers] = await db.query('SELECT id, name FROM suppliers ORDER BY name ASC');
     const [procurements] = await db.query(
-      `SELECT *, (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id LIMIT 1) as title 
-       FROM inventory_requests 
+      `SELECT * FROM inventory_procurements 
        WHERE status='approved' 
        AND id NOT IN (SELECT inventory_procurement_id FROM inventory_purchases WHERE inventory_procurement_id IS NOT NULL)`
     );
@@ -119,7 +117,7 @@ exports.store = async (req, res, next) => {
     );
 
     const [items] = await db.query(
-      `SELECT * FROM inventory_request_details WHERE inventory_request_id=? ORDER BY id ASC`,
+      `SELECT * FROM inventory_procurement_items WHERE inventory_procurement_id=? ORDER BY id ASC`,
       [inventory_procurement_id]
     );
 
@@ -305,9 +303,9 @@ exports.procurementItems = async (req, res, next) => {
     const id = req.params.id;
     const [items] = await db.query(
       `SELECT pi.item_id, COALESCE(pi.item_name, i.name) as name, pi.quantity
-       FROM inventory_request_details pi
+       FROM inventory_procurement_items pi
        LEFT JOIN items i ON pi.item_id = i.id
-       WHERE pi.inventory_request_id = ?
+       WHERE pi.inventory_procurement_id = ?
        ORDER BY pi.id ASC`,
       [id]
     );
