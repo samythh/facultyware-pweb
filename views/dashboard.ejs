@@ -8,18 +8,25 @@
     <div class="max-w-screen-lg mx-auto">
       <header class="flex flex-col gap-2 mb-8">
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Dashboard</h1>
-        <p class="text-muted-foreground">Ringkasan aktivitas pengadaan dan purchase order fakultas.</p>
+        <p class="text-muted-foreground">Ringkasan aktivitas persetujuan pengadaan barang fakultas.</p>
       </header>
 
-      <section class="flex flex-wrap gap-6">
+      <section class="flex flex-wrap gap-6 mb-8">
         <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
           <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Permintaan</h2>
           <p class="text-3xl font-bold text-blue-600 mt-2"><%= totalReq %></p>
         </div>
 
-        <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
-          <h2 class="text-sm font-medium uppercase text-muted-foreground">Menunggu Approval</h2>
-          <p class="text-3xl font-bold text-yellow-500 mt-2"><%= pending %></p>
+        <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1 flex flex-col justify-between">
+          <div>
+            <h2 class="text-sm font-medium uppercase text-muted-foreground">Menunggu Approval</h2>
+            <p class="text-3xl font-bold text-yellow-500 mt-2"><%= pending %></p>
+          </div>
+          <% if (pending > 0) { %>
+            <a href="/approval" class="mt-4 px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-lg hover:bg-yellow-600 transition-colors inline-block w-full">Tinjau Sekarang</a>
+          <% } else { %>
+            <div class="mt-4 px-4 py-2 text-sm text-gray-400">Tidak ada antrean</div>
+          <% } %>
         </div>
 
         <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
@@ -28,12 +35,139 @@
         </div>
 
         <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
-          <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Supplier</h2>
-          <p class="text-3xl font-bold text-purple-600 mt-2"><%= supplier %></p>
+          <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Ditolak</h2>
+          <p class="text-3xl font-bold text-red-600 mt-2"><%= rejected %></p>
         </div>
       </section>
+
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="card p-6 bg-card rounded-xl border shadow-sm">
+          <h3 class="text-lg font-semibold mb-4 text-gray-800">Tren Permintaan (6 Bulan Terakhir)</h3>
+          <div class="relative h-64 w-full">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card p-6 bg-card rounded-xl border shadow-sm">
+          <h3 class="text-lg font-semibold mb-4 text-gray-800">Komposisi Status Persetujuan</h3>
+          <div class="relative h-64 w-full flex justify-center">
+            <canvas id="doughnutChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="card bg-card rounded-xl border shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50/50">
+            <h3 class="text-lg font-semibold text-gray-800">5 Permintaan Terbaru</h3>
+            <a href="/approval" class="text-sm font-medium text-blue-600 hover:underline">Lihat Semua &rarr;</a>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-muted-foreground bg-white border-b">
+                <tr>
+                  <th class="px-6 py-3 font-medium">No. Request</th>
+                  <th class="px-6 py-3 font-medium">Tanggal</th>
+                  <th class="px-6 py-3 font-medium">Pemohon</th>
+                  <th class="px-6 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y bg-white">
+                <% if (recentRequests && recentRequests.length > 0) { %>
+                  <% recentRequests.forEach(function (req) { %>
+                    <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location.href='/approval/<%= req.id %>'">
+                      <td class="px-6 py-4 font-mono font-medium text-blue-600">#<%= req.request_number %></td>
+                      <td class="px-6 py-4"><%= new Date(req.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                      <td class="px-6 py-4 text-gray-700"><%= req.pemohon_name || 'Unit/Staf' %></td>
+                      <td class="px-6 py-4"><%- include('partials/status-badge', { status: req.status }) %></td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="4" class="px-6 py-8 text-center text-muted-foreground">Belum ada aktivitas pengajuan barang.</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    {
+      const initDashboardCharts = () => {
+        const barCtx = document.getElementById('barChart');
+        const doughnutCtx = document.getElementById('doughnutChart');
+
+        if (!barCtx || !doughnutCtx) return;
+
+        if (window.myBarChart) window.myBarChart.destroy();
+        if (window.myDoughnutChart) window.myDoughnutChart.destroy();
+
+        const labelsData = JSON.parse(`<%- trendLabels %>`);
+        const valuesData = JSON.parse(`<%- trendData %>`);
+        
+        const valApproved = Number('<%= approved %>');
+        const valPending = Number('<%= pending %>');
+        const valRejected = Number('<%= rejected %>');
+
+        // 1. Inisialisasi Bar Chart
+        window.myBarChart = new Chart(barCtx, {
+          type: 'bar',
+          data: {
+            labels: labelsData, 
+            datasets: [{
+              label: 'Jumlah Permintaan',
+              data: valuesData, 
+              backgroundColor: 'rgba(37, 99, 235, 0.8)',
+              borderRadius: 6,
+              barThickness: 30
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, grid: { borderDash: [5, 5] }, ticks: { stepSize: 1 } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+
+        // 2. Inisialisasi Doughnut Chart
+        window.myDoughnutChart = new Chart(doughnutCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Disetujui', 'Menunggu', 'Ditolak'],
+            datasets: [{
+              data: [valApproved, valPending, valRejected], 
+              backgroundColor: [
+                'rgba(34, 197, 94, 0.8)',  // Hijau
+                'rgba(234, 179, 8, 0.8)',  // Kuning
+                'rgba(239, 68, 68, 0.8)'   // Merah
+              ],
+              borderWidth: 0,
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: { legend: { position: 'bottom' } }
+          }
+        });
+      };
+
+      initDashboardCharts();
+    }
+  </script>
 </main>
 
 <%- include('partials/footer') %>

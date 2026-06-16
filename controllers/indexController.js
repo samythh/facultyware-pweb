@@ -7,7 +7,7 @@ const index = (req, res) => {
   res.redirect("/dashboard");
 };
 
-const home = (req, res) => {
+const home = (req, res) => { 
   res.redirect("/dashboard");
 };
 

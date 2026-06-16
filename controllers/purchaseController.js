@@ -328,18 +328,51 @@ async function safeCount(sql, params = []) {
 
 exports.dashboard = async (req, res, next) => {
   try {
+    // 1. Hitung data untuk Card & Doughnut Chart
     const totalReq = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests`);
     const pending = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='pending'`);
+    const approved = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='approved'`);
+    const rejected = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='rejected'`);
     const totalPO = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_purchases`);
-    const supplier = await safeCount(`SELECT COUNT(*) as cnt FROM suppliers`);
 
+    // 2. Hitung data untuk Bar Chart (6 bulan terakhir)
+    const trendLabels = [];
+    const trendData = [];
+    
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      
+      const monthName = d.toLocaleString('id-ID', { month: 'short' });
+      trendLabels.push(monthName);
+      
+      const m = d.getMonth() + 1;
+      const y = d.getFullYear();
+      
+      const count = await safeCount(
+        `SELECT COUNT(*) as cnt FROM inventory_requests WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?`,
+        [m, y]
+      );
+      trendData.push(count);
+    }
+
+    // 3. AMBIL 5 PERMINTAAN TERBARU (Baru Ditambahkan)
+    const [recentRequests] = await db.query(
+      `SELECT * FROM inventory_requests ORDER BY created_at DESC LIMIT 5`
+    );
+
+    // 4. Kirim semua variabel ke EJS
     res.render('dashboard', {
       title: 'Dashboard',
       user: req.session.username,
       totalReq,
       pending,
+      approved,
+      rejected,
       totalPO,
-      supplier
+      trendLabels: JSON.stringify(trendLabels),
+      trendData: JSON.stringify(trendData),
+      recentRequests // Variabel tabel kita kirim ke sini
     });
   } catch (err) { next(err); }
 };
