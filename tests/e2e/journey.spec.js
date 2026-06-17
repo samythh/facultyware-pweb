@@ -25,6 +25,9 @@ async function loginAs(page, role) {
 }
 
 test('menelusuri seluruh alur aplikasi dari masuk hingga keluar', async ({ page }) => {
+  // Banyak jeda + navigasi -> butuh waktu lebih dari batas global 30 detik.
+  test.setTimeout(120_000);
+
   // ── Admin ──────────────────────────────────────────────────────────
   await loginAs(page, 'admin');
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
