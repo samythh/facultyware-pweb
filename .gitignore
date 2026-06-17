@@ -60,7 +60,30 @@ typings/
 # next.js build output
 .next
 
-PEMBAGIAN-PENGADAAN.md
+# ──── Non-production: dokumentasi, skrip, tes, IDE ────
+
+# Markdown (dokumentasi & catatan)
+*.md
+
+# Skrip migrasi / seed / uji coba
+scratch/
+scripts/
+
+# Pengujian E2E & konfigurasi Playwright
+tests/
+playwright.config.js
+
+# Editor / IDE
+.vscode/
+*.code-workspace
+.qoder/
+
+# Log server
+srv_*.log
+
+# Berkas unggahan runtime (simpan .gitkeep saja)
+public/assets/uploads/**/*
+!public/assets/uploads/**/.gitkeep
 
 # Playwright
 /test-results/
