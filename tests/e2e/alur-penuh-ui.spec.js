@@ -247,6 +247,16 @@ test.describe('Alur penuh pengadaan (UI)', () => {
 
       await expect(page.locator('.cond-cacat')).toHaveCount(0);
       await expect(page.getByText('Riwayat Barang Ganti')).toBeVisible();
+      await beat(page);
+
+      // ── 12. Penutup: kembali ke daftar penerimaan, lalu dashboard ──
+      await page.goto('/receiving');
+      await expect(page.locator('h1')).toContainText('Penerimaan Barang');
+      await beat(page);
+
+      await page.goto('/dashboard');
+      await expect(page.locator('h1')).toContainText('Dashboard');
+      await beat(page);
    });
 
    test.afterAll(async () => {
