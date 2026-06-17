@@ -32,34 +32,34 @@
       </div>
 
       <!-- Info Pengadaan -->
-      <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
-        <h3 class="text-base font-semibold">Informasi Pengadaan</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Nomor Pengadaan</span>
-            <span class="font-bold font-mono text-primary text-base"><%= procurement.request_number %></span>
+      <div class="card">
+        <section class="po-info">
+          <div class="po-head">
+            <div>
+              <span class="po-eyebrow">Nomor Pengadaan</span>
+              <span class="po-number font-mono"><%= procurement.request_number %></span>
+            </div>
+            <%- include('../partials/status-badge', { status: procurement.status }) %>
           </div>
-          <div class="flex flex-col gap-1.5 col-span-2">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Judul Pengadaan</span>
-            <span class="font-semibold text-foreground text-base"><%= procurement.title %></span>
+          <div class="info-grid">
+            <div class="info-tile" style="grid-column: 1 / -1;">
+              <div class="info-label">Judul Pengadaan</div>
+              <div class="info-value"><%= procurement.title %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Pembuat Pengadaan</div>
+              <div class="info-value"><%= procurement.creator_name || '-' %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Disetujui Tanggal</div>
+              <div class="info-value"><%= fmtDate(procurement.approved_at) %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Jumlah Permintaan</div>
+              <div class="info-value"><%= requests.length %> permintaan</div>
+            </div>
           </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Status</span>
-            <span><%- include('../partials/status-badge', { status: procurement.status }) %></span>
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Pembuat Pengadaan</span>
-            <span class="font-medium text-foreground text-base"><%= procurement.creator_name || '-' %></span>
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Disetujui Tanggal</span>
-            <span class="font-medium text-foreground text-base"><%= fmtDate(procurement.approved_at) %></span>
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Jumlah Permintaan</span>
-            <span class="font-medium text-foreground text-base"><%= requests.length %> permintaan</span>
-          </div>
-        </div>
+        </section>
       </div>
 
       <!-- Permintaan yang Digabung -->

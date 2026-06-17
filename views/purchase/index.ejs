@@ -22,25 +22,29 @@
         </a>
       </div>
 
-      <!-- Search Card -->
+      <!-- Search & Sort Card -->
       <div class="card p-4 bg-card rounded-xl border shadow-sm">
-        <form method="get" action="/purchase" class="flex gap-2" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
-          <div class="relative flex-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Cari berdasarkan nomor PO atau nama supplier..." class="input w-full" style="padding-left: 2.5rem !important;" />
-          </div>
-          <button type="submit" class="btn-outline">Cari</button>
-          <% if (typeof search !== 'undefined' && search) { %>
-            <a href="/purchase" class="btn-ghost" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Clear</a>
-          <% } %>
-        </form>
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <form method="get" action="/purchase" class="flex gap-2" style="flex:1 1 260px;" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+            <div class="relative flex-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Cari berdasarkan nomor PO atau nama supplier..." class="input w-full" style="padding-left: 2.5rem !important;" />
+            </div>
+            <input type="hidden" name="sort" value="<%= typeof sort !== 'undefined' ? sort : '' %>" />
+            <button type="submit" class="btn-outline">Cari</button>
+            <% if (typeof search !== 'undefined' && search) { %>
+              <a href="/purchase?sort=<%= typeof sort !== 'undefined' ? sort : '' %>" class="btn-ghost" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Clear</a>
+            <% } %>
+          </form>
+          <%- include('../partials/sort-control', { action: '/purchase', current: (typeof sort !== 'undefined' ? sort : ''), opts: (typeof sortOptions !== 'undefined' ? sortOptions : []), keep: { search: (typeof search !== 'undefined' ? search : '') } }) %>
+        </div>
       </div>
 
       <!-- Table Card -->
-      <div class="card bg-card rounded-xl border shadow-sm overflow-hidden">
+      <div class="card card--table bg-card rounded-xl border shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
@@ -77,6 +81,32 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+          <div class="p-4 border-t flex items-center justify-between gap-4">
+            <span class="text-xs text-muted-foreground">Halaman <%= currentPage %> dari <%= totalPages %></span>
+            <div class="flex gap-1" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+              <% if (currentPage > 1) { %>
+                <a href="/purchase?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%= sort %>" class="btn-xs-outline">Sebelumnya</a>
+              <% } else { %>
+                <button type="button" class="btn-xs-outline select-none" disabled>Sebelumnya</button>
+              <% } %>
+              <% for (let i = 1; i <= totalPages; i++) { %>
+                <% if (i === currentPage) { %>
+                  <button type="button" class="btn-xs font-semibold select-none"><%= i %></button>
+                <% } else { %>
+                  <a href="/purchase?page=<%= i %>&search=<%= search %>&sort=<%= sort %>" class="btn-xs-outline"><%= i %></a>
+                <% } %>
+              <% } %>
+              <% if (currentPage < totalPages) { %>
+                <a href="/purchase?page=<%= currentPage + 1 %>&search=<%= search %>&sort=<%= sort %>" class="btn-xs-outline">Berikutnya</a>
+              <% } else { %>
+                <button type="button" class="btn-xs-outline select-none" disabled>Berikutnya</button>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
       </div>
 
     </div>

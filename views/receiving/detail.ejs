@@ -105,10 +105,12 @@
               </div>
               <div class="flex flex-wrap items-center justify-end gap-2 pt-2 border-t" style="border-color: var(--color-border);">
                 <% if (po && po.status !== 'completed') { %>
+                  <button type="button" class="btn-outline" onclick="document.getElementById('dialog-retur').showModal()">Catat Retur</button>
+                  <button type="button" class="btn-outline" onclick="document.getElementById('dialog-replacement').showModal()">Catat Barang Ganti</button>
                   <button type="button" class="btn" onclick="document.getElementById('dialog-confirm').showModal()">Konfirmasi Final</button>
+                <% } else { %>
+                  <span class="text-sm text-muted-foreground">Penerimaan sudah final (Selesai) — retur &amp; barang ganti terkunci.</span>
                 <% } %>
-                <button type="button" class="btn-outline" onclick="document.getElementById('dialog-retur').showModal()">Catat Retur</button>
-                <button type="button" class="btn-outline" onclick="document.getElementById('dialog-replacement').showModal()">Catat Barang Ganti</button>
               </div>
             </section>
           </div>

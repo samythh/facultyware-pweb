@@ -23,7 +23,8 @@ router.get('/api/procurement/:id/items', checkPermission('manage_po'), purchaseC
 // Dashboard statistik (mounted under /purchase/dashboard)
 router.get('/dashboard', checkPermission('manage_po'), purchaseController.dashboard);
 // Export PO ke PDF (static before param)
-router.get('/:id/export', checkPermission('manage_po'), purchaseController.exportPDF);
+// Wadir (manage_approval) juga boleh mengunduh untuk meninjau saat menyetujui.
+router.get('/:id/export', checkPermission(['manage_po', 'manage_approval']), purchaseController.exportPDF);
 
 // Update status PO (approved → completed)
 router.post('/:id/status', checkPermission('manage_po'), purchaseController.updateStatus);
@@ -33,6 +34,8 @@ router.post('/:id/approve', checkPermission('manage_approval'), purchaseControll
 router.post('/:id/reject', checkPermission('manage_approval'), purchaseController.reject);
 
 // Detail PO berdasarkan ID (param last)
-router.get('/:id', checkPermission('manage_po'), purchaseController.detail);
+// Wadir (manage_approval) perlu membuka detail ini untuk meninjau harga
+// sebelum menyetujui PO pada gerbang ke-2.
+router.get('/:id', checkPermission(['manage_po', 'manage_approval']), purchaseController.detail);
 
 module.exports = router; // Export router supaya bisa dipakai di app.js

@@ -1,5 +1,14 @@
 const db = require('../lib/db');       // Utility koneksi database
 const PDFDocument = require('pdfkit'); // Library untuk generate PDF
+const { resolveSort, toSelectOptions } = require('../lib/sort');
+
+// Opsi urutan daftar PO (whitelist aman untuk ORDER BY).
+const PURCHASE_SORTS = {
+  terbaru:  { label: 'Terbaru',        orderBy: 'id DESC' },
+  terlama:  { label: 'Terlama',        orderBy: 'id ASC' },
+  supplier: { label: 'Supplier (A-Z)', orderBy: 'supplier ASC, id DESC' },
+  status:   { label: 'Status',         orderBy: 'status ASC, id DESC' },
+};
 
 // Helper: Resolve raw item name to item id.
 async function resolveItemId(rawName) {
@@ -17,18 +26,31 @@ async function resolveItemId(rawName) {
 // Daftar PO
 exports.index = async (req, res, next) => {
   try {
-    const { page = 1, search = '' } = req.query;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const search = req.query.search || '';
     const limit = 10;
     const offset = (page - 1) * limit;
+    const sort = resolveSort(req.query.sort, PURCHASE_SORTS, 'terbaru');
 
     const [purchases] = await db.query(
-      `SELECT * FROM inventory_purchases 
+      `SELECT * FROM inventory_purchases
        WHERE supplier LIKE ? OR purchase_number LIKE ?
+       ORDER BY ${sort.orderBy}
        LIMIT ? OFFSET ?`,
       [`%${search}%`, `%${search}%`, limit, offset]
     );
 
-    res.render('purchase/index', { title: 'Daftar Purchase Order', user: req.session.username, purchases, search, page });
+    const [countRows] = await db.query(
+      `SELECT COUNT(*) AS total FROM inventory_purchases WHERE supplier LIKE ? OR purchase_number LIKE ?`,
+      [`%${search}%`, `%${search}%`]
+    );
+    const totalPages = Math.max(1, Math.ceil(countRows[0].total / limit));
+
+    res.render('purchase/index', {
+      title: 'Daftar Purchase Order', user: req.session.username, purchases, search,
+      currentPage: page, totalPages,
+      sort: sort.key, sortOptions: toSelectOptions(PURCHASE_SORTS)
+    });
   } catch (err) { next(err); }
 };
 
@@ -360,20 +382,125 @@ async function safeCount(sql, params = []) {
   }
 }
 
+// Ambil baris dengan aman (kembalikan [] bila query gagal/tabel tak ada).
+async function safeRows(sql, params = []) {
+  try {
+    const [rows] = await db.query(sql, params);
+    return rows;
+  } catch (err) {
+    console.warn(`[dashboard] aktivitas dilewati (${err.code || err.message})`);
+    return [];
+  }
+}
+
 exports.dashboard = async (req, res, next) => {
   try {
-    const totalReq = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_procurements`);
-    const pending = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_purchases WHERE status='pending'`);
+    // Kartu statistik (berbasis alur permintaan/approval).
+    const totalReq = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests`);
+    const pending = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='pending'`);
+    const approved = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='approved'`);
+    const rejected = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_requests WHERE status='rejected'`);
     const totalPO = await safeCount(`SELECT COUNT(*) as cnt FROM inventory_purchases`);
-    const supplier = await safeCount(`SELECT COUNT(*) as cnt FROM suppliers`);
+
+    // 5 permintaan terbaru untuk tabel aktivitas.
+    let recentRequests = [];
+    try {
+      const [rows] = await db.query(`
+        SELECT p.id, p.request_number, p.status, p.created_at, e.name AS pemohon_name
+        FROM inventory_requests p
+        LEFT JOIN employees e ON p.employee_id = e.id
+        ORDER BY p.created_at DESC
+        LIMIT 5
+      `);
+      recentRequests = rows;
+    } catch (err) {
+      console.warn(`[dashboard] daftar terbaru dilewati (${err.code || err.message})`);
+    }
+
+    // Tren permintaan 6 bulan terakhir (selalu tampilkan 6 bulan, isi 0 bila kosong).
+    const trendLabels = [];
+    const trendData = [];
+    try {
+      const [rows] = await db.query(`
+        SELECT DATE_FORMAT(created_at, '%Y-%m') AS ym, COUNT(*) AS cnt
+        FROM inventory_requests
+        WHERE created_at >= DATE_SUB(DATE_FORMAT(NOW(), '%Y-%m-01'), INTERVAL 5 MONTH)
+        GROUP BY ym
+      `);
+      const counts = {};
+      rows.forEach(r => { counts[r.ym] = Number(r.cnt) || 0; });
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      const now = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        trendLabels.push(monthNames[d.getMonth()]);
+        trendData.push(counts[ym] || 0);
+      }
+    } catch (err) {
+      console.warn(`[dashboard] tren dilewati (${err.code || err.message})`);
+    }
+
+    // ── Log Aktivitas (per-role) — dirangkai dari data yang ada, tanpa tabel log baru.
+    const can = (p) => Array.isArray(req.session.permissions) && req.session.permissions.includes(p);
+    const isApprover = can('manage_approval');
+    const isOps = can('manage_procurement') || can('manage_po') || can('manage_receiving');
+    const acts = [];
+    const pushRows = (rows, mapFn) => rows.forEach((r) => { const e = mapFn(r); if (e && e.at) acts.push(e); });
+
+    if (isApprover || isOps) {
+      pushRows(await safeRows(
+        `SELECT a.status, a.action_date AS at, r.request_number AS num
+           FROM inventory_request_approvals a
+           JOIN inventory_requests r ON r.id = a.inventory_request_id
+          WHERE a.action_date IS NOT NULL
+          ORDER BY a.action_date DESC LIMIT 8`),
+        (r) => ({ at: r.at, kind: r.status === 'rejected' ? 'rejected' : 'approved',
+                  text: r.status === 'rejected' ? `Permintaan ${r.num} ditolak` : `Permintaan ${r.num} disetujui` }));
+
+      pushRows(await safeRows(
+        `SELECT request_number AS num, created_at AS at FROM inventory_requests ORDER BY created_at DESC LIMIT 8`),
+        (r) => ({ at: r.at, kind: 'info', text: `Permintaan ${r.num} diajukan` }));
+
+      pushRows(await safeRows(
+        `SELECT purchase_number AS num, status, approved_at AS at FROM inventory_purchases WHERE approved_at IS NOT NULL ORDER BY approved_at DESC LIMIT 8`),
+        (r) => ({ at: r.at, kind: r.status === 'rejected' ? 'rejected' : 'approved',
+                  text: r.status === 'rejected' ? `PO ${r.num} ditolak` : `PO ${r.num} disetujui` }));
+    }
+    if (isOps) {
+      pushRows(await safeRows(
+        `SELECT request_number AS num, created_at AS at FROM inventory_procurements ORDER BY created_at DESC LIMIT 8`),
+        (r) => ({ at: r.at, kind: 'info', text: `Pengadaan ${r.num} dibuat` }));
+
+      pushRows(await safeRows(
+        `SELECT purchase_number AS num, updated_at AS at FROM inventory_purchases WHERE status='completed' ORDER BY updated_at DESC LIMIT 8`),
+        (r) => ({ at: r.at, kind: 'done', text: `Penerimaan PO ${r.num} selesai` }));
+    }
+
+    const monthNamesA = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const activities = acts
+      .sort((a, b) => new Date(b.at) - new Date(a.at))
+      .slice(0, 8)
+      .map((a) => {
+        const d = new Date(a.at);
+        const label = Number.isNaN(d.getTime())
+          ? '-'
+          : `${d.getDate()} ${monthNamesA[d.getMonth()]} ${d.getFullYear()}, ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        return { kind: a.kind, text: a.text, at_label: label };
+      });
 
     res.render('dashboard', {
       title: 'Dashboard',
       user: req.session.username,
       totalReq,
       pending,
+      approved,
+      rejected,
       totalPO,
-      supplier
+      recentRequests,
+      activities,
+      trendLabels: JSON.stringify(trendLabels),
+      trendData: JSON.stringify(trendData)
     });
   } catch (err) { next(err); }
 };

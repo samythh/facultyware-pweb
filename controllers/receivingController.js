@@ -12,8 +12,17 @@
 
 const pool = require("../lib/db");
 const PDFDocument = require("pdfkit");
+const { resolveSort, toSelectOptions } = require("../lib/sort");
 
 const PAGE_SIZE = 10;
+
+// Opsi urutan daftar penerimaan (whitelist aman untuk ORDER BY).
+const RECEIVING_SORTS = {
+  terbaru:  { label: "Terbaru",        orderBy: "purchase_date DESC, id DESC" },
+  terlama:  { label: "Terlama",        orderBy: "purchase_date ASC, id ASC" },
+  supplier: { label: "Supplier (A-Z)", orderBy: "supplier ASC, id DESC" },
+  status:   { label: "Status",         orderBy: "status ASC, id DESC" },
+};
 
 // Label status PO ke bahasa tampilan. Alur 2-gerbang: PO 'pending' (menunggu
 // persetujuan Wadir) -> 'approved' (siap diterima) -> 'completed' (selesai).
@@ -67,12 +76,13 @@ const index = async (req, res, next) => {
     const statusClause = where
       ? `${where} AND status IN ('approved','completed')`
       : `WHERE status IN ('approved','completed')`;
+    const sort = resolveSort(req.query.sort, RECEIVING_SORTS, "terbaru");
 
     const [rows] = await pool.query(
       `SELECT id, purchase_number, supplier, purchase_date, status
        FROM inventory_purchases
        ${statusClause}
-       ORDER BY purchase_date DESC, id DESC
+       ORDER BY ${sort.orderBy}
        LIMIT ? OFFSET ?`,
       [...params, PAGE_SIZE, offset]
     );
@@ -95,6 +105,8 @@ const index = async (req, res, next) => {
       search,
       page,
       totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+      sort: sort.key,
+      sortOptions: toSelectOptions(RECEIVING_SORTS),
     });
   } catch (err) {
     next(err);
@@ -397,7 +409,7 @@ const retur = async (req, res, next) => {
     await conn.beginTransaction();
 
     const [poRows] = await conn.query(
-      "SELECT purchase_number FROM inventory_purchases WHERE id = ?",
+      "SELECT purchase_number, status FROM inventory_purchases WHERE id = ?",
       [poId]
     );
     if (poRows.length === 0) {
@@ -405,6 +417,14 @@ const retur = async (req, res, next) => {
       return res.status(404).render("error", {
         message: "Purchase order tidak ditemukan.",
         error: { status: 404, stack: "" },
+      });
+    }
+    // Penerimaan yang sudah final (completed) terkunci: tidak bisa retur lagi.
+    if (poRows[0].status === "completed") {
+      await conn.rollback();
+      return res.status(409).render("error", {
+        message: "Penerimaan sudah final (Selesai); retur tidak dapat dicatat lagi.",
+        error: { status: 409, stack: "" },
       });
     }
     const purchaseNumber = poRows[0].purchase_number;
@@ -456,7 +476,7 @@ const replacement = async (req, res, next) => {
     await conn.beginTransaction();
 
     const [poRows] = await conn.query(
-      "SELECT purchase_number FROM inventory_purchases WHERE id = ?",
+      "SELECT purchase_number, status FROM inventory_purchases WHERE id = ?",
       [poId]
     );
     if (poRows.length === 0) {
@@ -464,6 +484,14 @@ const replacement = async (req, res, next) => {
       return res.status(404).render("error", {
         message: "Purchase order tidak ditemukan.",
         error: { status: 404, stack: "" },
+      });
+    }
+    // Penerimaan yang sudah final (completed) terkunci: tidak bisa catat ganti lagi.
+    if (poRows[0].status === "completed") {
+      await conn.rollback();
+      return res.status(409).render("error", {
+        message: "Penerimaan sudah final (Selesai); barang ganti tidak dapat dicatat lagi.",
+        error: { status: 409, stack: "" },
       });
     }
     const purchaseNumber = poRows[0].purchase_number;
@@ -536,6 +564,19 @@ const detail = async (req, res, next) => {
       [id]
     );
 
+    // Jumlah barang ganti per item (untuk mengoreksi tampilan cacat -> baik).
+    const replacedByItem = {};
+    if (po) {
+      const [repRows] = await pool.query(
+        `SELECT item_id, COALESCE(SUM(quantity), 0) AS replaced
+           FROM inventory_transactions
+          WHERE reference = ? AND type = 'in' AND notes LIKE 'Barang ganti%'
+          GROUP BY item_id`,
+        [po.purchase_number]
+      );
+      repRows.forEach((r) => { replacedByItem[r.item_id] = Number(r.replaced) || 0; });
+    }
+
     let totalOrdered = 0;
     let totalGood = 0;
     let totalDefective = 0;
@@ -549,8 +590,20 @@ const detail = async (req, res, next) => {
       i.verified_good = i.verified_good == null ? null : Number(i.verified_good);
       i.verified_defective = i.verified_defective == null ? null : Number(i.verified_defective);
       i.is_verified = i.verified_good != null || i.verified_defective != null;
-      const good = i.verified_good || 0;
-      const defective = i.verified_defective || 0;
+
+      // Koreksi barang ganti: unit cacat yang sudah diganti vendor dianggap beres,
+      // dipindah dari "Cacat" ke "Baik" (maksimal sebanyak jumlah cacat). Dengan
+      // begitu, bila semua cacat sudah diganti -> Cacat 0 & Baik penuh.
+      const goodRaw = i.verified_good || 0;
+      const defectiveRaw = i.verified_defective || 0;
+      const applied = Math.min(replacedByItem[i.item_id] || 0, defectiveRaw);
+      const good = goodRaw + applied;
+      const defective = defectiveRaw - applied;
+      if (i.is_verified) {
+        i.verified_good = good;
+        i.verified_defective = defective;
+      }
+
       i.total_received = good + defective; // total fisik yang datang
       i.diff = i.is_verified ? i.total_received - i.ordered_qty : null;
 

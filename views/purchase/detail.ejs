@@ -39,27 +39,35 @@
         </div>
       </div>
 
-      <!-- Info PO Grid Card -->
-      <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
-        <h3 class="text-base font-semibold">Informasi Purchase Order</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Nomor PO</span>
-            <span class="font-bold font-mono text-primary text-base"><%= po.purchase_number %></span>
+      <!-- Info PO -->
+      <div class="card">
+        <section class="po-info">
+          <div class="po-head">
+            <div>
+              <span class="po-eyebrow">Nomor Purchase Order</span>
+              <span class="po-number font-mono"><%= po.purchase_number %></span>
+            </div>
+            <%- include('../partials/status-badge', { status: po.status }) %>
           </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Pemasok / Supplier</span>
-            <span class="font-semibold text-foreground text-base"><%= po.supplier %></span>
+          <div class="info-grid">
+            <div class="info-tile">
+              <div class="info-label">Pemasok / Supplier</div>
+              <div class="info-value"><%= po.supplier %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Tanggal Transaksi</div>
+              <div class="info-value"><%= fmtDate(po.purchase_date) %></div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Jumlah Item</div>
+              <div class="info-value"><%= items.length %> item</div>
+            </div>
+            <div class="info-tile">
+              <div class="info-label">Total Pesanan</div>
+              <div class="info-value">Rp <%= Number(total || 0).toLocaleString('id-ID') %></div>
+            </div>
           </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Tanggal Transaksi</span>
-            <span class="font-medium text-foreground text-base"><%= fmtDate(po.purchase_date) %></span>
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs uppercase tracking-wider text-muted-foreground">Status PO</span>
-            <span><%- include('../partials/status-badge', { status: po.status }) %></span>
-          </div>
-        </div>
+        </section>
       </div>
 
       <!-- Item Table Card -->

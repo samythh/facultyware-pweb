@@ -17,16 +17,9 @@
           <p class="text-3xl font-bold text-blue-600 mt-2"><%= totalReq %></p>
         </div>
 
-        <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1 flex flex-col justify-between">
-          <div>
-            <h2 class="text-sm font-medium uppercase text-muted-foreground">Menunggu Approval</h2>
-            <p class="text-3xl font-bold text-yellow-500 mt-2"><%= pending %></p>
-          </div>
-          <% if (pending > 0) { %>
-            <a href="/approval" class="mt-4 px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-lg hover:bg-yellow-600 transition-colors inline-block w-full">Tinjau Sekarang</a>
-          <% } else { %>
-            <div class="mt-4 px-4 py-2 text-sm text-gray-400">Tidak ada antrean</div>
-          <% } %>
+        <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
+          <h2 class="text-sm font-medium uppercase text-muted-foreground">Menunggu Approval</h2>
+          <p class="text-3xl font-bold text-yellow-500 mt-2"><%= pending %></p>
         </div>
 
         <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
@@ -56,35 +49,82 @@
         </div>
       </section>
 
+      <section class="mb-8">
+        <div class="card p-6 bg-card rounded-xl border shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Aktivitas Terbaru</h3>
+            <% if (typeof activities !== 'undefined' && activities && activities.length > 0) { %>
+              <span class="text-xs text-muted-foreground"><%= activities.length %> kejadian terkini</span>
+            <% } %>
+          </div>
+          <% if (typeof activities !== 'undefined' && activities && activities.length > 0) { %>
+            <div class="act-feed">
+              <% activities.forEach(function (a) { %>
+                <div class="act-item">
+                  <span class="act-icon act-<%= a.kind %>">
+                    <% if (a.kind === 'approved') { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <% } else if (a.kind === 'rejected') { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    <% } else if (a.kind === 'done') { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    <% } else { %>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <% } %>
+                  </span>
+                  <div class="act-body">
+                    <span class="act-text"><%= a.text %></span>
+                    <span class="act-time"><%= a.at_label %></span>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="flex flex-col items-center justify-center text-center py-8 gap-2 text-muted-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <p class="text-sm">Belum ada aktivitas terbaru.</p>
+            </div>
+          <% } %>
+        </div>
+      </section>
+
       <section>
-        <div class="card bg-card rounded-xl border shadow-sm overflow-hidden">
-          <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50/50">
-            <h3 class="text-lg font-semibold text-gray-800">5 Permintaan Terbaru</h3>
-            <a href="/approval" class="text-sm font-medium text-blue-600 hover:underline">Lihat Semua &rarr;</a>
+        <div class="card card--table bg-card rounded-xl border shadow-sm overflow-hidden">
+          <%
+            // Tautan permintaan sadar-role: Wadir membuka via area Persetujuan,
+            // Admin (pengelola permintaan) via /procurement. Hindari 403.
+            const canDo = (p) => (typeof can === 'function' ? can(p) : false);
+            const reqBase = canDo('manage_approval') ? '/approval' : (canDo('manage_procurement') ? '/procurement' : null);
+          %>
+          <div class="p-4 border-b flex justify-between items-center">
+            <h3 class="text-lg font-semibold">5 Permintaan Terbaru</h3>
+            <% if (reqBase) { %>
+            <a href="<%= reqBase %>" class="text-sm font-medium text-primary hover:underline">Lihat Semua &rarr;</a>
+            <% } %>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left">
-              <thead class="text-muted-foreground bg-white border-b">
-                <tr>
-                  <th class="px-6 py-3 font-medium">No. Request</th>
-                  <th class="px-6 py-3 font-medium">Tanggal</th>
-                  <th class="px-6 py-3 font-medium">Pemohon</th>
-                  <th class="px-6 py-3 font-medium">Status</th>
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="bg-muted/50 border-b">
+                  <th class="p-4 font-semibold text-muted-foreground w-[180px]">No. Request</th>
+                  <th class="p-4 font-semibold text-muted-foreground w-[150px]">Tanggal</th>
+                  <th class="p-4 font-semibold text-muted-foreground">Pemohon</th>
+                  <th class="p-4 font-semibold text-muted-foreground w-[150px]">Status</th>
                 </tr>
               </thead>
-              <tbody class="divide-y bg-white">
+              <tbody class="divide-y">
                 <% if (recentRequests && recentRequests.length > 0) { %>
                   <% recentRequests.forEach(function (req) { %>
-                    <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location.href='/approval/<%= req.id %>'">
-                      <td class="px-6 py-4 font-mono font-medium text-blue-600">#<%= req.request_number %></td>
-                      <td class="px-6 py-4"><%= new Date(req.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
-                      <td class="px-6 py-4 text-gray-700"><%= req.pemohon_name || 'Unit/Staf' %></td>
-                      <td class="px-6 py-4"><%- include('partials/status-badge', { status: req.status }) %></td>
+                    <tr class="hover:bg-muted/30 transition-colors <%= reqBase ? 'cursor-pointer' : '' %>" <% if (reqBase) { %>onclick="window.location.href='<%= reqBase %>/<%= req.id %>'"<% } %>>
+                      <td class="p-4 font-mono font-semibold text-primary">#<%= req.request_number %></td>
+                      <td class="p-4 text-muted-foreground"><%= new Date(req.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                      <td class="p-4 font-medium"><%= req.pemohon_name || 'Unit/Staf' %></td>
+                      <td class="p-4"><%- include('partials/status-badge', { status: req.status }) %></td>
                     </tr>
                   <% }) %>
                 <% } else { %>
                   <tr>
-                    <td colspan="4" class="px-6 py-8 text-center text-muted-foreground">Belum ada aktivitas pengajuan barang.</td>
+                    <td colspan="4" class="p-8 text-center text-muted-foreground">Belum ada aktivitas pengajuan barang.</td>
                   </tr>
                 <% } %>
               </tbody>

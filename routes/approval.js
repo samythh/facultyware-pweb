@@ -2,6 +2,32 @@ const express = require('express');
 const router = express.Router();
 const db = require('../lib/db');
 const { checkPermission } = require('../middlewares/acl');
+const { resolveSort, toSelectOptions } = require('../lib/sort');
+
+// Opsi urutan (whitelist aman untuk ORDER BY) per halaman persetujuan.
+const INBOX_SORTS = {
+  terbaru: { label: 'Terbaru',       orderBy: 'p.created_at DESC, p.id DESC' },
+  terlama: { label: 'Terlama',       orderBy: 'p.created_at ASC, p.id ASC' },
+  pemohon: { label: 'Pemohon (A-Z)', orderBy: 'pemohon_name ASC, p.id DESC' },
+};
+const HISTORY_SORTS = {
+  terbaru: { label: 'Terbaru', orderBy: 'p.created_at DESC, p.id DESC' },
+  terlama: { label: 'Terlama', orderBy: 'p.created_at ASC, p.id ASC' },
+  status:  { label: 'Status',  orderBy: 'p.status ASC, p.id DESC' },
+};
+const PO_SORTS = {
+  terbaru:      { label: 'Terbaru',          orderBy: 'pur.created_at DESC, pur.id DESC' },
+  terlama:      { label: 'Terlama',          orderBy: 'pur.created_at ASC, pur.id ASC' },
+  total_tinggi: { label: 'Total tertinggi',  orderBy: 'total DESC' },
+  total_rendah: { label: 'Total terendah',   orderBy: 'total ASC' },
+  supplier:     { label: 'Supplier (A-Z)',   orderBy: 'pur.supplier ASC, pur.id DESC' },
+};
+const PO_ARCHIVE_SORTS = {
+  terbaru:      { label: 'Terbaru',         orderBy: 'pur.approved_at DESC, pur.id DESC' },
+  terlama:      { label: 'Terlama',         orderBy: 'pur.approved_at ASC, pur.id ASC' },
+  total_tinggi: { label: 'Total tertinggi', orderBy: 'total DESC' },
+  status:       { label: 'Status',          orderBy: 'pur.status ASC, pur.id DESC' },
+};
 
 // Menerapkan middleware untuk semua route di bawah ini
 router.use(checkPermission('manage_approval'));
@@ -32,7 +58,8 @@ async function getStats() {
 router.get('/inbox', async (req, res) => {
     try {
         const stats = await getStats();
-        
+        const sort = resolveSort(req.query.sort, INBOX_SORTS, 'terbaru');
+
         // Query JOIN untuk mengambil data pengadaan beserta nama pemohon
         const query = `
             SELECT p.id, p.request_number, p.status, p.created_at, e.name AS pemohon_name, a.notes
@@ -40,7 +67,7 @@ router.get('/inbox', async (req, res) => {
             JOIN employees e ON p.employee_id = e.id
             LEFT JOIN inventory_request_approvals a ON p.id = a.inventory_request_id
             WHERE p.status = 'pending'
-            ORDER BY p.created_at DESC
+            ORDER BY ${sort.orderBy}
         `;
         const [procurements] = await db.execute(query);
 
@@ -51,7 +78,9 @@ router.get('/inbox', async (req, res) => {
             procurements: procurements,
             totalPending: stats.totalPending,
             totalApproved: stats.totalApproved,
-            totalRejected: stats.totalRejected
+            totalRejected: stats.totalRejected,
+            sort: sort.key,
+            sortOptions: toSelectOptions(INBOX_SORTS)
         });
     } catch (error) {
         console.error(error);
@@ -63,14 +92,15 @@ router.get('/inbox', async (req, res) => {
 router.get('/history', async (req, res) => {
     try {
         const stats = await getStats();
-        
+        const sort = resolveSort(req.query.sort, HISTORY_SORTS, 'terbaru');
+
         const query = `
             SELECT p.id, p.request_number, p.status, p.created_at, e.name AS pemohon_name, a.notes
             FROM inventory_requests p
             JOIN employees e ON p.employee_id = e.id
             LEFT JOIN inventory_request_approvals a ON p.id = a.inventory_request_id
             WHERE p.status IN ('approved', 'rejected')
-            ORDER BY p.created_at DESC
+            ORDER BY ${sort.orderBy}
         `;
         const [historyProcurements] = await db.execute(query);
 
@@ -81,11 +111,78 @@ router.get('/history', async (req, res) => {
             procurements: historyProcurements,
             totalPending: stats.totalPending,
             totalApproved: stats.totalApproved,
-            totalRejected: stats.totalRejected
+            totalRejected: stats.totalRejected,
+            sort: sort.key,
+            sortOptions: toSelectOptions(HISTORY_SORTS)
         });
     } catch (error) {
         console.error(error);
         res.status(500).send("Gagal mengambil data Archive dari database.");
+    }
+});
+
+// 3b. Inbox PO (GERBANG KE-2, sadar-harga) — terpisah dari persetujuan permintaan.
+// Menampilkan Purchase Order berstatus 'pending' beserta total harga supaya
+// Wakil Dekan bisa menimbang anggaran sebelum menyetujui belanja.
+router.get('/po', async (req, res) => {
+    try {
+        const sort = resolveSort(req.query.sort, PO_SORTS, 'terbaru');
+        const query = `
+            SELECT pur.id, pur.purchase_number, pur.supplier, pur.purchase_date,
+                   pur.created_at, pur.status,
+                   COALESCE(SUM(pi.quantity * pi.price), 0) AS total
+            FROM inventory_purchases pur
+            LEFT JOIN inventory_purchase_items pi ON pi.inventory_purchase_id = pur.id
+            WHERE pur.status = 'pending'
+            GROUP BY pur.id, pur.purchase_number, pur.supplier, pur.purchase_date,
+                     pur.created_at, pur.status
+            ORDER BY ${sort.orderBy}
+        `;
+        const [purchases] = await db.execute(query);
+
+        res.render('inbox-po', {
+            title: 'Persetujuan Belanja (PO)',
+            user: req.session.username,
+            purchases,
+            sort: sort.key,
+            sortOptions: toSelectOptions(PO_SORTS)
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Gagal mengambil data Inbox PO dari database.");
+    }
+});
+
+// 3c. Arsip PO (GERBANG KE-2) — riwayat keputusan persetujuan Purchase Order.
+// Menampilkan PO yang sudah disetujui/ditolak (termasuk yang sudah selesai diterima).
+router.get('/po/archive', async (req, res) => {
+    try {
+        const sort = resolveSort(req.query.sort, PO_ARCHIVE_SORTS, 'terbaru');
+        const query = `
+            SELECT pur.id, pur.purchase_number, pur.supplier, pur.purchase_date,
+                   pur.created_at, pur.status, pur.approved_at, pur.approval_notes,
+                   COALESCE(SUM(pi.quantity * pi.price), 0) AS total,
+                   e.name AS approver_name
+            FROM inventory_purchases pur
+            LEFT JOIN inventory_purchase_items pi ON pi.inventory_purchase_id = pur.id
+            LEFT JOIN employees e ON pur.approved_by = e.id
+            WHERE pur.status IN ('approved', 'rejected', 'completed')
+            GROUP BY pur.id, pur.purchase_number, pur.supplier, pur.purchase_date,
+                     pur.created_at, pur.status, pur.approved_at, pur.approval_notes, e.name
+            ORDER BY ${sort.orderBy}
+        `;
+        const [purchases] = await db.execute(query);
+
+        res.render('inbox-po-archive', {
+            title: 'Arsip Persetujuan PO',
+            user: req.session.username,
+            purchases,
+            sort: sort.key,
+            sortOptions: toSelectOptions(PO_ARCHIVE_SORTS)
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Gagal mengambil data Arsip PO dari database.");
     }
 });
 

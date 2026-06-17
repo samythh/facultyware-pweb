@@ -1,4 +1,13 @@
 const db = require('../lib/db');
+const { resolveSort, toSelectOptions } = require('../lib/sort');
+
+// Opsi urutan daftar pengadaan (whitelist aman untuk ORDER BY).
+const PENGADAAN_SORTS = {
+  terbaru: { label: 'Terbaru',      orderBy: 'p.id DESC' },
+  terlama: { label: 'Terlama',      orderBy: 'p.id ASC' },
+  judul:   { label: 'Judul (A-Z)',  orderBy: 'p.title ASC, p.id DESC' },
+  status:  { label: 'Status',       orderBy: 'p.status ASC, p.id DESC' },
+};
 
 // Helper: Resolve logged-in user name to employee ID.
 async function resolveEmployeeId(userId) {
@@ -54,6 +63,7 @@ exports.index = async (req, res, next) => {
       where = 'WHERE p.request_number LIKE ? OR p.title LIKE ?';
       params.push(`%${search}%`, `%${search}%`);
     }
+    const sort = resolveSort(req.query.sort, PENGADAAN_SORTS, 'terbaru');
 
     const [procurements] = await db.query(
       `SELECT p.*, e.name AS creator_name,
@@ -61,7 +71,7 @@ exports.index = async (req, res, next) => {
          FROM inventory_procurements p
          LEFT JOIN employees e ON p.employee_id = e.id
          ${where}
-         ORDER BY p.id DESC LIMIT ? OFFSET ?`,
+         ORDER BY ${sort.orderBy} LIMIT ? OFFSET ?`,
       [...params, limit, offset]
     );
 
@@ -79,7 +89,9 @@ exports.index = async (req, res, next) => {
       search,
       currentPage: page,
       totalPages,
-      limit
+      limit,
+      sort: sort.key,
+      sortOptions: toSelectOptions(PENGADAAN_SORTS)
     });
   } catch (error) {
     next(error);
@@ -105,7 +117,7 @@ exports.create = async (req, res, next) => {
 // Ambil permintaan approved yang belum tergabung ke pengadaan mana pun + barangnya.
 async function getConsolidatableRequests() {
   const [requests] = await db.query(
-    `SELECT r.id, r.request_number, r.request_date, e.name AS requester_name
+    `SELECT r.id, r.request_number, r.title, r.request_date, e.name AS requester_name
        FROM inventory_requests r
        LEFT JOIN employees e ON r.employee_id = e.id
       WHERE r.status = 'approved' AND r.inventory_procurement_id IS NULL

@@ -17,42 +17,43 @@
             <% } %>
           </p>
         </div>
-        <% if (tab === 'history') { %>
-          <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <%- include('partials/sort-control', { action: (tab === 'history' ? '/approval/history' : '/approval/inbox'), current: (typeof sort !== 'undefined' ? sort : ''), opts: (typeof sortOptions !== 'undefined' ? sortOptions : []), keep: {} }) %>
+          <% if (tab === 'history') { %>
             <a href="/approval/rekap/export?format=pdf" class="btn-outline">Export PDF</a>
             <a href="/approval/rekap/export?format=excel" class="btn-outline">Export Excel</a>
-          </div>
-        <% } %>
+          <% } %>
+        </div>
       </header>
 
-      <div class="card">
+      <div class="card card--table overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="w-full text-sm">
+          <table class="w-full text-left border-collapse text-sm">
             <thead>
-              <tr class="text-muted-foreground text-left">
-                <th class="px-3 py-2 font-medium">No</th>
-                <th class="px-3 py-2 font-medium">Tanggal</th>
-                <th class="px-3 py-2 font-medium">Pemohon</th>
-                <th class="px-3 py-2 font-medium">Status</th>
-                <th class="px-3 py-2 font-medium text-right">Aksi</th>
+              <tr class="bg-muted/50 border-b">
+                <th class="p-4 font-semibold text-muted-foreground w-[180px]">No</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[150px]">Tanggal</th>
+                <th class="p-4 font-semibold text-muted-foreground">Pemohon</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[150px]">Status</th>
+                <th class="p-4 font-semibold text-muted-foreground w-[100px] text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y">
               <% if (procurements && procurements.length > 0) { %>
                 <% procurements.forEach(function (proc) { %>
-                  <tr class="border-t hover:bg-muted cursor-pointer" onclick="window.location.href='/approval/<%= proc.id %>'">
-                    <td class="px-3 py-2 font-mono">#<%= proc.request_number %></td>
-                    <td class="px-3 py-2"><%= new Date(proc.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
-                    <td class="px-3 py-2 font-medium"><%= proc.pemohon_name || 'Unit/Staf' %></td>
-                    <td class="px-3 py-2"><%- include('partials/status-badge', { status: proc.status }) %></td>
-                    <td class="px-3 py-2 text-right">
-                      <a href="/approval/<%= proc.id %>" class="btn-sm-outline" onclick="event.stopPropagation()">Detail</a>
+                  <tr class="hover:bg-muted/30 transition-colors cursor-pointer" onclick="window.location.href='/approval/<%= proc.id %>'">
+                    <td class="p-4 font-mono font-semibold text-primary">#<%= proc.request_number %></td>
+                    <td class="p-4 text-muted-foreground"><%= new Date(proc.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                    <td class="p-4 font-medium"><%= proc.pemohon_name || 'Unit/Staf' %></td>
+                    <td class="p-4"><%- include('partials/status-badge', { status: proc.status }) %></td>
+                    <td class="p-4 text-right">
+                      <a href="/approval/<%= proc.id %>" class="btn-xs-outline inline-flex items-center" onclick="event.stopPropagation()">Detail</a>
                     </td>
                   </tr>
                 <% }) %>
               <% } else { %>
-                <tr class="border-t">
-                  <td colspan="5" class="px-3 py-8 text-center text-muted-foreground">
+                <tr>
+                  <td colspan="5" class="p-8 text-center text-muted-foreground">
                     Belum ada permintaan pengadaan yang masuk.
                   </td>
                 </tr>
@@ -60,7 +61,7 @@
             </tbody>
           </table>
         </div>
-        
+
         <div id="pagination-container" class="flex items-center justify-between border-t px-4 py-4 text-sm text-muted-foreground">
           <span id="page-info">Menampilkan <%= procurements ? procurements.length : 0 %> permintaan</span>
           

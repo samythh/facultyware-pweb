@@ -1,4 +1,13 @@
 const Supplier = require("../models/supplier");
+const { resolveSort, toSelectOptions } = require("../lib/sort");
+
+// Opsi urutan daftar supplier (whitelist aman untuk ORDER BY).
+const SUPPLIER_SORTS = {
+  nama:      { label: "Nama (A-Z)", orderBy: "name ASC" },
+  nama_desc: { label: "Nama (Z-A)", orderBy: "name DESC" },
+  kode:      { label: "Kode (A-Z)", orderBy: "code ASC" },
+  terbaru:   { label: "Terbaru",    orderBy: "id DESC" },
+};
 
 /**
  * GET /supplier
@@ -10,10 +19,11 @@ exports.index = async (req, res, next) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = 10;
     const offset = (page - 1) * limit;
+    const sort = resolveSort(req.query.sort, SUPPLIER_SORTS, "nama");
 
-    // Ambil data dengan filter
-    const allSuppliers = await Supplier.findAll(search);
-    
+    // Ambil data dengan filter + urutan
+    const allSuppliers = await Supplier.findAll(search, sort.orderBy);
+
     // Manual pagination (simpel dan aman)
     const totalItems = allSuppliers.length;
     const totalPages = Math.ceil(totalItems / limit) || 1;
@@ -27,6 +37,8 @@ exports.index = async (req, res, next) => {
       currentPage: page,
       totalPages,
       limit,
+      sort: sort.key,
+      sortOptions: toSelectOptions(SUPPLIER_SORTS),
     });
   } catch (error) {
     next(error);

@@ -1,5 +1,14 @@
 const db = require('../lib/db');
 const PDFDocument = require('pdfkit');
+const { resolveSort, toSelectOptions } = require('../lib/sort');
+
+// Opsi urutan daftar permintaan (whitelist aman untuk ORDER BY).
+const REQUEST_SORTS = {
+  terbaru: { label: 'Terbaru',     orderBy: 'r.id DESC' },
+  terlama: { label: 'Terlama',     orderBy: 'r.id ASC' },
+  judul:   { label: 'Judul (A-Z)', orderBy: 'title ASC, r.id DESC' },
+  status:  { label: 'Status',      orderBy: 'r.status ASC, r.id DESC' },
+};
 
 // Helper: Resolve logged-in user name to employee ID.
 async function resolveEmployeeId(userId) {
@@ -81,7 +90,8 @@ const index = async (req, res, next) => {
       queryParams.push(`%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY r.id DESC LIMIT ? OFFSET ?';
+    const sort = resolveSort(req.query.sort, REQUEST_SORTS, 'terbaru');
+    query += ` ORDER BY ${sort.orderBy} LIMIT ? OFFSET ?`;
     queryParams.push(limit, offset);
 
     const [procurements] = await db.query(query, queryParams);
@@ -112,7 +122,9 @@ const index = async (req, res, next) => {
       search,
       currentPage: page,
       totalPages,
-      limit
+      limit,
+      sort: sort.key,
+      sortOptions: toSelectOptions(REQUEST_SORTS)
     });
   } catch (error) {
     next(error);

@@ -6,7 +6,7 @@ class Supplier {
    * @param {string} search - Pencarian berdasarkan nama atau kode supplier.
    * @returns {Promise<Array>} List supplier.
    */
-  static async findAll(search = "") {
+  static async findAll(search = "", orderBy = "id ASC") {
     let query = "SELECT * FROM suppliers";
     const params = [];
 
@@ -16,7 +16,8 @@ class Supplier {
       params.push(searchTerm, searchTerm);
     }
 
-    query += " ORDER BY id ASC";
+    // `orderBy` selalu berasal dari whitelist controller (bukan input mentah).
+    query += " ORDER BY " + orderBy;
     const [rows] = await db.query(query, params);
     return rows;
   }

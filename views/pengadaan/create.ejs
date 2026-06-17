@@ -61,9 +61,15 @@
                 <input type="checkbox" name="request_number" value="<%= r.request_number %>" class="req-check mt-1" />
                 <div class="flex-1 min-w-0">
                   <div class="flex flex-wrap items-center gap-2">
-                    <span class="font-semibold text-sm"><%= r.request_number %></span>
-                    <span class="text-xs text-muted-foreground"><%= r.requester_name || 'Staf' %> &middot; <%= fmtDate(r.request_date) %></span>
+                    <span class="font-semibold text-sm"><%= r.title || 'Tanpa judul' %></span>
                     <span class="text-xs rounded-full bg-muted px-2 py-0.5"><%= r.items.length %> barang</span>
+                  </div>
+                  <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span class="font-mono"><%= r.request_number %></span>
+                    <span>&middot;</span>
+                    <span><%= r.requester_name || 'Staf' %></span>
+                    <span>&middot;</span>
+                    <span><%= fmtDate(r.request_date) %></span>
                   </div>
                   <ul class="mt-2 text-sm text-muted-foreground list-disc pl-5">
                     <% r.items.forEach(function (it) { %>
@@ -79,7 +85,7 @@
         <!-- Actions -->
         <div class="card p-6 bg-card rounded-xl border shadow-sm flex items-center justify-end gap-2">
           <a href="/pengadaan" class="btn-outline" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Batal</a>
-          <button type="submit" class="btn">Simpan &amp; Ajukan Pengadaan</button>
+          <button type="submit" class="btn">Simpan Pengadaan</button>
         </div>
       </form>
       <% } %>
