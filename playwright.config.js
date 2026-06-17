@@ -22,6 +22,9 @@ module.exports = defineConfig({
     baseURL: BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // Rekam video tiap test. Opsi: 'on' (semua), 'retain-on-failure'
+    // (simpan hanya yang gagal), 'off'. Override via env: VIDEO=retain-on-failure
+    video: process.env.VIDEO || 'on',
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
