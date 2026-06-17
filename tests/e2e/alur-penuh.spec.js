@@ -4,6 +4,10 @@
 //
 // Test ini MENULIS data lalu MEMBERSIHKANNYA sendiri lewat DB (afterAll),
 // memakai koneksi lib/db (yang sudah memuat .env).
+//
+// Catatan: aksi POST yang berhasil selalu REDIRECT (302). Kita TIDAK mengikuti
+// redirect (maxRedirects:0) supaya hasil tidak bergantung pada izin halaman
+// tujuan; keberhasilan dipastikan lewat status 302 + pengecekan DB.
 const { test, expect } = require('@playwright/test');
 const { USERS } = require('./helpers');
 const db = require('../../lib/db');
@@ -15,19 +19,23 @@ test.describe('Alur penuh pengadaan', () => {
   const judulPengadaan = `E2E Pengadaan ${stamp}`;
   const namaBarang = `Barang E2E ${stamp}`;
 
+  // POST tanpa mengikuti redirect; kembalikan response.
+  const post = (page, url, form) =>
+    page.request.post(url, form ? { form, maxRedirects: 0 } : { maxRedirects: 0 });
+
   async function loginReq(page, role) {
     const u = USERS[role];
-    const r = await page.request.post('/login', { form: { email: u.email, password: u.password } });
-    expect(r.ok(), `login ${role}`).toBeTruthy();
+    const r = await post(page, '/login', { email: u.email, password: u.password });
+    expect(r.status(), `login ${role} harus berhasil (redirect)`).toBe(302);
   }
 
   test('permintaan disetujui, dikonsolidasi jadi PO, lalu barang ganti menutup cacat', async ({ page }) => {
+    test.setTimeout(60_000);
+
     // 1. Admin membuat permintaan (1 barang, jumlah 5).
     await loginReq(page, 'admin');
-    let r = await page.request.post('/procurement/create', {
-      form: { title: judulPermintaan, item_name: namaBarang, quantity: '5' },
-    });
-    expect(r.ok()).toBeTruthy();
+    let r = await post(page, '/procurement/create', { title: judulPermintaan, item_name: namaBarang, quantity: '5' });
+    expect(r.status(), 'buat permintaan').toBe(302);
     let [rows] = await db.query(
       'SELECT id, request_number FROM inventory_requests WHERE title = ? ORDER BY id DESC LIMIT 1',
       [judulPermintaan]
@@ -38,17 +46,15 @@ test.describe('Alur penuh pengadaan', () => {
 
     // 2. Wakil dekan menyetujui permintaan.
     await loginReq(page, 'wadir');
-    r = await page.request.post(`/approval/${ctx.reqId}/approve`);
-    expect(r.ok()).toBeTruthy();
+    r = await post(page, `/approval/${ctx.reqId}/approve`);
+    expect(r.status(), 'setujui permintaan').toBe(302);
     [rows] = await db.query('SELECT status FROM inventory_requests WHERE id = ?', [ctx.reqId]);
     expect(rows[0].status).toBe('approved');
 
     // 3. Admin mengonsolidasi permintaan menjadi satu pengadaan.
     await loginReq(page, 'admin');
-    r = await page.request.post('/pengadaan/create', {
-      form: { title: judulPengadaan, request_number: ctx.reqNumber },
-    });
-    expect(r.ok()).toBeTruthy();
+    r = await post(page, '/pengadaan/create', { title: judulPengadaan, request_number: ctx.reqNumber });
+    expect(r.status(), 'buat pengadaan').toBe(302);
     [rows] = await db.query(
       'SELECT id FROM inventory_procurements WHERE title = ? ORDER BY id DESC LIMIT 1',
       [judulPengadaan]
@@ -60,15 +66,13 @@ test.describe('Alur penuh pengadaan', () => {
     const [sup] = await db.query('SELECT id FROM suppliers ORDER BY id LIMIT 1');
     expect(sup.length, 'butuh minimal 1 supplier').toBeGreaterThan(0);
     const today = new Date().toISOString().slice(0, 10);
-    r = await page.request.post('/purchase/create', {
-      form: {
-        inventory_procurement_id: String(ctx.procId),
-        supplier_id: String(sup[0].id),
-        purchase_date: today,
-        prices: '15000',
-      },
+    r = await post(page, '/purchase/create', {
+      inventory_procurement_id: String(ctx.procId),
+      supplier_id: String(sup[0].id),
+      purchase_date: today,
+      prices: '15000',
     });
-    expect(r.ok()).toBeTruthy();
+    expect(r.status(), 'buat PO').toBe(302);
     [rows] = await db.query(
       'SELECT id, purchase_number FROM inventory_purchases WHERE inventory_procurement_id = ? ORDER BY id DESC LIMIT 1',
       [ctx.procId]
@@ -79,8 +83,8 @@ test.describe('Alur penuh pengadaan', () => {
 
     // 5. Wakil dekan menyetujui PO (gerbang kedua, sadar-harga).
     await loginReq(page, 'wadir');
-    r = await page.request.post(`/purchase/${ctx.poId}/approve`);
-    expect(r.ok()).toBeTruthy();
+    r = await post(page, `/purchase/${ctx.poId}/approve`);
+    expect(r.status(), 'setujui PO').toBe(302);
     [rows] = await db.query('SELECT status FROM inventory_purchases WHERE id = ?', [ctx.poId]);
     expect(rows[0].status).toBe('approved');
 
@@ -93,10 +97,11 @@ test.describe('Alur penuh pengadaan', () => {
     expect(pis.length).toBe(1);
     ctx.piId = pis[0].id;
     ctx.itemId = pis[0].item_id;
-    r = await page.request.post(`/receiving/${ctx.poId}/verify`, {
-      form: { [`good_qty[${ctx.piId}]`]: '3', [`defective_qty[${ctx.piId}]`]: '2' },
+    r = await post(page, `/receiving/${ctx.poId}/verify`, {
+      [`good_qty[${ctx.piId}]`]: '3',
+      [`defective_qty[${ctx.piId}]`]: '2',
     });
-    expect(r.ok()).toBeTruthy();
+    expect(r.status(), 'verifikasi penerimaan').toBe(302);
     [rows] = await db.query(
       'SELECT received_quantity, received_defective FROM inventory_purchase_items WHERE id = ?',
       [ctx.piId]
@@ -105,10 +110,12 @@ test.describe('Alur penuh pengadaan', () => {
     expect(Number(rows[0].received_defective)).toBe(2);
 
     // 7. Admin mencatat barang ganti sebanyak 2 (menutup yang cacat).
-    r = await page.request.post('/receiving/replacement', {
-      form: { po_id: String(ctx.poId), item_id: String(ctx.itemId), quantity: '2' },
+    r = await post(page, '/receiving/replacement', {
+      po_id: String(ctx.poId),
+      item_id: String(ctx.itemId),
+      quantity: '2',
     });
-    expect(r.ok()).toBeTruthy();
+    expect(r.status(), 'catat barang ganti').toBe(302);
 
     // 8. Pada detail penerimaan: cacat menjadi 0 (fix D) & barang ganti tercatat.
     await page.goto(`/receiving/${ctx.poId}/detail`);
