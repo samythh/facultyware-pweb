@@ -24,7 +24,7 @@ async function loginAs(page, role) {
   await beat(page);
 }
 
-test('full flow', async ({ page }) => {
+test('menelusuri seluruh alur aplikasi dari masuk hingga keluar', async ({ page }) => {
   // ── Admin ──────────────────────────────────────────────────────────
   await loginAs(page, 'admin');
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();

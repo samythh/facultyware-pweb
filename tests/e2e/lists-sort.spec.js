@@ -1,13 +1,13 @@
 const { test, expect } = require('@playwright/test');
 const { login } = require('./helpers');
 
-test.describe('sort', () => {
+test.describe('Pengurutan daftar', () => {
   test.beforeEach(async ({ page }) => {
     await login(page, 'admin');
   });
 
   for (const path of ['/purchase', '/pengadaan', '/procurement', '/supplier']) {
-    test(`sort ${path}`, async ({ page }) => {
+    test(`dapat mengurutkan daftar pada halaman ${path}`, async ({ page }) => {
       await page.goto(path);
       const sel = page.locator('#sort-select');
       await expect(sel).toBeVisible();
@@ -22,7 +22,7 @@ test.describe('sort', () => {
     });
   }
 
-  test('search purchase', async ({ page }) => {
+  test('menampilkan kotak pencarian pada halaman Purchase Order', async ({ page }) => {
     await page.goto('/purchase');
     await expect(page.locator('input[type="text"][name="search"]')).toBeVisible();
     const pager = page.getByText(/Halaman \d+ dari \d+/);

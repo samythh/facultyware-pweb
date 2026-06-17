@@ -18,8 +18,16 @@ const loginPage = (req, res) => {
 const login = async (req, res, next) => {
   // Tabel users (skema Laravel) memakai email sebagai identitas unik;
   // tidak ada kolom username. Terima nilai dari field email/username apa pun.
-  const identifier = req.body.email || req.body.username;
-  const { password } = req.body;
+  const identifier = (req.body.email || req.body.username || "").trim();
+  const password = req.body.password || "";
+
+  // Hindari query dengan parameter kosong/undefined (bisa menyebabkan error).
+  if (!identifier || !password) {
+    return res.render("login", {
+      title: "Login",
+      error: "Email dan kata sandi wajib diisi.",
+    });
+  }
 
   try {
     const [rows] = await db.query("SELECT * FROM users WHERE email = ? OR name = ?", [
