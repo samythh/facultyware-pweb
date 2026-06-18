@@ -64,6 +64,7 @@ typings/
 
 # Markdown (dokumentasi & catatan)
 *.md
+!README.md
 
 # Skrip migrasi / seed / uji coba
 scratch/
