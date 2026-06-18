@@ -31,7 +31,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Tabel dibuat lewat migration eksplisit: scripts/migrate_sessions_table.js
 // (createDatabaseTable=false agar tidak membuat tabel diam-diam saat runtime).
 const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST,
+  ...(process.env.DB_SOCKET_PATH
+    ? { socketPath: process.env.DB_SOCKET_PATH }
+    : { host: process.env.DB_HOST }),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
