@@ -30,6 +30,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // terpisah `express_sessions` -- tidak mengganggu tabel `sessions` Laravel.
 // Tabel dibuat lewat migration eksplisit: scripts/migrate_sessions_table.js
 // (createDatabaseTable=false agar tidak membuat tabel diam-diam saat runtime).
+const isRemote = !process.env.DB_SOCKET_PATH
+  && process.env.DB_HOST
+  && process.env.DB_HOST !== 'localhost'
+  && process.env.DB_HOST !== '127.0.0.1';
+
 const sessionStore = new MySQLStore({
   ...(process.env.DB_SOCKET_PATH
     ? { socketPath: process.env.DB_SOCKET_PATH }
@@ -37,6 +42,7 @@ const sessionStore = new MySQLStore({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  ...(isRemote ? { ssl: { rejectUnauthorized: false } } : {}),
   createDatabaseTable: false,
   schema: {
     tableName: "express_sessions",
