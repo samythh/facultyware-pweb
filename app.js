@@ -30,24 +30,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 // terpisah `express_sessions` -- tidak mengganggu tabel `sessions` Laravel.
 // Tabel dibuat lewat migration eksplisit: scripts/migrate_sessions_table.js
 // (createDatabaseTable=false agar tidak membuat tabel diam-diam saat runtime).
-const isRemote = !process.env.DB_SOCKET_PATH
-  && process.env.DB_HOST
-  && process.env.DB_HOST !== 'localhost'
-  && process.env.DB_HOST !== '127.0.0.1';
+//
+// PENTING: express-mysql-session hanya meneruskan whitelist opsi ke mysql2
+// (host, port, user, password, database) — ssl dan socketPath TIDAK diteruskan.
+// Solusi: pakai pool yang sudah ada dari lib/db.js (yang sudah dikonfigurasi
+// dengan ssl/socketPath) sebagai parameter kedua constructor.
+const dbPool = require('./lib/db');
 
 const sessionStore = new MySQLStore({
-  ...(process.env.DB_SOCKET_PATH
-    ? { socketPath: process.env.DB_SOCKET_PATH }
-    : { host: process.env.DB_HOST }),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ...(isRemote ? { ssl: { rejectUnauthorized: false } } : {}),
   createDatabaseTable: false,
   schema: {
     tableName: "express_sessions",
   },
-});
+}, dbPool);
 
 app.use(session({
   key: 'session_cookie_name',
