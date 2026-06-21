@@ -32,3 +32,8 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/facultyware'
+
+# Wajib saat trigger memakai service account khusus: tentukan tujuan log
+# secara eksplisit, jika tidak build gagal validasi sebelum step dijalankan.
+options:
+  logging: CLOUD_LOGGING_ONLY
