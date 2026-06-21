@@ -138,7 +138,7 @@ async function main() {
     await run(`CREATE TABLE inventory_receiving_attachments (id bigint(20) unsigned NOT NULL AUTO_INCREMENT, inventory_purchase_id bigint(20) unsigned NOT NULL, file_path varchar(255) NOT NULL, original_name varchar(255) DEFAULT NULL, mime_type varchar(100) DEFAULT NULL, size int(11) DEFAULT NULL, created_at timestamp NULL DEFAULT NULL, PRIMARY KEY (id), KEY idx_ira_purchase (inventory_purchase_id), CONSTRAINT fk_ira_purchase FOREIGN KEY (inventory_purchase_id) REFERENCES inventory_purchases (id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
       'tabel inventory_receiving_attachments dibuat');
   }
-  for (const [name, def] of [['received_quantity','int(11) DEFAULT NULL'],['received_defective','int(11) DEFAULT NULL'],['received_note','varchar(255) DEFAULT NULL']]) {
+  for (const [name, def] of [['received_quantity', 'int(11) DEFAULT NULL'], ['received_defective', 'int(11) DEFAULT NULL'], ['received_note', 'varchar(255) DEFAULT NULL']]) {
     if (await col('inventory_purchase_items', name)) {
       console.log(`  - kolom ${name} sudah ada`);
     } else {

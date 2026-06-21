@@ -345,14 +345,15 @@
             <select id="retur-item" name="item_id" class="select" required>
               <% if (typeof items !== 'undefined' && items.length > 0) { %>
                 <% items.forEach(function (item) { %>
-                  <option value="<%= item.item_id %>"><%= item.name %> (<%= item.unit %>)</option>
+                  <option value="<%= item.item_id %>" data-available="<%= item.available_return %>"><%= item.name %> (<%= item.unit %>) — tersedia <%= item.available_return %></option>
                 <% }) %>
               <% } %>
             </select>
           </div>
           <div class="grid gap-2">
-            <label for="retur-qty">Jumlah Retur</label>
+            <label for="retur-qty">Jumlah Retur <span id="retur-avail" class="text-muted-foreground" style="font-weight:400;"></span></label>
             <input type="number" min="1" id="retur-qty" name="quantity" class="input" required />
+            <p id="retur-warn" class="text-destructive" style="display:none; font-size:.78rem; margin-top:.15rem;"></p>
           </div>
           <div class="grid gap-2">
             <label for="retur-reason">Alasan Retur</label>
@@ -429,6 +430,61 @@
             btn.setAttribute("aria-expanded", String(!collapsed));
           });
         });
+      })();
+
+      // Validasi jumlah retur: tidak boleh melebihi jumlah yang dimiliki.
+      (() => {
+        const form = document.querySelector('#dialog-retur form');
+        const sel = document.getElementById('retur-item');
+        const qty = document.getElementById('retur-qty');
+        const avail = document.getElementById('retur-avail');
+        const warn = document.getElementById('retur-warn');
+        if (!form || !sel || !qty) return;
+
+        const maxFor = () => {
+          const opt = sel.options[sel.selectedIndex];
+          return opt ? parseInt(opt.dataset.available, 10) || 0 : 0;
+        };
+
+        const syncAvail = () => {
+          const max = maxFor();
+          qty.max = max;
+          if (avail) avail.textContent = '(maksimal ' + max + ')';
+          check();
+        };
+
+        const check = () => {
+          const max = maxFor();
+          const val = parseInt(qty.value, 10);
+          const over = Number.isInteger(val) && val > max;
+          if (warn) {
+            warn.style.display = over ? 'block' : 'none';
+            warn.textContent = over
+              ? 'Jumlah retur (' + val + ') melebihi yang dimiliki. Maksimal hanya ' + max + '.'
+              : '';
+          }
+          return !over;
+        };
+
+        sel.addEventListener('change', syncAvail);
+        qty.addEventListener('input', check);
+
+        form.addEventListener('submit', (e) => {
+          if (!check()) {
+            e.preventDefault();
+            const max = maxFor();
+            if (window.showToast) {
+              window.showToast(
+                'Jumlah retur terlalu banyak',
+                'Barang ini hanya tersedia ' + max + ' unit untuk diretur.',
+                'error'
+              );
+            }
+            qty.focus();
+          }
+        });
+
+        syncAvail();
       })();
     </script>
 

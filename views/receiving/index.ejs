@@ -91,10 +91,10 @@
                         <td class="p-4"><%- include('../partials/status-badge', { status: po.status, label: po.status_label }) %></td>
                         <td class="p-4 text-right">
                           <div class="flex items-center justify-end gap-2">
-                            <a class="btn-xs-outline inline-flex items-center" href="/receiving/<%= po.id %>/detail">Detail</a>
                             <% if (po.status !== 'completed') { %>
                               <a class="btn-success" href="/receiving/<%= po.id %>/verify">Verifikasi</a>
                             <% } %>
+                            <a class="btn-xs-outline inline-flex items-center" href="/receiving/<%= po.id %>/detail">Detail</a>
                           </div>
                         </td>
                       </tr>

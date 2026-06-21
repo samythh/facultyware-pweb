@@ -429,6 +429,42 @@ const retur = async (req, res, next) => {
     }
     const purchaseNumber = poRows[0].purchase_number;
 
+    // Validasi jumlah: tidak boleh meretur lebih dari yang benar-benar dimiliki.
+    // "Dimiliki" = jumlah diterima saat verifikasi (baik + cacat), atau jumlah
+    // dipesan bila belum diverifikasi; dikurangi jumlah yang sudah diretur.
+    const [itemRows] = await conn.query(
+      `SELECT quantity, received_quantity, received_defective
+         FROM inventory_purchase_items
+        WHERE inventory_purchase_id = ? AND item_id = ?`,
+      [poId, itemId]
+    );
+    if (itemRows.length === 0) {
+      await conn.rollback();
+      return res.status(400).render("error", {
+        message: "Barang tidak terdaftar pada purchase order ini.",
+        error: { status: 400, stack: "" },
+      });
+    }
+    const it = itemRows[0];
+    const verified = it.received_quantity != null || it.received_defective != null;
+    const owned = verified
+      ? Number(it.received_quantity || 0) + Number(it.received_defective || 0)
+      : Number(it.quantity);
+    const [[{ returned }]] = await conn.query(
+      `SELECT COALESCE(SUM(quantity), 0) AS returned
+         FROM inventory_transactions
+        WHERE reference = ? AND type = 'out' AND item_id = ?`,
+      [purchaseNumber, itemId]
+    );
+    const available = Math.max(0, owned - Number(returned || 0));
+    if (qty > available) {
+      await conn.rollback();
+      return res.status(400).render("error", {
+        message: `Jumlah retur (${qty}) melebihi jumlah yang dimiliki. Sisa yang bisa diretur untuk barang ini hanya ${available}.`,
+        error: { status: 400, stack: "" },
+      });
+    }
+
     // Catat transaksi keluar (retur ke vendor).
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -577,6 +613,20 @@ const detail = async (req, res, next) => {
       repRows.forEach((r) => { replacedByItem[r.item_id] = Number(r.replaced) || 0; });
     }
 
+    // Jumlah yang SUDAH diretur per item (transaksi keluar 'out' referensi No PO ini).
+    // Dipakai untuk menghitung sisa yang masih boleh diretur (available_return).
+    const returnedByItem = {};
+    if (po) {
+      const [retRows] = await pool.query(
+        `SELECT item_id, COALESCE(SUM(quantity), 0) AS returned
+           FROM inventory_transactions
+          WHERE reference = ? AND type = 'out'
+          GROUP BY item_id`,
+        [po.purchase_number]
+      );
+      retRows.forEach((r) => { returnedByItem[r.item_id] = Number(r.returned) || 0; });
+    }
+
     let totalOrdered = 0;
     let totalGood = 0;
     let totalDefective = 0;
@@ -606,6 +656,11 @@ const detail = async (req, res, next) => {
 
       i.total_received = good + defective; // total fisik yang datang
       i.diff = i.is_verified ? i.total_received - i.ordered_qty : null;
+
+      // Sisa yang masih boleh diretur = total dimiliki − yang sudah diretur.
+      // Bila belum diverifikasi, pakai jumlah dipesan sebagai acuan sementara.
+      const ownedQty = i.is_verified ? i.total_received : i.ordered_qty;
+      i.available_return = Math.max(0, ownedQty - (returnedByItem[i.item_id] || 0));
 
       i.line_total = i.price * i.ordered_qty;
       i.price_label = fmtRp(i.price);
