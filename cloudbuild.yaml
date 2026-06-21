@@ -25,6 +25,10 @@ steps:
       - '512Mi'
       - '--port'
       - '8080'
+      - '--add-cloudsql-instances'
+      - '${PROJECT_ID}:asia-southeast2:facultyware-db'
+      - '--set-env-vars'
+      - 'DB_HOST=34.101.89.64,DB_USER=facultyware_app,DB_PASSWORD=FacultyWare2026Prod,DB_NAME=facultyware,SESSION_SECRET=facultyware2026secret,NODE_ENV=production,DEV_NO_AUTH=0'
 
 images:
   - 'gcr.io/$PROJECT_ID/facultyware'
