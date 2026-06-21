@@ -74,9 +74,9 @@
 
         <!-- Summary & Actions Card -->
         <div class="card p-6 bg-card rounded-xl border shadow-sm flex flex-col items-end gap-4">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap justify-end" style="max-width:100%;">
             <span class="text-sm text-muted-foreground font-medium">Total Estimasi Nilai PO:</span>
-            <span id="total" class="text-xl font-bold text-primary">Rp 0</span>
+            <span id="total" class="text-xl font-bold text-primary" style="word-break:break-all; overflow-wrap:anywhere;">Rp 0</span>
           </div>
           <div class="flex items-center justify-end gap-2">
             <a href="/purchase" class="btn-outline">Batal</a>
@@ -123,27 +123,36 @@
       
       const table = document.createElement('table');
       table.className = 'w-full text-left text-sm border-collapse';
+      // table-layout:fixed + colgroup → lebar kolom tetap; angka besar membungkus
+      // ke bawah (word-break) dan TIDAK lagi menggeser kolom di sebelahnya.
+      table.style.tableLayout = 'fixed';
       table.innerHTML = `
+        <colgroup>
+          <col />
+          <col style="width:72px" />
+          <col style="width:190px" />
+          <col style="width:150px" />
+        </colgroup>
         <thead>
           <tr class="border-b text-muted-foreground font-semibold">
             <th class="pb-3 pr-4">Nama Barang</th>
-            <th class="pb-3 pr-4 text-right w-[90px]">Qty</th>
-            <th class="pb-3 pr-4 text-right w-[200px]">Harga Satuan</th>
-            <th class="pb-3 text-right w-[170px]">Subtotal</th>
+            <th class="pb-3 pr-4 text-right">Qty</th>
+            <th class="pb-3 pr-4 text-right">Harga Satuan</th>
+            <th class="pb-3 text-right">Subtotal</th>
           </tr>
         </thead>
         <tbody class="divide-y">
           ${data.items.map((i, idx) => `
             <tr class="hover:bg-muted/10">
-              <td class="py-3 font-medium align-middle">${i.name}</td>
+              <td class="py-3 font-medium align-middle" style="word-break:break-word;">${i.name}</td>
               <td class="py-3 pr-4 text-right align-middle font-mono font-medium">${i.quantity}</td>
               <td class="py-2 pr-4 align-middle">
-                <div style="position:relative; width:180px; margin-left:auto;">
+                <div style="position:relative; width:100%;">
                   <span style="position:absolute; left:.6rem; top:50%; transform:translateY(-50%); color:var(--color-muted-foreground); font-size:.85rem; pointer-events:none;">Rp</span>
-                  <input type="number" name="prices[]" data-qty="${i.quantity}" min="0" placeholder="0" class="input font-mono" style="width:100%; text-align:right; padding-left:2.1rem;" oninput="updateSubtotal()" required />
+                  <input type="number" name="prices[]" data-qty="${i.quantity}" min="0" max="999999999999" placeholder="0" class="input font-mono" style="width:100%; text-align:right; padding-left:2.1rem;" oninput="updateSubtotal()" required />
                 </div>
               </td>
-              <td id="subtotal-${idx}" class="py-3 text-right align-middle font-mono font-semibold text-primary">Rp 0</td>
+              <td id="subtotal-${idx}" class="py-3 text-right align-middle font-mono font-semibold text-primary" style="word-break:break-all; overflow-wrap:anywhere;">Rp 0</td>
             </tr>`).join('')}
         </tbody>
       `;
