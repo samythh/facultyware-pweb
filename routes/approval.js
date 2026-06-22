@@ -116,7 +116,7 @@ router.get('/history', async (req, res) => {
         const [historyProcurements] = await db.execute(query);
 
         res.render('inbox', {
-            title: 'Arsip Pengadaan',
+            title: 'Arsip Persetujuan',
             user: req.session.username,
             tab: 'history',
             procurements: historyProcurements,

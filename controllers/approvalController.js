@@ -3,7 +3,7 @@ const db = require('../lib/db');
 // GET /approval -> inbox (daftar submitted)
 exports.getInbox = async (req, res, next) => {
   try {
-    res.render('inbox', { title: 'Inbox Approval' });
+    res.render('inbox', { title: 'Inbox Persetujuan' });
   } catch (error) {
     next(error);
   }
@@ -30,7 +30,7 @@ exports.exportRekap = async (req, res, next) => {
 // GET /approval/:id -> detail permintaan
 exports.getDetail = async (req, res, next) => {
   try {
-    res.render('detail', { title: 'Detail Approval', id: req.params.id });
+    res.render('detail', { title: 'Detail Persetujuan', id: req.params.id });
   } catch (error) {
     next(error);
   }
