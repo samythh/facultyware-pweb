@@ -60,9 +60,14 @@ router.get('/inbox', async (req, res) => {
         const stats = await getStats();
         const sort = resolveSort(req.query.sort, INBOX_SORTS, 'terbaru');
 
-        // Query JOIN untuk mengambil data pengadaan beserta nama pemohon
         const query = `
-            SELECT p.id, p.request_number, p.status, p.created_at, e.name AS pemohon_name, a.notes
+            SELECT p.id, p.request_number, p.status, p.created_at, e.name AS pemohon_name, a.notes,
+                   COALESCE(NULLIF(p.title, ''), CONCAT(
+                     COALESCE((SELECT item_name FROM inventory_request_details WHERE inventory_request_id = p.id ORDER BY id LIMIT 1), 'Permintaan Barang'),
+                     CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = p.id) > 1
+                          THEN CONCAT(' +', (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = p.id) - 1, ' lainnya')
+                          ELSE '' END
+                   )) AS title
             FROM inventory_requests p
             JOIN employees e ON p.employee_id = e.id
             LEFT JOIN inventory_request_approvals a ON p.id = a.inventory_request_id
@@ -95,7 +100,13 @@ router.get('/history', async (req, res) => {
         const sort = resolveSort(req.query.sort, HISTORY_SORTS, 'terbaru');
 
         const query = `
-            SELECT p.id, p.request_number, p.status, p.created_at, e.name AS pemohon_name, a.notes
+            SELECT p.id, p.request_number, p.status, p.created_at, e.name AS pemohon_name, a.notes,
+                   COALESCE(NULLIF(p.title, ''), CONCAT(
+                     COALESCE((SELECT item_name FROM inventory_request_details WHERE inventory_request_id = p.id ORDER BY id LIMIT 1), 'Permintaan Barang'),
+                     CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = p.id) > 1
+                          THEN CONCAT(' +', (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = p.id) - 1, ' lainnya')
+                          ELSE '' END
+                   )) AS title
             FROM inventory_requests p
             JOIN employees e ON p.employee_id = e.id
             LEFT JOIN inventory_request_approvals a ON p.id = a.inventory_request_id
@@ -352,7 +363,13 @@ router.get('/:id', async (req, res) => {
 
         // Ambil data utama pengadaan
         const queryProcurement = `
-            SELECT p.*, e.name AS pemohon_name, a.notes
+            SELECT p.*, e.name AS pemohon_name, a.notes,
+                   COALESCE(NULLIF(p.title, ''), CONCAT(
+                     COALESCE((SELECT item_name FROM inventory_request_details WHERE inventory_request_id = p.id ORDER BY id LIMIT 1), 'Permintaan Barang'),
+                     CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = p.id) > 1
+                          THEN CONCAT(' +', (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = p.id) - 1, ' lainnya')
+                          ELSE '' END
+                   )) AS title
             FROM inventory_requests p
             JOIN employees e ON p.employee_id = e.id
             LEFT JOIN inventory_request_approvals a ON p.id = a.inventory_request_id

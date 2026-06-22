@@ -1,13 +1,13 @@
--- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: localhost    Database: facultyware
 -- ------------------------------------------------------
--- Server version	10.4.32-MariaDB
+-- Server version	5.5.5-10.4.32-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!50503 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -19,8 +19,6 @@
 -- Current Database: `facultyware`
 --
 
-/*!40000 DROP DATABASE IF EXISTS `facultyware`*/;
-
 CREATE DATABASE /*!32312 IF NOT EXISTS*/ `facultyware` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
 
 USE `facultyware`;
@@ -31,7 +29,7 @@ USE `facultyware`;
 
 DROP TABLE IF EXISTS `asset_audit_details`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `asset_audit_details` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `asset_audit_id` bigint(20) unsigned NOT NULL,
@@ -63,7 +61,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `asset_audits`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `asset_audits` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `audit_number` varchar(255) NOT NULL,
@@ -95,7 +93,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `asset_grants`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `asset_grants` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -123,7 +121,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `asset_insurance_claims`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `asset_insurance_claims` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `asset_insurance_id` bigint(20) unsigned NOT NULL,
@@ -154,7 +152,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `asset_insurances`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `asset_insurances` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `asset_id` bigint(20) unsigned NOT NULL,
@@ -188,7 +186,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `asset_tracking_logs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `asset_tracking_logs` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `asset_id` bigint(20) unsigned NOT NULL,
@@ -222,7 +220,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `asset_trackings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `asset_trackings` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `asset_id` bigint(20) unsigned NOT NULL,
@@ -254,7 +252,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `assets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assets` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -290,7 +288,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `assignment_progress`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assignment_progress` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `assignment_id` bigint(20) unsigned NOT NULL,
@@ -325,7 +323,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `assignments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assignments` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
@@ -367,7 +365,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `attendances`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `attendances` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `employee_id` bigint(20) unsigned NOT NULL,
@@ -399,7 +397,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `buildings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `buildings` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -427,7 +425,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cache` (
   `key` varchar(255) NOT NULL,
   `value` mediumtext NOT NULL,
@@ -452,7 +450,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `cache_locks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cache_locks` (
   `key` varchar(255) NOT NULL,
   `owner` varchar(255) NOT NULL,
@@ -477,7 +475,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `committee_budget_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `committee_budget_items` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `committee_budget_id` bigint(20) unsigned NOT NULL,
@@ -508,7 +506,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `committee_budgets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `committee_budgets` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `committee_id` bigint(20) unsigned NOT NULL,
@@ -539,7 +537,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `committee_expenses`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `committee_expenses` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `committee_budget_item_id` bigint(20) unsigned NOT NULL,
@@ -575,7 +573,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `committee_external_members`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `committee_external_members` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `committee_id` bigint(20) unsigned NOT NULL,
@@ -605,7 +603,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `committee_members`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `committee_members` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `committee_id` bigint(20) unsigned NOT NULL,
@@ -637,7 +635,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `committee_task_progress`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `committee_task_progress` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `committee_task_id` bigint(20) unsigned NOT NULL,
@@ -668,7 +666,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `committee_tasks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `committee_tasks` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `committee_id` bigint(20) unsigned NOT NULL,
@@ -705,7 +703,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `committees`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `committees` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -740,7 +738,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `community_service_members`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `community_service_members` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `community_service_id` bigint(20) unsigned NOT NULL,
@@ -771,7 +769,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `community_services`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `community_services` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
@@ -802,7 +800,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `conference_proceedings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `conference_proceedings` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `publication_id` bigint(20) unsigned NOT NULL,
@@ -836,7 +834,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `document_revisions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `document_revisions` (
   `id` int(11) NOT NULL,
   `document_id` bigint(20) unsigned NOT NULL,
@@ -869,7 +867,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `document_types`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `document_types` (
   `id` bigint(20) unsigned NOT NULL,
   `name` varchar(45) DEFAULT NULL,
@@ -894,7 +892,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `documents`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `documents` (
   `id` bigint(20) unsigned NOT NULL,
   `name` varchar(45) DEFAULT NULL,
@@ -929,7 +927,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `education_histories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `education_histories` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `employee_id` bigint(20) unsigned NOT NULL,
@@ -962,7 +960,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `employee_grades`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `employee_grades` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -987,7 +985,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `employees`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `employees` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `employee_number` varchar(255) NOT NULL,
@@ -1033,7 +1031,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `employment_statuses`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `employment_statuses` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -1060,7 +1058,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `equipment_loans`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `equipment_loans` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `equipment_id` bigint(20) unsigned NOT NULL,
@@ -1097,7 +1095,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `equipment_maintenance_request_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `equipment_maintenance_request_log` (
   `id` bigint(20) NOT NULL,
   `equipment_maintenance_request_id` bigint(20) unsigned DEFAULT NULL,
@@ -1137,7 +1135,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `equipment_maintenance_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `equipment_maintenance_requests` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `equipment_id` bigint(20) unsigned NOT NULL,
@@ -1172,7 +1170,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `equipment_proc_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `equipment_proc_items` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `equipment_proc_id` bigint(20) unsigned NOT NULL,
@@ -1204,7 +1202,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `equipment_procurements`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `equipment_procurements` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `request_number` varchar(255) NOT NULL,
@@ -1236,7 +1234,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `equipment_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `equipment_requests` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `request_number` varchar(255) NOT NULL,
@@ -1276,7 +1274,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `equipments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `equipments` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `asset_id` bigint(20) unsigned NOT NULL,
@@ -1311,7 +1309,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `event_attendances`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_attendances` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `event_registration_id` bigint(20) unsigned NOT NULL,
@@ -1346,7 +1344,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `event_committee_members`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_committee_members` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `event_id` bigint(20) unsigned NOT NULL,
@@ -1378,7 +1376,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `event_documents`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_documents` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `event_id` bigint(20) unsigned NOT NULL,
@@ -1414,7 +1412,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `event_registrations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_registrations` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `event_id` bigint(20) unsigned NOT NULL,
@@ -1460,7 +1458,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `event_reminders`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_reminders` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `event_id` bigint(20) unsigned NOT NULL,
@@ -1494,7 +1492,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `events`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `events` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
@@ -1544,7 +1542,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `express_sessions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `express_sessions` (
   `session_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `expires` int(11) unsigned NOT NULL,
@@ -1559,7 +1557,7 @@ CREATE TABLE `express_sessions` (
 
 LOCK TABLES `express_sessions` WRITE;
 /*!40000 ALTER TABLE `express_sessions` DISABLE KEYS */;
-INSERT INTO `express_sessions` VALUES ('7EfVHiRwADz4XEjTNAeio0JohqYHVbkR',1781581208,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-16T03:40:08.183Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}');
+INSERT INTO `express_sessions` VALUES ('-hh1wNIPeLoRJErAMQiBfmUfYCdRdscZ',1782171084,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:23.361Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('0EKL3QGc2TK43ukmL8arEa_FUUwrTvG1',1782171746,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:25.213Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('0QN1WCvpRxCcdy2pqVw2IUR9EtGlD54x',1782171083,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:22.457Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('15ep-LXWL-X5gp08rOOUFMLvJi3WprfS',1782171745,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:24.237Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('1Td1P_U91CeD4IKomvOsYnUrw0BlG0Od',1782172956,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:35.761Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('1iAmtHjZnXkzbM-AUw7VhlI3Hhfd17HF',1782171096,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:35.677Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('1sTHluhqCbc6osHYddZtcmOxysymlyFc',1782173069,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:28.340Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('1vJey-JDBAuYLRHfIqfvhOxPBPEKbSSM',1782173067,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:26.817Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('2CCS9uTZH4-eirsut6oF0cm01_L0ylAl',1782171071,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:10.500Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('2EKvji4qtZMPTVJsTJ8DDMjjCh1P6gAs',1782171093,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:32.581Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('2jaKb_hTeLprNn2GHI0F2dlMxZhEplO2',1782172944,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:23.652Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('2lOZEBPYNmQhl1esYMgN-HL1Ene6JplA',1782173050,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:09.212Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('3OO5rnPkW3m-VkkpsI8lEqyTUsAxwxej',1782171133,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:32:12.379Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('3_-PvpGz8VXcYjme1HLfOo6fxb3Y4kun',1782173054,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:13.756Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('3cSo9cFs1z61tAp6EjT-mDofIot-TPeP',1782173091,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:50.672Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('3ebkYO3RXszs1FjrElpMfTSYW1sFntt7',1782171080,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:20.373Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('3gwsC4-7mI2S-V0PPyoqEGUYmoHTpgPF',1782171733,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:12.998Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('4Bp1OcuqMXkdFm0zH47Gy5jO2lF4YTYJ',1782171737,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:16.668Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('4D5C8uXGJt4S-cWO3_XlOOLmX2fU1_eE',1782172948,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:27.238Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('4eE0jU4AFQrd4ZO5ikKkaXc85csFBHWb',1782173046,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:05.962Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('5AEEIKUxg8-OofApa45p-XGWzgUJ0LPh',1782172927,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:07.436Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('5v_paBpawHZ0C3A1cQZVELq5iGto4uwA',1782171076,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:15.271Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('6-EK293hXvLNDf8ud1clBiIBkrSj-wM2',1782171736,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:14.760Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('6BciYZbBPEgAFGxwE3-J-Wf5zECUB0ls',1782171622,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:22.034Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('6Iy9P3bEbEbV4JQP21I2WorbZiZ9G8li',1782171748,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:27.473Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('7HBfX57WJ3cDrv8RdlXG3uxDuhMNRBhF',1782173062,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:21.810Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('7n2qhudeDC6Svq1OsSiXx9UoiaHb7IqL',1782172949,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:28.251Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('8jYcwTeIl3AeZUtiGa3TWp6byLn1RecA',1782172968,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:47.109Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('9Eu3_tvG2mypPDI2zsAxTdJauOBXqD9v',1782171613,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:11.855Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('9hpghTbTZm1OTXXdk8ka9ynz7dwfZGvq',1782172959,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:39.169Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('9kV_cyAG4NCSqV0AJFsL6mejQaIRixpL',1782171741,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:20.123Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('9seT-sTrOQSn-kqixpvmixNHT70vwiM9',1782171072,'{\"cookie\":{\"originalMaxAge\":86399999,\"expires\":\"2026-06-22T23:31:11.275Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('AO3H8nqrC_F4r5-4Q_hR_Q_kbdoRVPAT',1782173067,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:26.529Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('AXKCh-HFioFWhsIebfBXg7GGa6ppCKoL',1782173059,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:18.746Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('ArNmQaUTgGM-TNIlbR9XSUtBUIiICJxU',1782173064,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:23.610Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('B8JzjfTHYIuRMdC3OgikZI9xVToMs71Z',1782171087,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:27.066Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('Be_oOf_K2j9xe1ZwdfUxmeoWm52E3L4i',1782172973,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:52.532Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('Bt7XW8Larr-aD1cY4iPFVsDztozvX-D-',1782171631,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:30.454Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('CMMULN38XPkgdOaIZS6NrWj0UTziqDzb',1782171614,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:13.865Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('CjpNCFer6uXiyT_iND0T64zYYOau0mzn',1782171726,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:05.890Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('D09BM_M4DgarnY8M_B0Usb881a9Y2gmA',1782171616,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:15.132Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('DVAuVcUaoiLWRCp_KUAFvfWTL8AqHGHE',1782172951,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:30.764Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('DbgHWgOojfxliuYSs4gzEcT75tFPhX8V',1782173053,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:13.469Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('E6SQPHy26b1OWh2Z-uouGY1TiJiN7Eco',1782173476,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:11:15.190Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('E6ckBGq1F_MJgvutyCc6OcOMt85tvHNN',1782171726,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:05.270Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('EOrHQYrSgVzU_Mb_MOcZGY4Zr3XWcm6I',1782171728,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:07.301Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('EaxKdUu1mllJSKjbrFkeOqZ93heydDrI',1782172961,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:39.888Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('EoHCd4xSUn4xmVckeaP5kfFXlvSbQXES',1782171134,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:32:13.975Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('Ev0ljVeNNhUDIaWhL84AyFsAG0d4xFPc',1782171598,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:39:57.568Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('FL9hs-vI2UOWfrmFJgmF60HJtZfG1a9V',1782172971,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:50.932Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('FQ5taaCPkydJ1s4fY5-Z3gU-geo2t54c',1782171603,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:02.589Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('F_369wUYhogvpif6UJZFpo7ZmZ6Gdswc',1782173048,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:07.364Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('F_aA_wJtIYQatruCD3tWE_mySxhxm8eQ',1782172954,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:33.756Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('Fge6cy9CEp8zndWOcEURpPfVqdbiiOov',1782173069,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:28.933Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('FywkYOQ4fhvj3FAX45eB69zGf0Sk3c9P',1782172955,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:35.073Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('G2Onfk1VmRroPcMf4KAbUAvJlCnbsudN',1782173057,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:16.419Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('G76A-3-DSowNIHygLYsptDFOtHOIKzXI',1782171746,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:25.881Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('GfLqAi4IA2IF5SlGfbLG7MwGDOobX8nM',1782171725,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:04.720Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('GgN5BhxHhKcctYsn84uek8KGH3n-dbyW',1782171603,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:02.768Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('GyZwAGrvnAstBpmVT7QTZ5OAZVdIS0NC',1782172972,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:51.838Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('HeLb3XRmKWP0ayvs1bgmW6PbSKDboJWC',1782172962,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:41.147Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('Hn-2hYbh1XVaFfQ_XQtbOwGPoCwTgpp0',1782172928,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:08.002Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('HuP9pRKPR-Uavus1_tTtukmHruQKQqaJ',1782171723,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:02.811Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('IF4J7DHbg0uFZFHeETL0DFsoflvmGu_0',1782172965,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:44.461Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('IN-Kvxi-ivgYxVJVEYTANFTcnKvGaHA8',1782171600,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:00.191Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('J99dNWYg4w12lgMJRfLL8LJCoIlWfJWE',1782171739,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:18.902Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('JB4NHQhwpbpb7EsAL2ZxHu54Hjapaw4W',1782171733,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:11.069Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('JJOQwCwGPIEWKwxgMimRDf06uacDyUrS',1782171624,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:23.563Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('JTI6dh1exE1ZCKPqvS2ycbCjlI1jFTY2',1782171606,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:05.320Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('Jn0HY0P5H8HYBXdLdk9oZbILYtlMMifK',1782171723,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:02.444Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('KCt_eo_oxIJkf6SFCN-7k9fI4zBNDbM2',1782172958,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:37.867Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('KNhkfVuROR_HqoKR0vgbH3u_av380Jt4',1782171731,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:11.159Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('KOcRfVZG3kZFzxzTnejTuxpZ_I65hJo3',1782171136,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:32:15.398Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('KRwdijcfFg3zgh6HKHwQ57qLtmBd0Xtu',1782172958,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:36.949Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('KfMBxuFRiOjVKvhvTVXdH1dNzdt6SV09',1782171086,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:25.607Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('Ks1Ok0QkQxPT6GdAlYlnrqqVZFDfurrb',1782172960,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:39.383Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('KvUkL16OMeW6VCDEd2mhimZhDXaBNoej',1782171068,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:07.557Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('L83CF8b6BpbAn-nPtN2v-E-vNPnuHBia',1782173047,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:06.552Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('LWmHzOHQKz4PQ5xhG7lglYKLH1qUnF7a',1782173057,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:17.258Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('LZ5u-K22-uF1OxuVaK-BTjsYkahSONns',1782171626,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:25.700Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('M2C-Vgni5G0tLf_w8eiEcA745g4YTiZ4',1782173087,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:46.300Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('MIFsAgGS-fWRFb16eoRR36b-Qx8f635y',1782173474,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:11:13.545Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('MJzhJ_t065vSubJ_8hEzhGskbV1rXox9',1782173090,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:49.232Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('MkoZMUwvxleKlKWc6DEPb9y9QGoqjZiw',1782173048,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:07.888Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('Myl40d5ON80k94G26ci8KHSPo3XYbKyn',1782173046,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:06.115Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('N6UgiE5J7fpZZfNnATUJpns-c2CSEJUv',1782171608,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:07.606Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('NUG4GotQp8kgf5J9zePDKLV6mMHEZeEA',1782171616,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:15.616Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('NdZIE5J7_hyVW10VAmh8aZXQnxkKBgu6',1782171629,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:28.919Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('NhQMwYh9B6iVcoGvp8q1gBLn2WS-WYf8',1782171751,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:30.584Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('O87erVpSlLLkV4M9j536UnhN3M63bT7O',1782171097,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:37.076Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('OB8HaSUZyeRugnJVsBzX4xJcv2Wppvk2',1782171627,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:26.628Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('ORA0ddcQIZavaYtGONFfaTsNBKqSAJXM',1782171730,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:09.317Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('OSu64tzCafw2Y6lpEFHhDDnGXgclK5S5',1782171738,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:17.639Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('OYoCe3Ek9My9eMHqb7tvCAcMINa8cNfz',1782171744,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:23.651Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('PEUo336-nmRY3Gwt5Pij-JPpzBO9FJg9',1782171095,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:34.199Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('PTshqe_fM5dINUC7I5_JHhYHpkL0Kwth',1782171078,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:18.130Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('Q3qX2FpSAFxv8AiD5BRbpcmsQ9IRXApW',1782173088,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:47.705Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('QMU5KG7qwBjjwwDheykN0IkkqpDZV1hX',1782172947,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:26.839Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('QVEYfKl3dhLCPNHbK5lgapkmCf8Ds4V-',1782172964,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:43.119Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('QvR85Gmum039UQl5rm4niUHUT-16wCOB',1782171617,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:16.821Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('RPs8587HKNeSZIzlm3ICi9IHOgq0R2Vu',1782171738,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:17.288Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('RhqqUf8VfLGvLpQURZ4ZOnFaCxr4lH5F',1782173085,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:44.269Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('RlNQKBm6xQsMtt0rsKW2iH4k4vTx1sXm',1782171086,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:25.170Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('SrY7clKO7K8pFMLhMY8gGP3jt8SRx-b0',1782171076,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:15.123Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('T8VNpxIR67U3J9PM43x3hfIyktN9PFG2',1782171072,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:11.474Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('TQROt7rKpzbCLl9vAD0h7szhgKQdm3oD',1782172978,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:57.200Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('URJFS4-7tawXwcRQBXhEIOt2vuiawkKP',1782172970,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:50.252Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('UXV9xyzyKUx8anWB0CvtJJGa9t9crrOk',1782171962,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:46:00.468Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('UficUYhsfRe2ly1dPP-uRQd5wC5vV-jN',1782171602,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:01.127Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('VqgHMwtgqTVm_4jasxogZY-VIapHMHq8',1782171742,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:21.968Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('WVMQOOwpnWxByW4TbgX4DobsiUfFZroy',1782173067,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:26.024Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('WY8Nb6KrDb3luwebqU_3RqDOcC4v2g28',1782173060,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:20.203Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('WfNxcSl3zOdv1VShlLxS1dLMovNM4qZ4',1782173093,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:52.231Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('WiRyDf7maBb5LrKaVb_HUJOGA8UbilYv',1782171074,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:13.867Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('WwPMw-xy8LlK0dSVVjeYYtctMZ5gcQsa',1782173065,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:24.429Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('X7Ij3iDcfDKFYO8rIF1D5mfDNLKBqVJ_',1782171088,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:27.440Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('XUUlSV2cBjjjyC7dEO0WGAw7h-xRGmbL',1782173052,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:11.990Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('XVy6r5C5qagbzpteTzRNdp4KdXSq5Bnc',1782171137,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:32:16.865Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('XgLBjxK7Aimzmn-flmwJaRzyBtxfMUp1',1782171599,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:39:58.108Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('XuM0W6Y5xhrfBARYrFBLvn-hMf9yS_we',1782171729,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:08.939Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('YdXcG0_padWr4hu4OSMrt7IAICF85R4O',1782171753,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:32.606Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('YoRTpq4t2B4BE92f3usH4CxYKzrbdP9N',1782171081,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:20.057Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('YtRGc7reJSQ1VhbqEq7haFbWa4eadcAF',1782173094,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:53.816Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('Z7WTgeADVC0M-iJ7xSNf4DLJ1LRZSNOC',1782173071,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:30.065Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('ZUR0lOdeS4OvN7o7iVQDPUzFfL2v84mC',1782171070,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:10.059Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('_B-Y6pOfnojjLUsEccTO3JItLhSJHKT4',1782171610,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:09.810Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('_D0bYqnM00IpfQlnSHk3HfEGkX797Sue',1782171605,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:04.876Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('_GMDvzcSeY-b3939qXbvjE8GlLrJk0Vu',1782173062,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:21.365Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('_VON7uup-iuj6BcQtCT1DAg0Rw58aDtd',1782171620,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:19.825Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('_fo-eRJIllAM-g_Lr_MxOggFCg4pcA-V',1782172944,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:23.993Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('aBb2jKAg7kEBCtM9KRm89EO4upQbL9TK',1782171084,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:23.054Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('acZTsFsUM7WwCDBpwxLW7oVVVkoRGBBw',1782172974,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:54.097Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('atB1iNXgXuI9LLxTXX3Z2M1qJzyyt7vS',1782171601,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:00.713Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('atjeBlhvU4mxgbFH1mZTJ3udfA-YJHV-',1782171741,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:20.918Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('b9hr_MOks2DzM-jdqN46Blvb-PubizWA',1782173019,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:03:38.310Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('c2WkQedUGhw701MeM9HVZZkTP7468rwv',1782173023,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:03:42.833Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('c2XDvj_o2pX7rHllM5UcjXCAMAT3IAOX',1782171089,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:29.041Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('cdD-Oqjl2fHT3rOvEDa_aH0jCtcDnZ6Z',1782173052,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:10.930Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('cgIL0STtDXINk-b8xN7MNfSpSwjAT2un',1782171079,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:19.196Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('cl9pHQJUis4pt7OHXpvXDNFt1dNI90U7',1782171622,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:21.396Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('dCGyWYT9UY7DWVObzc4HPapd0cXn8gUC',1782172968,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:47.392Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('dka9XBLmcJECvRhhi6Po5n75eF70_QTY',1782171749,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:28.967Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('duGrrPw-Q1S_zHi5x2J3_L1EXATHNX9I',1782173065,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:24.093Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('dzIj94jajCyQZZQfwYOs69WnbYjtyeUT',1782172970,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:49.681Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('eCykmyVdMlFCkd54dAGlZZFO_aNI29Lf',1782171077,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:17.220Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('eTpHaiIJqRaZqAzXZ_7999fnqSA5pvuM',1782173063,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:22.285Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('exq-N3XI5xu15I9aq1bxzVP-JZzsnkZi',1782172953,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:32.734Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('fUTRJxZkofbTbaZPlxNwcMknSDmE00qF',1782171728,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:06.825Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('h8QNB6A-IoYozSP66R0OZAETIk3VLH03',1782171619,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:18.311Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('hTpIJ595KpTS01KqQabe-popvkZPP1v_',1782171723,'{\"cookie\":{\"originalMaxAge\":86399999,\"expires\":\"2026-06-22T23:42:02.727Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('hjVAOnRD3DEvXf2MiSNuNNLRZL1bidZW',1782171743,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:22.576Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('i1mT9ReCcLL8nNA-r3fz3oZJuXrHLg_6',1782173017,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:03:36.779Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('j4wB5Nl9NOn7zmHaYjXY1qPwknKfdBDX',1782173071,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:30.849Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('jEV1fD0NL4WCmT2DqAI3-3uWM4xrCv6T',1782172962,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:41.622Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('jEvSYz63-wNGbl94KsZKIWi0Xj_0uBf-',1782171599,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:39:58.703Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('jGcx_6HHC5hHSkykKt18ryeByQXKNcE_',1782172945,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:25.019Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('jiNV1xbsC3B5rBj0IZ1b1dTTTgSaZiZD',1782172952,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:31.650Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('jj5QynXtVOkJOSJDxCAEwKCZrv6ZPaZp',1782173059,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:18.137Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('jmGw3KP9f_1lsEy8ZORy8fmNapwf42V6',1782172945,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:24.388Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('jnBlG1bu9w5E37NuUEiEHDiwxp8B4GHj',1782173051,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:10.236Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('jsRdrzZe6-JKeBEHW4jxCjazFFggOc60',1782172966,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:45.303Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('kaBT_LyL0htWIEKrpn_pTuCXa2W4PrJS',1782172976,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:55.715Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('kdYCnm9Q5d3T2ua8cpkaesJCA8773btQ',1782171091,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:30.620Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('kn4V1HNixRSCzyCFKtrKSlITiSxT76FS',1782171621,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:20.400Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('kuRj4j3rS7YBpKctwhKWxTsWm-NMwxmA',1782171618,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:17.327Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('m2glidDHl7L0Dt8GfdAtYIthcvy9DWw3',1782172960,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:40.083Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('mGvZfsVV5n-9tHYOU-zktmZh-AR_qeVD',1782171574,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:39:32.340Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('mjsDjyf3BaoS3JvdgAq18XFKxSXEeWnr',1782171091,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:30.818Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('mrCSueJ6tIi1aGzE3PBC26KbylLOv06w',1782171728,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:07.855Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('nCydWGX7PLxkzgE9fZhhxE0jB4UDmofi',1782171625,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:25.149Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('nT5bKD33vj4as8a5toGHy_MSer_5aAvE',1782172963,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:42.075Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('n_zjD8E-KhsV7cKN5A8gXnZeaQ74qkDz',1782171732,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:11.642Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('ncFSduEvfsyc_fu0CtvbZ__2U78fXunq',1782171094,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:33.583Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('otNqs0GqeMAs9JVaGv74HQ20ENtIZsHA',1782173336,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:08:46.739Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('p_KzgDBKmI5GYcvfKUREQYIjn143-0DP',1782171089,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:28.631Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('pwqMebCb8d48UiDTRo52Jl8n3wgSOEyO',1782171735,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:14.392Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('q9XCZcoy9eAIE1T51aLxHAvr38hGa-ux',1782171747,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:26.853Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('qPoqcoswq6ObUTmzN7H4rVL7hkHULxci',1782171599,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:39:58.272Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('rNVepyBuR_HlJ4mSJe0mOnP22taUVfJA',1782171074,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:12.853Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('rbWe5ba-DlkVcxy9H8TizwrJT4WIdcqu',1782173061,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:20.821Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('s5yxZ3XP9MSnIrz_lSxJq9hMEd5S5YhQ',1782172363,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:52:33.805Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('s8E1r_NyW1RkwT3OhENJfOYNi8c1zCU2',1782173020,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:03:39.820Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('sdpYYPlM6tmBuoLuKthWhw8wwrlOHLCt',1782171741,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:20.714Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('silfPjplklq28KRUuk4TvGzxdj7PYDxE',1782171607,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:06.615Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('smxYbkP07Bz7l1j2YVFT1Mmm8b_-8xac',1782172966,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:45.758Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('tI3aQ09bVGYWHIDEeCb2Zkr_JHVgRam3',1782171604,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:03.241Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('ttjsLFiuXhq1DowuhkJHkhnAeUYEaOEU',1782172931,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:10.497Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('tye0blk81N9-QdhAjMeifK9lxk0BH44_',1782173060,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:20.001Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('u02KdXPbXEL4mP5Fzdlrwv6Fr0830UsG',1782171078,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:17.683Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('u9IH8PN3ew88By-FWe3YBN35F4X22z4L',1782172964,'{\"cookie\":{\"originalMaxAge\":86399999,\"expires\":\"2026-06-23T00:02:43.657Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('uBXOTmMX8BkY6qnfL7LQUdenBX0DTh5s',1782171085,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:24.848Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('uGQhnrx7icqSjx9GN1nPV5abB526H6Gw',1782173103,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:54.056Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('uQXs20TbPUJGYPOFnTEBG-zel4zrlixg',1782173049,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:08.288Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('uZJOyG38MyUv3XLTCcvGPtllwnVwzoEx',1782171082,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:21.239Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('urJbsUn7KAPw1r0icEkbcRdyGk7UT3-p',1782171608,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:08.267Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('uxTCl8gn72ejGgX7FNA9K31APK6dBIfO',1782171735,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:42:15.243Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('vT1qAtCI0Ga6Sf_KXX0tSzuY6BrcI2MT',1782173002,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:03:13.275Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('vUgc4CpIGVSn091hPU8mmab0T5THD2xz',1782172929,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:08.698Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('wA-DFK2x4TcxgG8FSfvBV6KtYJhLGBBe',1782171619,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:18.860Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('wIZcjyFMLIo321TGM-aXv3ty8mafJtni',1782171072,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:12.346Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('wXdM0DvCEI_n7iqJpw5cVS2O90tOyxYW',1782173059,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:19.118Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('wagy73RTsF4ZSkoKuJO2Ec3gX6Il_Vqm',1782171614,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:13.353Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('wxcQCi3udB4taow8tuzEahQLb73Ki9Dn',1782171077,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:31:15.771Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('x6GZH8q5GMG8DKuOPBbhTkY6wOe80A0r',1782173021,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:03:41.402Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('xONre5jyG5vy65h8CAIpF8w07BeRfBJf',1782171628,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:40:27.376Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('xjLFFFN-VvsZHuOcN9HSR6XB_zF0Strs',1782173055,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:04:15.167Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":2,\"username\":\"Wakil Dekan\",\"permissions\":[\"manage_approval\"]}'),('yFJSvNtjqJHILCKLU6kZulfKZZmJZ1v8',1782172241,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:50:32.293Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('yjVDLCSKNnnPKTDt4Z_J_wnHG0dGI0pX',1782172950,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:29.630Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('yvh-RooYlER08BiOzY7ONOKQ5aoJlUBn',1782171139,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:32:18.339Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('zpvO2XZKhYvXvZ22CpAFL7ERidjwf0DQ',1782171140,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-22T23:32:19.800Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}'),('zsPc3K5e8InDOul-HQ0VePeG08lX7QyC',1782172969,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2026-06-23T00:02:47.887Z\",\"httpOnly\":true,\"path\":\"/\"},\"userId\":1,\"username\":\"Admin SIP\",\"permissions\":[\"manage_procurement\",\"manage_vendor\",\"manage_po\",\"manage_receiving\"]}');
 /*!40000 ALTER TABLE `express_sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1569,7 +1567,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `failed_jobs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `failed_jobs` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(255) NOT NULL,
@@ -1598,7 +1596,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `functional_positions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `functional_positions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -1625,7 +1623,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `holidays`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `holidays` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `date` date NOT NULL,
@@ -1651,7 +1649,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `implementation_arrangements`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `implementation_arrangements` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `partnership_id` bigint(20) unsigned NOT NULL,
@@ -1688,7 +1686,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `inventories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventories` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `item_id` bigint(20) unsigned NOT NULL,
@@ -1716,7 +1714,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `inventory_procurement_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory_procurement_items` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `inventory_procurement_id` bigint(20) unsigned NOT NULL,
@@ -1730,7 +1728,7 @@ CREATE TABLE `inventory_procurement_items` (
   KEY `inventory_procurement_items_item_id_foreign` (`item_id`),
   CONSTRAINT `inventory_procurement_items_inventory_procurement_id_foreign` FOREIGN KEY (`inventory_procurement_id`) REFERENCES `inventory_procurements` (`id`),
   CONSTRAINT `inventory_procurement_items_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1739,7 +1737,7 @@ CREATE TABLE `inventory_procurement_items` (
 
 LOCK TABLES `inventory_procurement_items` WRITE;
 /*!40000 ALTER TABLE `inventory_procurement_items` DISABLE KEYS */;
-INSERT INTO `inventory_procurement_items` VALUES (3,1,NULL,'ROG ZEPHYRUS',1,'2026-06-05 09:12:40','2026-06-05 09:12:40'),(4,1,NULL,'LENOVO IDEAPAD',12,'2026-06-05 09:12:40','2026-06-05 09:12:40'),(5,2,NULL,'Mouse',5,'2026-06-05 09:48:33','2026-06-05 09:48:33');
+INSERT INTO `inventory_procurement_items` VALUES (3,1,NULL,'ROG ZEPHYRUS',1,'2026-06-05 09:12:40','2026-06-05 09:12:40'),(4,1,NULL,'LENOVO IDEAPAD',12,'2026-06-05 09:12:40','2026-06-05 09:12:40'),(5,2,NULL,'Mouse',5,'2026-06-05 09:48:33','2026-06-05 09:48:33'),(6,3,NULL,'Meja',5,'2026-06-15 04:49:36','2026-06-15 04:49:36'),(13,7,NULL,'RAM 3GB',5,'2026-06-16 11:23:08','2026-06-16 11:23:08'),(14,7,NULL,'SSD 256 GB',3,'2026-06-16 11:23:08','2026-06-16 11:23:08'),(15,7,NULL,'Teh Kotak 1ml',1,'2026-06-16 11:23:08','2026-06-16 11:23:08'),(16,8,NULL,'Mouse',1,'2026-06-16 11:25:37','2026-06-16 11:25:37'),(17,8,NULL,'Meja Gaming',1,'2026-06-16 11:25:37','2026-06-16 11:25:37'),(18,8,NULL,'ROG ZEPHYRUS',3,'2026-06-16 11:25:37','2026-06-16 11:25:37'),(21,10,NULL,'Meja Gaming',1,'2026-06-17 01:46:37','2026-06-17 01:46:37'),(22,10,NULL,'Meja Kantor',1,'2026-06-17 01:46:37','2026-06-17 01:46:37'),(23,11,NULL,'Meja',5,'2026-06-17 02:29:15','2026-06-17 02:29:15'),(24,11,NULL,'Kursi',5,'2026-06-17 02:29:15','2026-06-17 02:29:15'),(25,11,NULL,'TV Proyektor',3,'2026-06-17 02:29:15','2026-06-17 02:29:15'),(26,12,NULL,'Meja',3,'2026-06-17 02:38:57','2026-06-17 02:38:57'),(27,12,NULL,'TV',2,'2026-06-17 02:38:57','2026-06-17 02:38:57'),(28,12,NULL,'Komputer',2,'2026-06-17 02:38:57','2026-06-17 02:38:57'),(29,12,NULL,'PC',1,'2026-06-17 02:38:57','2026-06-17 02:38:57'),(30,12,NULL,'Meja',13,'2026-06-17 02:38:57','2026-06-17 02:38:57'),(31,13,NULL,'Mouse',2,'2026-06-17 02:40:59','2026-06-17 02:40:59'),(32,13,NULL,'Meja Gaming',3,'2026-06-17 02:40:59','2026-06-17 02:40:59');
 /*!40000 ALTER TABLE `inventory_procurement_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1749,7 +1747,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `inventory_procurements`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory_procurements` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `request_number` varchar(255) NOT NULL,
@@ -1764,7 +1762,7 @@ CREATE TABLE `inventory_procurements` (
   UNIQUE KEY `inventory_procurements_request_number_unique` (`request_number`),
   KEY `inventory_procurements_created_by_foreign` (`created_by`),
   CONSTRAINT `inventory_procurements_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `employees` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1773,7 +1771,7 @@ CREATE TABLE `inventory_procurements` (
 
 LOCK TABLES `inventory_procurements` WRITE;
 /*!40000 ALTER TABLE `inventory_procurements` DISABLE KEYS */;
-INSERT INTO `inventory_procurements` VALUES (1,'PRQ-20260605-0001','Pengadaan Monitor','approved',1,NULL,1,'2026-06-05 09:12:10','2026-06-05 09:24:00'),(2,'PRQ-20260605-0002','Lab','rejected',1,NULL,1,'2026-06-05 09:48:33','2026-06-05 09:48:33');
+INSERT INTO `inventory_procurements` VALUES (1,'PRQ-20260605-0001','Pengadaan Monitor','approved',1,NULL,1,'2026-06-05 09:12:10','2026-06-05 09:24:00'),(2,'PRQ-20260605-0002','Lab','rejected',1,NULL,1,'2026-06-05 09:48:33','2026-06-05 09:48:33'),(3,'PRQ-20260615-0001','Pengadaan Meja','submitted',1,NULL,1,'2026-06-15 04:49:36','2026-06-15 04:50:15'),(7,'PGD-20260616-0001','Aku','submitted',1,NULL,1,'2026-06-16 11:23:08','2026-06-16 11:23:08'),(8,'PGD-20260616-0002','Pengadaan IT Lab','approved',1,'2026-06-16 11:39:04',1,'2026-06-16 11:25:37','2026-06-16 11:39:04'),(10,'PGD-20260617-0001','Pengadaan Lab Juni','approved',1,NULL,1,'2026-06-17 01:46:37','2026-06-17 01:46:37'),(11,'PGD-20260617-0002','Pengadaan Ruangan Dosen 2026','approved',1,NULL,1,'2026-06-17 02:29:15','2026-06-17 02:29:15'),(12,'PGD-20260617-0003','Pengadaan Maret 2027','approved',1,NULL,1,'2026-06-17 02:38:57','2026-06-17 02:38:57'),(13,'PGD-20260617-0004','Pengadaan 2028','approved',1,NULL,1,'2026-06-17 02:40:59','2026-06-17 02:40:59');
 /*!40000 ALTER TABLE `inventory_procurements` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1783,7 +1781,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `inventory_purchase_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory_purchase_items` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `inventory_purchase_id` bigint(20) unsigned NOT NULL,
@@ -1800,7 +1798,7 @@ CREATE TABLE `inventory_purchase_items` (
   KEY `inventory_purchase_items_item_id_foreign` (`item_id`),
   CONSTRAINT `inventory_purchase_items_inventory_purchase_id_foreign` FOREIGN KEY (`inventory_purchase_id`) REFERENCES `inventory_purchases` (`id`),
   CONSTRAINT `inventory_purchase_items_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1809,7 +1807,7 @@ CREATE TABLE `inventory_purchase_items` (
 
 LOCK TABLES `inventory_purchase_items` WRITE;
 /*!40000 ALTER TABLE `inventory_purchase_items` DISABLE KEYS */;
-INSERT INTO `inventory_purchase_items` VALUES (1,1,1,1,400000.00,NULL,'2026-06-05 09:27:43',1,NULL,0),(2,1,2,12,200000.00,NULL,'2026-06-05 09:27:43',5,NULL,7);
+INSERT INTO `inventory_purchase_items` VALUES (1,1,1,1,400000.00,NULL,'2026-06-05 09:27:43',1,NULL,0),(2,1,2,12,200000.00,NULL,'2026-06-05 09:27:43',5,NULL,7),(6,12,3,1,5000000.00,'2026-06-17 01:47:58','2026-06-17 01:56:41',1,NULL,0),(7,12,4,1,4778888.00,'2026-06-17 01:47:58','2026-06-17 01:56:41',1,NULL,0),(8,13,5,5,100000.00,'2026-06-17 02:32:13','2026-06-17 02:35:20',5,NULL,0),(9,13,6,5,200000.00,'2026-06-17 02:32:13','2026-06-17 02:35:20',5,NULL,0),(10,13,7,3,17777.00,'2026-06-17 02:32:13','2026-06-17 02:35:20',3,NULL,0),(11,14,5,3,56000.00,'2026-06-17 02:41:21','2026-06-17 02:42:13',2,'cacat',1),(12,14,8,2,44777.00,'2026-06-17 02:41:21','2026-06-17 02:42:13',1,'cacat',1),(13,14,9,2,2452525.00,'2026-06-17 02:41:21','2026-06-17 02:42:13',2,NULL,0),(14,14,10,1,22424.00,'2026-06-17 02:41:21','2026-06-17 02:42:13',0,'cacat',1),(15,14,5,13,23223.00,'2026-06-17 02:41:21','2026-06-17 02:42:13',13,NULL,0);
 /*!40000 ALTER TABLE `inventory_purchase_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1819,21 +1817,29 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `inventory_purchases`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory_purchases` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `purchase_number` varchar(255) NOT NULL,
   `inventory_procurement_id` bigint(20) unsigned DEFAULT NULL,
+  `supplier_id` bigint(20) unsigned DEFAULT NULL,
   `purchase_date` date NOT NULL,
   `supplier` varchar(255) DEFAULT NULL,
-  `status` enum('pending','approved','rejected','completed') NOT NULL,
+  `status` enum('draft','pending','approved','rejected','completed') NOT NULL DEFAULT 'pending',
+  `approved_by` bigint(20) unsigned DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `approval_notes` text DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `inventory_purchases_purchase_number_unique` (`purchase_number`),
   KEY `inventory_purchases_inventory_procurement_id_foreign` (`inventory_procurement_id`),
-  CONSTRAINT `inventory_purchases_inventory_procurement_id_foreign` FOREIGN KEY (`inventory_procurement_id`) REFERENCES `inventory_procurements` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `fk_ip_supplier` (`supplier_id`),
+  KEY `fk_po_approver` (`approved_by`),
+  CONSTRAINT `fk_ip_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_po_approver` FOREIGN KEY (`approved_by`) REFERENCES `employees` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_purchases_inventory_procurement_id_foreign` FOREIGN KEY (`inventory_procurement_id`) REFERENCES `inventory_procurements` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1842,7 +1848,7 @@ CREATE TABLE `inventory_purchases` (
 
 LOCK TABLES `inventory_purchases` WRITE;
 /*!40000 ALTER TABLE `inventory_purchases` DISABLE KEYS */;
-INSERT INTO `inventory_purchases` VALUES (1,'PO-202607-0001',1,'2026-07-01','Someone','completed',NULL,'2026-06-05 09:31:16');
+INSERT INTO `inventory_purchases` VALUES (1,'PO-202607-0001',NULL,NULL,'2026-07-01','Someone','completed',NULL,NULL,NULL,NULL,'2026-06-05 09:31:16'),(12,'PO-202606-0002',10,3,'2026-06-18','PT Andalas Prima','completed',2,'2026-06-17 01:55:34',NULL,'2026-06-17 01:47:58','2026-06-17 01:57:14'),(13,'PO-202606-0003',11,3,'2026-06-24','PT Andalas Prima','completed',2,'2026-06-17 02:32:32',NULL,'2026-06-17 02:32:13','2026-06-17 02:35:25'),(14,'PO-202607-0004',12,3,'2026-07-01','PT Andalas Prima','completed',2,'2026-06-17 02:41:30',NULL,'2026-06-17 02:41:21','2026-06-17 02:44:12');
 /*!40000 ALTER TABLE `inventory_purchases` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1852,7 +1858,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `inventory_receiving_attachments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory_receiving_attachments` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `inventory_purchase_id` bigint(20) unsigned NOT NULL,
@@ -1864,7 +1870,7 @@ CREATE TABLE `inventory_receiving_attachments` (
   PRIMARY KEY (`id`),
   KEY `idx_ira_purchase` (`inventory_purchase_id`),
   CONSTRAINT `fk_ira_purchase` FOREIGN KEY (`inventory_purchase_id`) REFERENCES `inventory_purchases` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1873,7 +1879,7 @@ CREATE TABLE `inventory_receiving_attachments` (
 
 LOCK TABLES `inventory_receiving_attachments` WRITE;
 /*!40000 ALTER TABLE `inventory_receiving_attachments` DISABLE KEYS */;
-INSERT INTO `inventory_receiving_attachments` VALUES (1,1,'1780651663255-741736577.jpeg','WhatsApp Image 2026-06-04 at 21.25.16.jpeg','image/jpeg',77244,'2026-06-05 09:27:43');
+INSERT INTO `inventory_receiving_attachments` VALUES (1,1,'1780651663255-741736577.jpeg','WhatsApp Image 2026-06-04 at 21.25.16.jpeg','image/jpeg',77244,'2026-06-05 09:27:43'),(2,12,'1781661401064-635266781.png','Screenshot 2026-06-16 222404.png','image/png',129757,'2026-06-17 01:56:41'),(3,13,'1781663720507-354014606.png','Screenshot 2026-06-16 222225.png','image/png',28735,'2026-06-17 02:35:20'),(4,14,'1781664133041-748512903.png','Screenshot 2026-06-16 225116.png','image/png',241083,'2026-06-17 02:42:13');
 /*!40000 ALTER TABLE `inventory_receiving_attachments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1883,7 +1889,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `inventory_request_approvals`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory_request_approvals` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `inventory_request_id` bigint(20) unsigned NOT NULL,
@@ -1899,7 +1905,7 @@ CREATE TABLE `inventory_request_approvals` (
   KEY `inventory_request_approvals_approver_id_foreign` (`approver_id`),
   CONSTRAINT `inventory_request_approvals_approver_id_foreign` FOREIGN KEY (`approver_id`) REFERENCES `employees` (`id`),
   CONSTRAINT `inventory_request_approvals_inventory_request_id_foreign` FOREIGN KEY (`inventory_request_id`) REFERENCES `inventory_requests` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1908,6 +1914,7 @@ CREATE TABLE `inventory_request_approvals` (
 
 LOCK TABLES `inventory_request_approvals` WRITE;
 /*!40000 ALTER TABLE `inventory_request_approvals` DISABLE KEYS */;
+INSERT INTO `inventory_request_approvals` VALUES (5,9,2,'approved',NULL,'2026-06-16 10:56:49',1,NULL,NULL),(6,13,2,'approved',NULL,'2026-06-16 11:24:35',1,NULL,NULL),(7,12,2,'approved',NULL,'2026-06-16 11:24:38',1,NULL,NULL),(8,19,2,'approved',NULL,'2026-06-17 01:44:38',1,NULL,NULL),(9,16,2,'rejected','Tidak Masuk Akal','2026-06-17 01:44:54',1,NULL,NULL),(10,20,2,'approved',NULL,'2026-06-17 02:27:21',1,NULL,NULL),(11,21,2,'approved',NULL,'2026-06-17 02:36:34',1,NULL,NULL),(12,22,2,'approved',NULL,'2026-06-17 02:37:34',1,NULL,NULL),(13,23,2,'approved',NULL,'2026-06-17 02:39:36',1,NULL,NULL);
 /*!40000 ALTER TABLE `inventory_request_approvals` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1917,7 +1924,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `inventory_request_details`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory_request_details` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `inventory_request_id` bigint(20) unsigned NOT NULL,
@@ -1932,7 +1939,7 @@ CREATE TABLE `inventory_request_details` (
   KEY `inventory_request_details_item_id_foreign` (`item_id`),
   CONSTRAINT `inventory_request_details_inventory_request_id_foreign` FOREIGN KEY (`inventory_request_id`) REFERENCES `inventory_requests` (`id`),
   CONSTRAINT `inventory_request_details_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1941,6 +1948,7 @@ CREATE TABLE `inventory_request_details` (
 
 LOCK TABLES `inventory_request_details` WRITE;
 /*!40000 ALTER TABLE `inventory_request_details` DISABLE KEYS */;
+INSERT INTO `inventory_request_details` VALUES (4,9,NULL,'RAM 3GB',NULL,5,'2026-06-16 10:56:22','2026-06-16 10:56:22'),(5,9,NULL,'SSD 256 GB',NULL,3,'2026-06-16 10:56:22','2026-06-16 10:56:22'),(6,9,NULL,'Teh Kotak 1ml',NULL,1,'2026-06-16 10:56:22','2026-06-16 10:56:22'),(9,12,NULL,'ROG ZEPHYRUS',NULL,3,'2026-06-16 11:23:49','2026-06-16 11:23:49'),(10,13,NULL,'Mouse',NULL,1,'2026-06-16 11:24:07','2026-06-16 11:24:07'),(11,13,NULL,'Meja Gaming',NULL,1,'2026-06-16 11:24:07','2026-06-16 11:24:07'),(14,16,NULL,'Meja Gaming',NULL,3,'2026-06-16 12:36:09','2026-06-16 12:36:09'),(15,16,NULL,'Mouse',NULL,1,'2026-06-16 12:36:09','2026-06-16 12:36:09'),(20,19,NULL,'Meja Gaming',NULL,1,'2026-06-17 01:44:17','2026-06-17 01:44:17'),(21,19,NULL,'Meja Kantor',NULL,1,'2026-06-17 01:44:17','2026-06-17 01:44:17'),(22,20,NULL,'Meja',NULL,5,'2026-06-17 02:23:51','2026-06-17 02:23:51'),(23,20,NULL,'Kursi',NULL,5,'2026-06-17 02:23:51','2026-06-17 02:23:51'),(24,20,NULL,'TV Proyektor',NULL,3,'2026-06-17 02:23:51','2026-06-17 02:23:51'),(25,21,NULL,'Komputer',NULL,2,'2026-06-17 02:36:23','2026-06-17 02:36:23'),(26,21,NULL,'PC',NULL,1,'2026-06-17 02:36:23','2026-06-17 02:36:23'),(27,21,NULL,'Meja',NULL,13,'2026-06-17 02:36:23','2026-06-17 02:36:23'),(28,22,NULL,'Meja',NULL,3,'2026-06-17 02:37:23','2026-06-17 02:37:23'),(29,22,NULL,'TV',NULL,2,'2026-06-17 02:37:23','2026-06-17 02:37:23'),(30,23,NULL,'Mouse',NULL,2,'2026-06-17 02:39:28','2026-06-17 02:39:28'),(31,23,NULL,'Meja Gaming',NULL,3,'2026-06-17 02:39:28','2026-06-17 02:39:28');
 /*!40000 ALTER TABLE `inventory_request_details` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1950,7 +1958,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `inventory_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory_requests` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `request_number` varchar(255) NOT NULL,
@@ -1958,21 +1966,21 @@ CREATE TABLE `inventory_requests` (
   `employee_id` bigint(20) unsigned NOT NULL,
   `request_date` date NOT NULL,
   `status` enum('pending','approved','rejected','fulfilled') NOT NULL,
+  `inventory_procurement_id` bigint(20) unsigned DEFAULT NULL,
   `approved_by` bigint(20) unsigned DEFAULT NULL,
   `approved_at` timestamp NULL DEFAULT NULL,
   `approved_by_id` bigint(20) unsigned NOT NULL,
-  `inventory_procurement_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `inventory_requests_request_number_unique` (`request_number`),
   KEY `inventory_requests_employee_id_foreign` (`employee_id`),
   KEY `inventory_requests_approved_by_foreign` (`approved_by`),
-  KEY `inventory_requests_inventory_procurement_id_foreign` (`inventory_procurement_id`),
+  KEY `fk_req_procurement` (`inventory_procurement_id`),
+  CONSTRAINT `fk_req_procurement` FOREIGN KEY (`inventory_procurement_id`) REFERENCES `inventory_procurements` (`id`) ON DELETE SET NULL,
   CONSTRAINT `inventory_requests_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `employees` (`id`),
-  CONSTRAINT `inventory_requests_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
-  CONSTRAINT `inventory_requests_inventory_procurement_id_foreign` FOREIGN KEY (`inventory_procurement_id`) REFERENCES `inventory_procurements` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  CONSTRAINT `inventory_requests_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=69 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1981,6 +1989,7 @@ CREATE TABLE `inventory_requests` (
 
 LOCK TABLES `inventory_requests` WRITE;
 /*!40000 ALTER TABLE `inventory_requests` DISABLE KEYS */;
+INSERT INTO `inventory_requests` VALUES (9,'PRQ-20260616-0001',NULL,1,'2026-06-16','approved',7,2,'2026-06-16 10:56:49',0,'2026-06-16 10:56:22','2026-06-16 11:23:08'),(12,'PRQ-20260616-0002',NULL,1,'2026-06-16','approved',8,2,'2026-06-16 11:24:38',0,'2026-06-16 11:23:49','2026-06-16 11:25:37'),(13,'PRQ-20260616-0003',NULL,1,'2026-06-16','approved',8,2,'2026-06-16 11:24:35',0,'2026-06-16 11:24:07','2026-06-16 11:25:37'),(16,'PRQ-20260616-0004',NULL,1,'2026-06-16','rejected',NULL,NULL,NULL,0,'2026-06-16 12:36:09','2026-06-16 12:36:09'),(19,'PRQ-20260617-0001','Lab Komputer',1,'2026-06-17','fulfilled',10,2,'2026-06-17 01:44:38',0,'2026-06-17 01:44:17','2026-06-17 01:57:14'),(20,'PRQ-20260617-0002','Kebutuhan Ruangan Dosen',1,'2026-06-17','fulfilled',11,2,'2026-06-17 02:27:21',0,'2026-06-17 02:23:51','2026-06-17 02:35:25'),(21,'PRQ-20260617-0003','Kebutuhan LSD',1,'2026-06-17','fulfilled',12,2,'2026-06-17 02:36:34',0,'2026-06-17 02:36:23','2026-06-17 02:44:12'),(22,'PRQ-20260617-0004','Lab LSE',1,'2026-06-17','fulfilled',12,2,'2026-06-17 02:37:34',0,'2026-06-17 02:37:23','2026-06-17 02:44:12'),(23,'PRQ-20260617-0005','Lab RDBI',1,'2026-06-17','approved',13,2,'2026-06-17 02:39:36',0,'2026-06-17 02:39:28','2026-06-17 02:40:59');
 /*!40000 ALTER TABLE `inventory_requests` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1990,7 +1999,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `inventory_transactions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory_transactions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `item_id` bigint(20) unsigned NOT NULL,
@@ -2004,7 +2013,7 @@ CREATE TABLE `inventory_transactions` (
   PRIMARY KEY (`id`),
   KEY `inventory_transactions_item_id_foreign` (`item_id`),
   CONSTRAINT `inventory_transactions_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2013,7 +2022,7 @@ CREATE TABLE `inventory_transactions` (
 
 LOCK TABLES `inventory_transactions` WRITE;
 /*!40000 ALTER TABLE `inventory_transactions` DISABLE KEYS */;
-INSERT INTO `inventory_transactions` VALUES (1,1,'out',1,'2026-06-05','PO-202607-0001','Barang cacat / rusak - Rusak Parah','2026-06-05 09:28:08','2026-06-05 09:28:08'),(2,1,'in',1,'2026-06-05','PO-202607-0001','Barang ganti - Sudah Diganti dengan yang baik','2026-06-05 09:28:52','2026-06-05 09:28:52'),(3,1,'in',1,'2026-06-05','PO-202607-0001','Penerimaan barang dikonfirmasi','2026-06-05 09:31:16','2026-06-05 09:31:16'),(4,2,'in',12,'2026-06-05','PO-202607-0001','Penerimaan barang dikonfirmasi','2026-06-05 09:31:16','2026-06-05 09:31:16');
+INSERT INTO `inventory_transactions` VALUES (1,1,'out',1,'2026-06-05','PO-202607-0001','Barang cacat / rusak - Rusak Parah','2026-06-05 09:28:08','2026-06-05 09:28:08'),(2,1,'in',1,'2026-06-05','PO-202607-0001','Barang ganti - Sudah Diganti dengan yang baik','2026-06-05 09:28:52','2026-06-05 09:28:52'),(3,1,'in',1,'2026-06-05','PO-202607-0001','Penerimaan barang dikonfirmasi','2026-06-05 09:31:16','2026-06-05 09:31:16'),(4,2,'in',12,'2026-06-05','PO-202607-0001','Penerimaan barang dikonfirmasi','2026-06-05 09:31:16','2026-06-05 09:31:16'),(5,3,'in',1,'2026-06-17','PO-202606-0002','Penerimaan barang dikonfirmasi','2026-06-17 01:57:14','2026-06-17 01:57:14'),(6,4,'in',1,'2026-06-17','PO-202606-0002','Penerimaan barang dikonfirmasi','2026-06-17 01:57:14','2026-06-17 01:57:14'),(7,5,'in',5,'2026-06-17','PO-202606-0003','Penerimaan barang dikonfirmasi','2026-06-17 02:35:25','2026-06-17 02:35:25'),(8,6,'in',5,'2026-06-17','PO-202606-0003','Penerimaan barang dikonfirmasi','2026-06-17 02:35:25','2026-06-17 02:35:25'),(9,7,'in',3,'2026-06-17','PO-202606-0003','Penerimaan barang dikonfirmasi','2026-06-17 02:35:25','2026-06-17 02:35:25'),(10,5,'out',1,'2026-06-17','PO-202607-0004','Barang cacat / rusak','2026-06-17 02:42:35','2026-06-17 02:42:35'),(11,8,'out',1,'2026-06-17','PO-202607-0004','Barang cacat / rusak','2026-06-17 02:42:44','2026-06-17 02:42:44'),(12,10,'out',1,'2026-06-17','PO-202607-0004','Barang cacat / rusak','2026-06-17 02:42:56','2026-06-17 02:42:56'),(13,10,'in',1,'2026-06-17','PO-202607-0004','Barang ganti dari vendor','2026-06-17 02:43:19','2026-06-17 02:43:19'),(14,8,'in',1,'2026-06-17','PO-202607-0004','Barang ganti dari vendor','2026-06-17 02:43:22','2026-06-17 02:43:22'),(15,5,'in',1,'2026-06-17','PO-202607-0004','Barang ganti dari vendor','2026-06-17 02:43:32','2026-06-17 02:43:32'),(16,5,'in',3,'2026-06-17','PO-202607-0004','Penerimaan barang dikonfirmasi','2026-06-17 02:44:12','2026-06-17 02:44:12'),(17,8,'in',2,'2026-06-17','PO-202607-0004','Penerimaan barang dikonfirmasi','2026-06-17 02:44:12','2026-06-17 02:44:12'),(18,9,'in',2,'2026-06-17','PO-202607-0004','Penerimaan barang dikonfirmasi','2026-06-17 02:44:12','2026-06-17 02:44:12'),(19,10,'in',1,'2026-06-17','PO-202607-0004','Penerimaan barang dikonfirmasi','2026-06-17 02:44:12','2026-06-17 02:44:12'),(20,5,'in',13,'2026-06-17','PO-202607-0004','Penerimaan barang dikonfirmasi','2026-06-17 02:44:12','2026-06-17 02:44:12');
 /*!40000 ALTER TABLE `inventory_transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2023,7 +2032,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `items` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -2035,7 +2044,7 @@ CREATE TABLE `items` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `items_code_unique` (`code`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2044,7 +2053,7 @@ CREATE TABLE `items` (
 
 LOCK TABLES `items` WRITE;
 /*!40000 ALTER TABLE `items` DISABLE KEYS */;
-INSERT INTO `items` VALUES (1,'ROG ZEPHYRUS','ITM-MQ0PZ8U7-294','unit',0,NULL,'2026-06-05 09:26:25','2026-06-05 09:26:25'),(2,'LENOVO IDEAPAD','ITM-MQ0PZ8UE-581','unit',0,NULL,'2026-06-05 09:26:25','2026-06-05 09:26:25');
+INSERT INTO `items` VALUES (1,'ROG ZEPHYRUS','ITM-MQ0PZ8U7-294','unit',0,NULL,'2026-06-05 09:26:25','2026-06-05 09:26:25'),(2,'LENOVO IDEAPAD','ITM-MQ0PZ8UE-581','unit',0,NULL,'2026-06-05 09:26:25','2026-06-05 09:26:25'),(3,'Meja Gaming','ITM-MQHEVWIX-972','unit',0,NULL,'2026-06-17 01:47:58','2026-06-17 01:47:58'),(4,'Meja Kantor','ITM-MQHEVWJ3-519','unit',0,NULL,'2026-06-17 01:47:58','2026-06-17 01:47:58'),(5,'Meja','ITM-MQHGGSQH-512','unit',0,NULL,'2026-06-17 02:32:13','2026-06-17 02:32:13'),(6,'Kursi','ITM-MQHGGSQP-914','unit',0,NULL,'2026-06-17 02:32:13','2026-06-17 02:32:13'),(7,'TV Proyektor','ITM-MQHGGSQU-438','unit',0,NULL,'2026-06-17 02:32:13','2026-06-17 02:32:13'),(8,'TV','ITM-MQHGSJM5-969','unit',0,NULL,'2026-06-17 02:41:21','2026-06-17 02:41:21'),(9,'Komputer','ITM-MQHGSJMB-965','unit',0,NULL,'2026-06-17 02:41:21','2026-06-17 02:41:21'),(10,'PC','ITM-MQHGSJMF-108','unit',0,NULL,'2026-06-17 02:41:21','2026-06-17 02:41:21'),(16,'Barang E2E 1781671669838','ITM-MQHLBHGJ-940','unit',0,NULL,'2026-06-17 04:48:03','2026-06-17 04:48:03'),(34,'Barang PO 1782086525564','ITM-MQOGB1D9-227','unit',0,NULL,'2026-06-22 00:02:07','2026-06-22 00:02:07'),(36,'Barang PO 1782086558914','ITM-MQOGBQ2V-805','unit',0,NULL,'2026-06-22 00:02:39','2026-06-22 00:02:39'),(39,'Barang PO 1782086659915','ITM-MQOGDVUT-41','unit',0,NULL,'2026-06-22 00:04:20','2026-06-22 00:04:20');
 /*!40000 ALTER TABLE `items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2054,7 +2063,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `job_batches`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `job_batches` (
   `id` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -2085,7 +2094,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `job_responsibilities`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `job_responsibilities` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `structural_position_id` bigint(20) unsigned NOT NULL,
@@ -2116,7 +2125,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `jobs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `jobs` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `queue` varchar(255) NOT NULL,
@@ -2145,7 +2154,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `journal_publications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `journal_publications` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `publication_id` bigint(20) unsigned NOT NULL,
@@ -2180,7 +2189,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `leave_approvals`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `leave_approvals` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `leave_request_id` bigint(20) unsigned NOT NULL,
@@ -2215,7 +2224,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `leave_balances`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `leave_balances` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `employee_id` bigint(20) unsigned NOT NULL,
@@ -2249,7 +2258,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `leave_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `leave_requests` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `employee_id` bigint(20) unsigned NOT NULL,
@@ -2293,7 +2302,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `leave_types`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `leave_types` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -2321,7 +2330,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `lecturer_functional_positions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lecturer_functional_positions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `lecturer_id` bigint(20) unsigned NOT NULL,
@@ -2356,7 +2365,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `lecturers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lecturers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `academic_rank` varchar(255) NOT NULL,
@@ -2384,7 +2393,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `meeting_consumption_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `meeting_consumption_requests` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `meeting_id` bigint(20) unsigned NOT NULL,
@@ -2419,7 +2428,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `meeting_documents`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `meeting_documents` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `meeting_id` bigint(20) unsigned NOT NULL,
@@ -2454,7 +2463,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `meeting_external_participants`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `meeting_external_participants` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `meeting_id` bigint(20) unsigned NOT NULL,
@@ -2484,7 +2493,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `meeting_minutes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `meeting_minutes` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `meeting_id` bigint(20) unsigned NOT NULL,
@@ -2518,7 +2527,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `meeting_participants`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `meeting_participants` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `meeting_id` bigint(20) unsigned NOT NULL,
@@ -2549,7 +2558,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `meetings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `meetings` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
@@ -2597,7 +2606,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `model_has_permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `model_has_permissions` (
   `permission_id` bigint(20) unsigned NOT NULL,
   `model_type` varchar(255) NOT NULL,
@@ -2623,7 +2632,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `model_has_roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `model_has_roles` (
   `role_id` bigint(20) unsigned NOT NULL,
   `model_type` varchar(255) NOT NULL,
@@ -2650,7 +2659,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `nomenclature_classifications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nomenclature_classifications` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `nomenclature_id` bigint(20) unsigned NOT NULL,
@@ -2679,7 +2688,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `nomenclatures`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nomenclatures` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -2707,7 +2716,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `official_travel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `official_travel` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `request_number` varchar(255) NOT NULL,
@@ -2751,7 +2760,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `official_travel_approvals`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `official_travel_approvals` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `official_travel_id` bigint(20) unsigned NOT NULL,
@@ -2785,7 +2794,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `official_travel_documents`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `official_travel_documents` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `official_travel_id` bigint(20) unsigned NOT NULL,
@@ -2816,7 +2825,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `official_travel_itineraries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `official_travel_itineraries` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `official_travel_id` bigint(20) unsigned NOT NULL,
@@ -2847,7 +2856,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `official_travel_members`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `official_travel_members` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `official_travel_id` bigint(20) unsigned NOT NULL,
@@ -2881,7 +2890,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `organization_units`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `organization_units` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -2915,7 +2924,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `overtime_approval_logs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overtime_approval_logs` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `overtime_request_id` bigint(20) unsigned NOT NULL,
@@ -2949,7 +2958,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `overtime_request_members`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overtime_request_members` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `overtime_request_id` bigint(20) unsigned NOT NULL,
@@ -2985,7 +2994,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `overtime_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overtime_requests` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `request_number` varchar(255) NOT NULL,
@@ -3027,7 +3036,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `partner_contacts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `partner_contacts` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `partner_id` bigint(20) unsigned NOT NULL,
@@ -3060,7 +3069,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `partner_follow_ups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `partner_follow_ups` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `partner_potential_id` bigint(20) unsigned NOT NULL,
@@ -3094,7 +3103,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `partner_potential_fields`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `partner_potential_fields` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `partner_potential_id` bigint(20) unsigned NOT NULL,
@@ -3122,7 +3131,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `partner_potentials`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `partner_potentials` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `partner_id` bigint(20) unsigned NOT NULL,
@@ -3152,7 +3161,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `partners`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `partners` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -3182,7 +3191,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `partnership_documents`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `partnership_documents` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `partnership_id` bigint(20) unsigned NOT NULL,
@@ -3211,7 +3220,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `partnership_implementations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `partnership_implementations` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `partnership_id` bigint(20) unsigned NOT NULL,
@@ -3243,7 +3252,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `partnerships`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `partnerships` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `partner_id` bigint(20) unsigned NOT NULL,
@@ -3280,7 +3289,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `password_reset_tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `password_reset_tokens` (
   `email` varchar(255) NOT NULL,
   `token` varchar(255) NOT NULL,
@@ -3304,7 +3313,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `permissions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -3332,7 +3341,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `publication_authors`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `publication_authors` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `publication_id` bigint(20) unsigned NOT NULL,
@@ -3364,7 +3373,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `publications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `publications` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
@@ -3396,7 +3405,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `research`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `research` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
@@ -3427,7 +3436,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `research_members`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `research_members` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `research_id` bigint(20) unsigned NOT NULL,
@@ -3458,7 +3467,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `role_has_permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `role_has_permissions` (
   `permission_id` bigint(20) unsigned NOT NULL,
   `role_id` bigint(20) unsigned NOT NULL,
@@ -3485,7 +3494,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `roles` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -3513,7 +3522,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `room_loans`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `room_loans` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `room_id` bigint(20) unsigned NOT NULL,
@@ -3551,7 +3560,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `room_maintenance_request_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `room_maintenance_request_log` (
   `id` bigint(20) NOT NULL,
   `room_maintenance_request_id` bigint(20) unsigned DEFAULT NULL,
@@ -3591,7 +3600,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `room_maintenance_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `room_maintenance_requests` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `room_id` bigint(20) unsigned NOT NULL,
@@ -3626,7 +3635,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `rooms`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rooms` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `asset_id` bigint(20) unsigned NOT NULL,
@@ -3666,7 +3675,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `sessions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sessions` (
   `id` varchar(255) NOT NULL,
   `user_id` bigint(20) unsigned DEFAULT NULL,
@@ -3695,7 +3704,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `staff`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `staff` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `position` varchar(255) NOT NULL,
@@ -3722,7 +3731,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `staff_nomenclature_histories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `staff_nomenclature_histories` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `staff_id` bigint(20) unsigned NOT NULL,
@@ -3755,7 +3764,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `structural_position_histories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `structural_position_histories` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `employee_id` bigint(20) unsigned NOT NULL,
@@ -3790,7 +3799,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `structural_positions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `structural_positions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -3822,7 +3831,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `student_request_active_references`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `student_request_active_references` (
   `id` bigint(20) unsigned NOT NULL,
   `student_requests_id` bigint(20) unsigned NOT NULL,
@@ -3862,7 +3871,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `student_request_grad_references`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `student_request_grad_references` (
   `id` bigint(20) unsigned NOT NULL,
   `student_requests_id` bigint(20) unsigned NOT NULL,
@@ -3902,7 +3911,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `student_request_refund`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `student_request_refund` (
   `id` bigint(20) unsigned NOT NULL,
   `student_request_id` bigint(20) unsigned DEFAULT NULL,
@@ -3936,7 +3945,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `student_request_refund_approvals`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `student_request_refund_approvals` (
   `id` bigint(20) unsigned NOT NULL,
   `student_request_refund_id` bigint(20) unsigned NOT NULL,
@@ -3970,7 +3979,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `student_request_resignation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `student_request_resignation` (
   `id` bigint(20) unsigned NOT NULL,
   `student_requests_id` bigint(20) unsigned NOT NULL,
@@ -4003,7 +4012,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `student_request_resignation_approvals`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `student_request_resignation_approvals` (
   `id` bigint(20) unsigned NOT NULL,
   `student_request_resignation_id` bigint(20) unsigned NOT NULL,
@@ -4037,7 +4046,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `student_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `student_requests` (
   `id` bigint(20) unsigned NOT NULL,
   `request_nunmber` varchar(45) DEFAULT NULL,
@@ -4070,7 +4079,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `students`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `students` (
   `id` bigint(20) unsigned NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -4117,12 +4126,43 @@ LOCK TABLES `students` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `suppliers`
+--
+
+DROP TABLE IF EXISTS `suppliers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `suppliers` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `code` varchar(100) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `phone` varchar(100) DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `suppliers`
+--
+
+LOCK TABLES `suppliers` WRITE;
+/*!40000 ALTER TABLE `suppliers` DISABLE KEYS */;
+INSERT INTO `suppliers` VALUES (3,'PT Andalas Prima','SPL-001','habibillahmikail@gmail.com','089684558171','Kampung Pagai, Ikur Koto RT 03 RW 08, Koto Tangah','2026-06-17 01:47:18','2026-06-17 01:47:18');
+/*!40000 ALTER TABLE `suppliers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `survey_answer_options`
 --
 
 DROP TABLE IF EXISTS `survey_answer_options`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `survey_answer_options` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `survey_answer_id` bigint(20) unsigned NOT NULL,
@@ -4152,7 +4192,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `survey_answers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `survey_answers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `survey_response_id` bigint(20) unsigned NOT NULL,
@@ -4183,7 +4223,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `survey_invitations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `survey_invitations` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `survey_id` bigint(20) unsigned NOT NULL,
@@ -4217,7 +4257,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `survey_question_assignments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `survey_question_assignments` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `survey_id` bigint(20) unsigned NOT NULL,
@@ -4248,7 +4288,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `survey_question_options`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `survey_question_options` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `survey_question_id` bigint(20) unsigned NOT NULL,
@@ -4277,7 +4317,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `survey_questions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `survey_questions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `question_text` text NOT NULL,
@@ -4304,7 +4344,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `survey_responses`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `survey_responses` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `survey_id` bigint(20) unsigned NOT NULL,
@@ -4335,7 +4375,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `surveys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `surveys` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
@@ -4368,7 +4408,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `travel_cost_components`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `travel_cost_components` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -4396,7 +4436,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `travel_cost_standards`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `travel_cost_standards` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `city_id` bigint(20) unsigned NOT NULL,
@@ -4433,7 +4473,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `travel_expenses`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `travel_expenses` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `official_travel_id` bigint(20) unsigned NOT NULL,
@@ -4472,7 +4512,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -4509,4 +4549,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-15 10:48:36
+-- Dump completed on 2026-06-22 15:14:25

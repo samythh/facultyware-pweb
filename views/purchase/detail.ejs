@@ -20,7 +20,7 @@
             <p class="text-sm text-muted-foreground">Rincian lengkap dan status transaksi pesanan pembelian.</p>
           </div>
           <div class="flex gap-2 shrink-0">
-            <% if (po.status === 'pending') { %>
+            <% if (po.status === 'pending' && can('manage_approval')) { %>
               <form method="POST" action="/purchase/<%= po.id %>/approve" class="inline">
                 <button type="submit" class="btn bg-emerald-600 hover:bg-emerald-700 text-white">Setujui PO</button>
               </form>
