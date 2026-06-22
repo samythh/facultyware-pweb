@@ -77,7 +77,7 @@ router.get('/inbox', async (req, res) => {
         const [procurements] = await db.execute(query);
 
         res.render('inbox', {
-            title: 'Inbox Wakil Dekan',
+            title: 'Persetujuan Permintaan',
             user: req.session.username,
             tab: 'inbox',
             procurements: procurements,
@@ -116,7 +116,7 @@ router.get('/history', async (req, res) => {
         const [historyProcurements] = await db.execute(query);
 
         res.render('inbox', {
-            title: 'Archive Pengadaan',
+            title: 'Arsip Pengadaan',
             user: req.session.username,
             tab: 'history',
             procurements: historyProcurements,
@@ -141,12 +141,16 @@ router.get('/po', async (req, res) => {
         const query = `
             SELECT pur.id, pur.purchase_number, pur.supplier, pur.purchase_date,
                    pur.created_at, pur.status,
-                   COALESCE(SUM(pi.quantity * pi.price), 0) AS total
+                   COALESCE(SUM(pi.quantity * pi.price), 0) AS total,
+                   COALESCE(NULLIF(proc.title, ''),
+                            (SELECT item_name FROM inventory_procurement_items WHERE inventory_procurement_id = proc.id LIMIT 1),
+                            'Pengadaan') AS judul
             FROM inventory_purchases pur
             LEFT JOIN inventory_purchase_items pi ON pi.inventory_purchase_id = pur.id
+            LEFT JOIN inventory_procurements proc ON proc.id = pur.inventory_procurement_id
             WHERE pur.status = 'pending'
             GROUP BY pur.id, pur.purchase_number, pur.supplier, pur.purchase_date,
-                     pur.created_at, pur.status
+                     pur.created_at, pur.status, proc.id, proc.title
             ORDER BY ${sort.orderBy}
         `;
         const [purchases] = await db.execute(query);
@@ -173,13 +177,17 @@ router.get('/po/archive', async (req, res) => {
             SELECT pur.id, pur.purchase_number, pur.supplier, pur.purchase_date,
                    pur.created_at, pur.status, pur.approved_at, pur.approval_notes,
                    COALESCE(SUM(pi.quantity * pi.price), 0) AS total,
-                   e.name AS approver_name
+                   e.name AS approver_name,
+                   COALESCE(NULLIF(proc.title, ''),
+                            (SELECT item_name FROM inventory_procurement_items WHERE inventory_procurement_id = proc.id LIMIT 1),
+                            'Pengadaan') AS judul
             FROM inventory_purchases pur
             LEFT JOIN inventory_purchase_items pi ON pi.inventory_purchase_id = pur.id
             LEFT JOIN employees e ON pur.approved_by = e.id
+            LEFT JOIN inventory_procurements proc ON proc.id = pur.inventory_procurement_id
             WHERE pur.status IN ('approved', 'rejected', 'completed')
             GROUP BY pur.id, pur.purchase_number, pur.supplier, pur.purchase_date,
-                     pur.created_at, pur.status, pur.approved_at, pur.approval_notes, e.name
+                     pur.created_at, pur.status, pur.approved_at, pur.approval_notes, e.name, proc.id, proc.title
             ORDER BY ${sort.orderBy}
         `;
         const [purchases] = await db.execute(query);

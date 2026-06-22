@@ -35,8 +35,9 @@ test.describe('Hak akses', () => {
   test('sidebar wakil dekan hanya memuat menu persetujuan', async ({ page }) => {
     await login(page, 'wadir');
     const sidebar = page.locator('#sidebar');
-    await expect(sidebar.getByText('Inbox Wakil Dekan', { exact: true })).toBeVisible();
+    await expect(sidebar.getByText('Persetujuan Permintaan', { exact: true })).toBeVisible();
     await expect(sidebar.getByText('Persetujuan Belanja (PO)', { exact: true })).toBeVisible();
+    await expect(sidebar.getByText('Arsip Pengadaan', { exact: true })).toBeVisible();
     await expect(sidebar.getByText('Arsip PO', { exact: true })).toBeVisible();
   });
 });

@@ -34,7 +34,10 @@
               <% if (purchases && purchases.length > 0) { %>
                 <% purchases.forEach(function (po) { %>
                   <tr class="hover:bg-muted/30 transition-colors cursor-pointer" onclick="window.location.href='/purchase/<%= po.id %>'">
-                    <td class="p-4 font-mono font-semibold text-primary"><%= po.purchase_number %></td>
+                    <td class="p-4">
+                      <span class="font-mono font-semibold text-primary block"><%= po.purchase_number %></span>
+                      <span class="text-xs text-muted-foreground block mt-0.5 max-w-[240px] truncate" title="<%= po.judul %>"><%= po.judul %></span>
+                    </td>
                     <td class="p-4 font-medium"><%= po.supplier || '-' %></td>
                     <td class="p-4 text-right font-mono font-semibold text-primary">Rp <%= Number(po.total || 0).toLocaleString('id-ID') %></td>
                     <td class="p-4 text-muted-foreground"><%= po.approver_name || '-' %></td>
