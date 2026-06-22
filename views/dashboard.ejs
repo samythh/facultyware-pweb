@@ -5,15 +5,22 @@
   <%- include('partials/navbar') %>
 
   <style>
-    /* Angka KPI dashboard — selaras sistem desain (info-tile + token tema). */
-    .kpi-num { font-size: 1.7rem; font-weight: 700; line-height: 1.15; letter-spacing: -.01em; color: var(--color-foreground); }
-    .kpi-num.is-money { font-size: 1.2rem; }
-    .kpi-num.is-primary { color: var(--color-primary); }
-    .kpi-num.is-amber { color: #d97706; }
-    .kpi-num.is-danger { color: var(--color-destructive); }
-    .kpi-sub { font-size: .7rem; color: var(--color-muted-foreground); margin-top: .3rem; }
-    .dash-section-title { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted-foreground); font-weight: 600; margin-bottom: .85rem; }
-    .panel-title { font-size: 1.05rem; font-weight: 600; color: var(--color-foreground); }
+    /* KPI strip — deretan angka dengan pembatas tipis (bukan kotak tebal). */
+    .kpi-strip { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+      background: var(--color-border); border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl); overflow: hidden; }
+    @media (min-width: 768px) { .kpi-strip.cols-4 { grid-template-columns: repeat(4, 1fr); }
+      .kpi-strip.cols-3 { grid-template-columns: repeat(3, 1fr); } }
+    .kpi-cell { background: var(--color-card); padding: 1.2rem 1.4rem; }
+    .kpi-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted-foreground); font-weight: 600; }
+    .kpi-num { font-size: 1.7rem; font-weight: 700; line-height: 1.15; letter-spacing: -.01em; color: var(--color-foreground); margin-top: .4rem; }
+    .kpi-num.money { font-size: 1.2rem; }
+    .kpi-num.primary { color: var(--color-primary); }
+    .kpi-num.amber { color: #d97706; }
+    .kpi-num.danger { color: var(--color-destructive); }
+    .kpi-sub { font-size: .7rem; color: var(--color-muted-foreground); margin-top: .35rem; }
+    .dash-label { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted-foreground); font-weight: 600; margin-bottom: .85rem; }
+    .panel-title { font-size: 1.02rem; font-weight: 600; color: var(--color-foreground); }
   </style>
 
   <div class="p-4 md:p-6 xl:p-12">
@@ -24,192 +31,146 @@
       </header>
 
       <!-- ═══════════════════════════════════════════════════════════════ -->
-      <!-- DASBOR WAKIL DEKAN: Fokus Persetujuan                            -->
+      <!-- WAKIL DEKAN: fokus pada keputusan persetujuan                    -->
       <!-- ═══════════════════════════════════════════════════════════════ -->
       <% if (isApprover && wakilDekanStats) { %>
       <section class="mb-10" id="sec-wadir">
-        <p class="dash-section-title">Ringkasan Persetujuan</p>
 
-        <!-- Hero: Menunggu Persetujuan Anda -->
+        <!-- Hero: yang menunggu keputusan -->
         <div class="card p-6 mb-6" style="border-left: 3px solid #d97706;">
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-            <div class="flex items-start gap-3">
-              <span class="act-icon act-info" style="width:2.5rem;height:2.5rem;">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div class="flex items-center gap-4">
+              <span class="act-icon act-info" style="width:2.75rem;height:2.75rem;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </span>
               <div>
                 <h2 class="panel-title">Menunggu Persetujuan Anda</h2>
-                <p class="text-sm text-muted-foreground mt-0.5">Dokumen yang memerlukan tindakan segera.</p>
+                <p class="text-sm text-muted-foreground mt-0.5"><%= wakilDekanStats.permintaanPending %> permintaan &middot; <%= wakilDekanStats.poPending %> purchase order</p>
               </div>
             </div>
-            <div class="flex items-center gap-6 text-right shrink-0">
+            <div class="flex items-center gap-8 text-right shrink-0">
               <div>
-                <div class="kpi-num is-amber"><%= wakilDekanStats.totalAntrean %></div>
+                <div class="kpi-num amber"><%= wakilDekanStats.totalAntrean %></div>
                 <div class="kpi-sub">Dokumen antre</div>
               </div>
               <div style="width:1px;height:42px;background:var(--color-border);"></div>
               <div>
-                <div class="kpi-num is-money is-primary"><%= wakilDekanStats.nominalPOPending_label %></div>
+                <div class="kpi-num money primary"><%= wakilDekanStats.nominalPOPending_label %></div>
                 <div class="kpi-sub">Nilai PO menunggu</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Grid: Ringkasan bulanan + Tabel PO pending -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div class="card p-6 flex flex-col justify-between">
-            <div>
-              <h3 class="panel-title mb-4">Belanja Bulan Ini</h3>
-              <div class="flex flex-col gap-3">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-muted-foreground">Disetujui</span>
-                  <span class="font-mono font-semibold is-primary" style="color:var(--color-primary);"><%= wakilDekanStats.belanjaDisetujuiBulanIni_label %></span>
-                </div>
-                <div style="height:1px;background:var(--color-border);"></div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-muted-foreground">Ditolak</span>
-                  <span class="font-mono font-semibold" style="color:var(--color-destructive);"><%= wakilDekanStats.belanjaDitolakBulanIni_label %></span>
-                </div>
-              </div>
-            </div>
-            <div class="flex flex-wrap gap-3 mt-6">
-              <a href="/approval/inbox" class="btn-outline flex-1 justify-center text-sm">Persetujuan Permintaan</a>
-              <a href="/approval/po" class="btn flex-1 justify-center text-sm">Persetujuan Belanja</a>
-            </div>
+        <!-- Daftar PO menunggu persetujuan (aksi utama: klik untuk tinjau) -->
+        <div class="card card--table overflow-hidden mb-6">
+          <div class="p-4 border-b flex justify-between items-center">
+            <h3 class="panel-title">PO Menunggu Persetujuan Belanja</h3>
+            <a href="/approval/po" class="text-sm font-medium text-primary hover:underline">Lihat semua &rarr;</a>
           </div>
-
-          <div class="card card--table overflow-hidden">
-            <div class="p-4 border-b flex justify-between items-center">
-              <h3 class="panel-title">PO Menunggu Persetujuan</h3>
-              <a href="/approval/po" class="text-sm font-medium text-primary hover:underline">Lihat semua &rarr;</a>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse text-sm">
-                <thead>
-                  <tr class="bg-muted/50 border-b">
-                    <th class="p-3 font-semibold text-muted-foreground">No PO</th>
-                    <th class="p-3 font-semibold text-muted-foreground">Pemasok</th>
-                    <th class="p-3 font-semibold text-muted-foreground text-right">Nilai</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y">
-                  <% if (wakilDekanStats.daftarPOPending && wakilDekanStats.daftarPOPending.length > 0) { %>
-                    <% wakilDekanStats.daftarPOPending.forEach(function (po) { %>
-                      <tr class="hover:bg-muted/30 transition-colors cursor-pointer" onclick="window.location.href='/purchase/<%= po.id %>'">
-                        <td class="p-3 font-mono font-semibold text-primary"><%= po.purchase_number %></td>
-                        <td class="p-3"><%= po.supplier || '-' %></td>
-                        <td class="p-3 text-right font-mono font-semibold"><%= fmtRp(po.total) %></td>
-                      </tr>
-                    <% }) %>
-                  <% } else { %>
-                    <tr><td colspan="3" class="p-6 text-center text-muted-foreground">Tidak ada PO menunggu persetujuan.</td></tr>
-                  <% } %>
-                </tbody>
-              </table>
-            </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="bg-muted/50 border-b">
+                  <th class="p-3 font-semibold text-muted-foreground">No PO</th>
+                  <th class="p-3 font-semibold text-muted-foreground">Pemasok</th>
+                  <th class="p-3 font-semibold text-muted-foreground text-right">Nilai</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                <% if (wakilDekanStats.daftarPOPending && wakilDekanStats.daftarPOPending.length > 0) { %>
+                  <% wakilDekanStats.daftarPOPending.forEach(function (po) { %>
+                    <tr class="hover:bg-muted/30 transition-colors cursor-pointer" onclick="window.location.href='/purchase/<%= po.id %>'">
+                      <td class="p-3 font-mono font-semibold text-primary"><%= po.purchase_number %></td>
+                      <td class="p-3"><%= po.supplier || '-' %></td>
+                      <td class="p-3 text-right font-mono font-semibold"><%= fmtRp(po.total) %></td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr><td colspan="3" class="p-6 text-center text-muted-foreground">Tidak ada PO menunggu persetujuan.</td></tr>
+                <% } %>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Grafik komparasi belanja -->
+        <!-- Oversight: permintaan menunggu + belanja yang sudah disetujui -->
+        <div class="kpi-strip cols-3 mb-6">
+          <a href="/approval/inbox" class="kpi-cell hover:bg-muted/30 transition-colors" style="text-decoration:none;">
+            <div class="kpi-label">Permintaan Menunggu</div>
+            <div class="kpi-num amber"><%= wakilDekanStats.permintaanPending %></div>
+            <div class="kpi-sub">klik untuk tinjau &rarr;</div>
+          </a>
+          <div class="kpi-cell">
+            <div class="kpi-label">Belanja Disetujui Bulan Ini</div>
+            <div class="kpi-num money primary"><%= wakilDekanStats.belanjaDisetujuiBulanIni_label %></div>
+          </div>
+          <div class="kpi-cell">
+            <div class="kpi-label">Total Belanja Disetujui</div>
+            <div class="kpi-num money primary"><%= kpiUmum.totalBelanja_label %></div>
+          </div>
+        </div>
+
+        <!-- Oversight: tren belanja yang disetujui -->
         <div class="card p-6">
-          <h3 class="panel-title mb-4">Perbandingan Nilai Belanja Bulan Ini</h3>
-          <div class="relative h-64 w-full"><canvas id="wadirCompareChart"></canvas></div>
+          <h3 class="panel-title mb-4">Tren Belanja Disetujui (6 Bulan Terakhir)</h3>
+          <div class="relative h-64 w-full"><canvas id="wadirTrendChart"></canvas></div>
         </div>
       </section>
       <% } %>
 
       <!-- ═══════════════════════════════════════════════════════════════ -->
-      <!-- DASBOR ADMIN / OPERASIONAL                                       -->
+      <!-- ADMIN / OPERASIONAL: fokus pada pekerjaan yang harus dijalankan  -->
       <!-- ═══════════════════════════════════════════════════════════════ -->
       <% if (isOps) { %>
       <section id="sec-admin">
+
         <!-- KPI operasional -->
-        <p class="dash-section-title">Ringkasan Operasional</p>
-        <div class="info-grid mb-6">
-          <div class="info-tile">
-            <h2 class="info-label">Total Permintaan</h2>
+        <p class="dash-label">Ringkasan Permintaan &amp; PO</p>
+        <div class="kpi-strip cols-4 mb-6">
+          <div class="kpi-cell">
+            <h2 class="kpi-label">Total Permintaan</h2>
             <div class="kpi-num" id="kpi-permintaan"><%= totalPermintaan %></div>
           </div>
-          <div class="info-tile">
-            <h2 class="info-label">Menunggu Approval</h2>
-            <div class="kpi-num is-amber" id="kpi-menunggu"><%= statusPermintaan.pending %></div>
+          <div class="kpi-cell">
+            <h2 class="kpi-label">Menunggu Approval</h2>
+            <div class="kpi-num amber" id="kpi-menunggu"><%= statusPermintaan.pending %></div>
           </div>
-          <div class="info-tile">
-            <h2 class="info-label">Total PO Dibuat</h2>
+          <div class="kpi-cell">
+            <h2 class="kpi-label">Total PO Dibuat</h2>
             <div class="kpi-num" id="kpi-po-dibuat"><%= totalPO %></div>
           </div>
-          <div class="info-tile">
-            <h2 class="info-label">Total Ditolak</h2>
-            <div class="kpi-num is-danger" id="kpi-ditolak"><%= statusPermintaan.rejected %></div>
+          <div class="kpi-cell">
+            <h2 class="kpi-label">Total Ditolak</h2>
+            <div class="kpi-num danger" id="kpi-ditolak"><%= statusPermintaan.rejected %></div>
           </div>
         </div>
 
         <!-- KPI finansial & penerimaan -->
-        <p class="dash-section-title">Finansial &amp; Penerimaan</p>
-        <div class="info-grid mb-8">
-          <div class="info-tile">
-            <h3 class="info-label">Total Nilai Belanja</h3>
-            <div class="kpi-num is-money is-primary" id="kpi-total-belanja"><%= kpiUmum.totalBelanja_label %></div>
+        <p class="dash-label">Finansial &amp; Penerimaan</p>
+        <div class="kpi-strip cols-4 mb-8">
+          <div class="kpi-cell">
+            <div class="kpi-label">Total Nilai Belanja</div>
+            <div class="kpi-num money primary" id="kpi-total-belanja"><%= kpiUmum.totalBelanja_label %></div>
           </div>
-          <div class="info-tile">
-            <h3 class="info-label">Belanja Bulan Ini</h3>
-            <div class="kpi-num is-money is-primary" id="kpi-belanja-ini"><%= kpiUmum.belanjaBulanIni_label %></div>
-            <div class="kpi-sub">rata-rata <span id="kpi-rata-po"><%= kpiUmum.rataRataPO_label %></span>/PO</div>
+          <div class="kpi-cell">
+            <div class="kpi-label">Belanja Bulan Ini</div>
+            <div class="kpi-num money primary" id="kpi-belanja-ini"><%= kpiUmum.belanjaBulanIni_label %></div>
+            <div class="kpi-sub">rata-rata <%= kpiUmum.rataRataPO_label %>/PO</div>
           </div>
-          <div class="info-tile">
-            <h3 class="info-label">Menunggu Penerimaan</h3>
-            <div class="kpi-num is-amber" id="kpi-menunggu-terima"><%= poMenungguPenerimaan %></div>
-            <div class="kpi-sub">PO berstatus disetujui</div>
+          <div class="kpi-cell">
+            <div class="kpi-label">Menunggu Penerimaan</div>
+            <div class="kpi-num amber" id="kpi-menunggu-terima"><%= poMenungguPenerimaan %></div>
+            <div class="kpi-sub">PO disetujui, belum diterima</div>
           </div>
-          <div class="info-tile">
-            <h3 class="info-label">Barang Cacat / Retur</h3>
-            <div class="kpi-num is-danger" id="kpi-cacat"><%= totalBarangCacat %></div>
-            <div class="kpi-sub"><span id="kpi-total-supp"><%= totalSupplier %></span> pemasok terdaftar</div>
-          </div>
-        </div>
-
-        <!-- Perlu tindakan -->
-        <div class="card p-6 mb-8" id="panel-tindakan">
-          <h3 class="panel-title mb-4 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Perlu Tindakan
-          </h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <p class="dash-section-title">Permintaan Menunggu Persetujuan</p>
-              <div class="flex flex-col gap-2" id="list-req-pending">
-                <% if (adminStats && adminStats.permintaanMenunggu && adminStats.permintaanMenunggu.length > 0) { %>
-                  <% adminStats.permintaanMenunggu.forEach(function (r) { %>
-                    <a href="/procurement" class="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/30 transition-colors text-sm">
-                      <span><span class="font-mono font-semibold text-primary">#<%= r.request_number %></span><span class="text-muted-foreground ml-2"><%= r.pemohon_name || 'Staf' %></span></span>
-                      <span class="status-badge" style="background:color-mix(in oklab,#d97706 16%,transparent);color:#d97706;">Menunggu</span>
-                    </a>
-                  <% }) %>
-                <% } else { %>
-                  <p class="text-sm text-muted-foreground">Tidak ada permintaan menunggu.</p>
-                <% } %>
-              </div>
-            </div>
-            <div>
-              <p class="dash-section-title">PO Menunggu Persetujuan Belanja</p>
-              <div class="flex flex-col gap-2" id="list-po-pending">
-                <% if (adminStats && adminStats.poMenungguPersetujuan && adminStats.poMenungguPersetujuan.length > 0) { %>
-                  <% adminStats.poMenungguPersetujuan.forEach(function (po) { %>
-                    <a href="/purchase/<%= po.id %>" class="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/30 transition-colors text-sm">
-                      <span><span class="font-mono font-semibold text-primary"><%= po.purchase_number %></span><span class="text-muted-foreground ml-2"><%= po.supplier || '-' %></span></span>
-                      <span class="font-mono font-semibold"><%= fmtRp(po.total) %></span>
-                    </a>
-                  <% }) %>
-                <% } else { %>
-                  <p class="text-sm text-muted-foreground">Tidak ada PO menunggu persetujuan.</p>
-                <% } %>
-              </div>
-            </div>
+          <div class="kpi-cell">
+            <div class="kpi-label">Barang Cacat / Retur</div>
+            <div class="kpi-num danger" id="kpi-cacat"><%= totalBarangCacat %></div>
+            <div class="kpi-sub"><%= totalSupplier %> pemasok terdaftar</div>
           </div>
         </div>
 
-        <!-- Grafik -->
+        <!-- Grafik: tren belanja + komposisi status PO -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div class="card p-6">
             <h3 class="panel-title mb-4">Tren Nilai Belanja (6 Bulan Terakhir)</h3>
@@ -221,12 +182,17 @@
           </div>
         </div>
 
-        <!-- Tabel: PO perlu tindak lanjut + Pemasok teraktif -->
+        <!-- Pekerjaan admin: PO siap diterima + pemasok teraktif -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div class="card card--table overflow-hidden">
             <div class="p-4 border-b flex justify-between items-center">
-              <h3 class="panel-title">PO Perlu Tindak Lanjut</h3>
-              <a href="/purchase" class="text-sm font-medium text-primary hover:underline">Lihat semua &rarr;</a>
+              <div>
+                <h3 class="panel-title">PO Siap Diterima</h3>
+                <% if (pengadaanBelumPO > 0) { %>
+                  <p class="text-xs text-muted-foreground mt-0.5"><%= pengadaanBelumPO %> pengadaan siap dibuat PO</p>
+                <% } %>
+              </div>
+              <a href="/receiving" class="text-sm font-medium text-primary hover:underline">Penerimaan &rarr;</a>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse text-sm">
@@ -247,7 +213,7 @@
                       </tr>
                     <% }) %>
                   <% } else { %>
-                    <tr><td colspan="3" class="p-6 text-center text-muted-foreground">Tidak ada PO memerlukan tindakan.</td></tr>
+                    <tr><td colspan="3" class="p-6 text-center text-muted-foreground">Tidak ada PO menunggu penerimaan.</td></tr>
                   <% } %>
                 </tbody>
               </table>
@@ -255,16 +221,15 @@
           </div>
 
           <div class="card card--table overflow-hidden">
-            <div class="p-4 border-b flex justify-between items-center">
+            <div class="p-4 border-b">
               <h3 class="panel-title">Pemasok Teraktif</h3>
-              <span class="text-xs text-muted-foreground"><%= totalSupplier %> terdaftar</span>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse text-sm">
                 <thead>
                   <tr class="bg-muted/50 border-b">
                     <th class="p-3 font-semibold text-muted-foreground">Pemasok</th>
-                    <th class="p-3 font-semibold text-muted-foreground text-center">Jumlah PO</th>
+                    <th class="p-3 font-semibold text-muted-foreground text-center">PO</th>
                     <th class="p-3 font-semibold text-muted-foreground text-right">Total Nilai</th>
                   </tr>
                 </thead>
@@ -289,78 +254,45 @@
       <% } %>
 
       <!-- ═══════════════════════════════════════════════════════════════ -->
-      <!-- AKTIVITAS TERBARU & BARANG POPULER (semua role operasional)      -->
+      <!-- AKTIVITAS TERBARU (semua role operasional)                       -->
       <!-- ═══════════════════════════════════════════════════════════════ -->
       <% if (isApprover || isOps) { %>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <section class="card p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="panel-title">Aktivitas Terbaru</h3>
-            <% if (activities && activities.length > 0) { %>
-              <span class="text-xs text-muted-foreground"><%= activities.length %> kejadian terkini</span>
-            <% } %>
-          </div>
+      <section class="card p-6 mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="panel-title">Aktivitas Terbaru</h3>
           <% if (activities && activities.length > 0) { %>
-            <div class="act-feed" id="act-feed">
-              <% activities.forEach(function (a) { %>
-                <div class="act-item">
-                  <span class="act-icon act-<%= a.kind %>">
-                    <% if (a.kind === 'approved') { %>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                    <% } else if (a.kind === 'rejected') { %>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                    <% } else if (a.kind === 'done') { %>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                    <% } else { %>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    <% } %>
-                  </span>
-                  <div class="act-body">
-                    <span class="act-text"><%= a.text %></span>
-                    <span class="act-time"><%= a.at_label %></span>
-                  </div>
-                </div>
-              <% }) %>
-            </div>
-          <% } else { %>
-            <div class="flex flex-col items-center justify-center text-center py-8 gap-2 text-muted-foreground">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <p class="text-sm">Belum ada aktivitas terbaru.</p>
-            </div>
+            <span class="text-xs text-muted-foreground"><%= activities.length %> kejadian terkini</span>
           <% } %>
-        </section>
-
-        <section class="card card--table overflow-hidden">
-          <div class="p-4 border-b flex justify-between items-center">
-            <h3 class="panel-title">5 Barang Paling Banyak Diminta</h3>
-            <span class="text-xs text-muted-foreground"><%= pengadaanBelumPO %> pengadaan belum jadi PO</span>
+        </div>
+        <% if (activities && activities.length > 0) { %>
+          <div class="act-feed" id="act-feed">
+            <% activities.forEach(function (a) { %>
+              <div class="act-item">
+                <span class="act-icon act-<%= a.kind %>">
+                  <% if (a.kind === 'approved') { %>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <% } else if (a.kind === 'rejected') { %>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  <% } else if (a.kind === 'done') { %>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                  <% } else { %>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <% } %>
+                </span>
+                <div class="act-body">
+                  <span class="act-text"><%= a.text %></span>
+                  <span class="act-time"><%= a.at_label %></span>
+                </div>
+              </div>
+            <% }) %>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-sm">
-              <thead>
-                <tr class="bg-muted/50 border-b">
-                  <th class="p-3 font-semibold text-muted-foreground w-12 text-center">#</th>
-                  <th class="p-3 font-semibold text-muted-foreground">Nama Barang</th>
-                  <th class="p-3 font-semibold text-muted-foreground text-right">Total Diminta</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y">
-                <% if (chart.topBarang && chart.topBarang.length > 0) { %>
-                  <% chart.topBarang.forEach(function (b, idx) { %>
-                    <tr class="hover:bg-muted/30 transition-colors">
-                      <td class="p-3 text-center text-muted-foreground font-medium"><%= idx + 1 %></td>
-                      <td class="p-3 font-medium"><%= b.nama %></td>
-                      <td class="p-3 text-right font-mono font-semibold"><%= Number(b.total_qty).toLocaleString('id-ID') %></td>
-                    </tr>
-                  <% }) %>
-                <% } else { %>
-                  <tr><td colspan="3" class="p-4 text-center text-muted-foreground">Belum ada data permintaan barang.</td></tr>
-                <% } %>
-              </tbody>
-            </table>
+        <% } else { %>
+          <div class="flex flex-col items-center justify-center text-center py-8 gap-2 text-muted-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <p class="text-sm">Belum ada aktivitas terbaru.</p>
           </div>
-        </section>
-      </div>
+        <% } %>
+      </section>
       <% } %>
 
       <!-- Edge case: tanpa izin -->
@@ -382,134 +314,67 @@
 
   <script>
   {
+    const rupiahTick = (v) => {
+      if (v >= 1000000) return 'Rp ' + (v / 1000000).toFixed(1) + 'jt';
+      if (v >= 1000) return 'Rp ' + (v / 1000).toFixed(0) + 'rb';
+      return 'Rp ' + v;
+    };
+    const barTrendOptions = {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx) => 'Rp ' + Number(ctx.parsed.y || 0).toLocaleString('id-ID') } }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { borderDash: [5, 5] }, ticks: { callback: rupiahTick } },
+        x: { grid: { display: false } }
+      }
+    };
+
     const initCharts = () => {
-      // ── Grafik Admin ──────────────────────────────────────────────────
       <% if (isOps) { %>
       const barCtxTrend = document.getElementById('barChartTrend');
       if (barCtxTrend) {
-        if (window.adminBarChartInstance) {
-          window.adminBarChartInstance.destroy();
-        }
+        if (window.adminBarChartInstance) window.adminBarChartInstance.destroy();
         window.adminBarChartInstance = new Chart(barCtxTrend, {
           type: 'bar',
           data: {
             labels: <%- JSON.stringify(chart.trendLabels) %>,
-            datasets: [{
-              label: 'Nilai Belanja (Rp)',
-              data: <%- JSON.stringify(chart.trendData) %>,
-              backgroundColor: 'rgba(22, 163, 74, 0.85)',
-              borderRadius: 6,
-              barThickness: 24
-            }]
+            datasets: [{ label: 'Nilai Belanja (Rp)', data: <%- JSON.stringify(chart.trendData) %>,
+              backgroundColor: 'rgba(22, 163, 74, 0.85)', borderRadius: 6, barThickness: 24 }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: (ctx) => 'Rp ' + Number(ctx.parsed.y || 0).toLocaleString('id-ID')
-                }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                grid: { borderDash: [5, 5] },
-                ticks: {
-                  callback: (v) => {
-                    if (v >= 1000000) return 'Rp ' + (v / 1000000).toFixed(1) + 'jt';
-                    if (v >= 1000) return 'Rp ' + (v / 1000).toFixed(0) + 'rb';
-                    return 'Rp ' + v;
-                  }
-                }
-              },
-              x: { grid: { display: false } }
-            }
-          }
+          options: barTrendOptions
         });
       }
 
       const donutCtxPO = document.getElementById('donutChartPO');
       if (donutCtxPO) {
-        if (window.adminDonutChartInstance) {
-          window.adminDonutChartInstance.destroy();
-        }
+        if (window.adminDonutChartInstance) window.adminDonutChartInstance.destroy();
         window.adminDonutChartInstance = new Chart(donutCtxPO, {
           type: 'doughnut',
           data: {
             labels: <%- JSON.stringify(chart.donut.labels) %>,
-            datasets: [{
-              data: <%- JSON.stringify(chart.donut.data) %>,
-              backgroundColor: <%- JSON.stringify(chart.donut.colors) %>,
-              borderWidth: 0,
-              hoverOffset: 6
-            }]
+            datasets: [{ data: <%- JSON.stringify(chart.donut.data) %>,
+              backgroundColor: <%- JSON.stringify(chart.donut.colors) %>, borderWidth: 0, hoverOffset: 6 }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '68%',
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' }
-              }
-            }
-          }
+          options: { responsive: true, maintainAspectRatio: false, cutout: '68%',
+            plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' } } } }
         });
       }
       <% } %>
 
-      // ── Grafik Wakil Dekan ─────────────────────────────────────────────
       <% if (isApprover && wakilDekanStats) { %>
-      const wadirCompareCtx = document.getElementById('wadirCompareChart');
-      if (wadirCompareCtx) {
-        if (window.wadirCompareChartInstance) {
-          window.wadirCompareChartInstance.destroy();
-        }
-        window.wadirCompareChartInstance = new Chart(wadirCompareCtx, {
+      const wadirTrendCtx = document.getElementById('wadirTrendChart');
+      if (wadirTrendCtx) {
+        if (window.wadirTrendChartInstance) window.wadirTrendChartInstance.destroy();
+        window.wadirTrendChartInstance = new Chart(wadirTrendCtx, {
           type: 'bar',
           data: {
-            labels: ['Disetujui', 'Ditolak'],
-            datasets: [{
-              label: 'Nilai Belanja Bulan Ini (Rp)',
-              data: [
-                <%= wakilDekanStats.belanjaDisetujuiBulanIni %>,
-                <%= wakilDekanStats.belanjaDitolakBulanIni %>
-              ],
-              backgroundColor: ['rgba(22, 163, 74, 0.85)', 'rgba(220, 38, 38, 0.85)'],
-              borderRadius: 6,
-              barThickness: 48
-            }]
+            labels: <%- JSON.stringify(chart.trendLabels) %>,
+            datasets: [{ label: 'Belanja Disetujui (Rp)', data: <%- JSON.stringify(chart.trendData) %>,
+              backgroundColor: 'rgba(22, 163, 74, 0.85)', borderRadius: 6, barThickness: 24 }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: (ctx) => 'Rp ' + Number(ctx.parsed.y || 0).toLocaleString('id-ID')
-                }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                grid: { borderDash: [5, 5] },
-                ticks: {
-                  callback: (v) => {
-                    if (v >= 1000000) return 'Rp ' + (v / 1000000).toFixed(1) + 'jt';
-                    if (v >= 1000) return 'Rp ' + (v / 1000).toFixed(0) + 'rb';
-                    return 'Rp ' + v;
-                  }
-                }
-              },
-              x: { grid: { display: false } }
-            }
-          }
+          options: barTrendOptions
         });
       }
       <% } %>
