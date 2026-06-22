@@ -8,6 +8,9 @@ const { checkPermission } = require("../middlewares/acl");
 router.use(isAuthenticated);
 router.use(checkPermission("manage_vendor"));
 
+// RestAPI: daftar supplier (JSON + pagination + search)
+router.get("/api/list", supplierController.apiList);
+
 // Rute CRUD Supplier
 router.get("/", supplierController.index);
 router.get("/create", supplierController.create);

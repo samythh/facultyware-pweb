@@ -46,6 +46,37 @@ exports.index = async (req, res, next) => {
 };
 
 /**
+ * GET /supplier/api/list
+ * RestAPI: daftar supplier dalam format JSON (pencarian + pagination).
+ * Dilindungi permission 'manage_vendor' (lihat routes/supplier.js).
+ */
+exports.apiList = async (req, res) => {
+  try {
+    const search = (req.query.search || "").trim();
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    const sort = resolveSort(req.query.sort, SUPPLIER_SORTS, "nama");
+
+    const all = await Supplier.findAll(search, sort.orderBy);
+    const total = all.length;
+    const data = all.slice(offset, offset + limit);
+
+    res.json({
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Gagal mengambil data supplier." });
+  }
+};
+
+/**
  * GET /supplier/create
  * Menampilkan form tambah supplier baru.
  */
