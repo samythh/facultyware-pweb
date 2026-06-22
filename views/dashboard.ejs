@@ -519,9 +519,9 @@
                   window.adminBarChartInstance = new Chart(barCtxTrend, {
                     type: 'bar',
                     data: {
-                      labels: <% - JSON.stringify(chart.trendLabels) %>,
+                      labels: <%- JSON.stringify(chart.trendLabels) %>,
                       datasets: [{
-                        label: 'Nilai Belanja (Rp)', data: <% - JSON.stringify(chart.trendData) %>,
+                        label: 'Nilai Belanja (Rp)', data: <%- JSON.stringify(chart.trendData) %>,
                         backgroundColor: 'rgba(22, 163, 74, 0.85)', borderRadius: 6, barThickness: 24
                       }]
                     },
@@ -535,10 +535,10 @@
                   window.adminDonutChartInstance = new Chart(donutCtxPO, {
                     type: 'doughnut',
                     data: {
-                      labels: <% - JSON.stringify(chart.donut.labels) %>,
+                      labels: <%- JSON.stringify(chart.donut.labels) %>,
                       datasets: [{
-                        data: <% - JSON.stringify(chart.donut.data) %>,
-                        backgroundColor: <% - JSON.stringify(chart.donut.colors) %>, borderWidth: 0, hoverOffset: 6
+                        data: <%- JSON.stringify(chart.donut.data) %>,
+                        backgroundColor: <%- JSON.stringify(chart.donut.colors) %>, borderWidth: 0, hoverOffset: 6
                       }]
                     },
                     options: {
@@ -556,9 +556,9 @@
                   window.wadirTrendChartInstance = new Chart(wadirTrendCtx, {
                     type: 'bar',
                     data: {
-                      labels: <% - JSON.stringify(chart.trendLabels) %>,
+                      labels: <%- JSON.stringify(chart.trendLabels) %>,
                       datasets: [{
-                        label: 'Belanja Disetujui (Rp)', data: <% - JSON.stringify(chart.trendData) %>,
+                        label: 'Belanja Disetujui (Rp)', data: <%- JSON.stringify(chart.trendData) %>,
                         backgroundColor: 'rgba(22, 163, 74, 0.85)', borderRadius: 6, barThickness: 24
                       }]
                     },
