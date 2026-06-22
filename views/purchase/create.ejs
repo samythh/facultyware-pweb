@@ -128,31 +128,31 @@
       table.style.tableLayout = 'fixed';
       table.innerHTML = `
         <colgroup>
-          <col />
-          <col style="width:72px" />
-          <col style="width:190px" />
-          <col style="width:150px" />
+          <col style="width:35%" />
+          <col style="width:80px" />
+          <col style="width:220px" />
+          <col style="width:160px" />
         </colgroup>
         <thead>
-          <tr class="border-b text-muted-foreground font-semibold">
-            <th class="pb-3 pr-4">Nama Barang</th>
-            <th class="pb-3 pr-4 text-right">Qty</th>
-            <th class="pb-3 pr-4 text-right">Harga Satuan</th>
-            <th class="pb-3 text-right">Subtotal</th>
+          <tr class="border-b text-muted-foreground font-semibold text-xs uppercase tracking-wide">
+            <th class="pb-3 pt-1">Nama Barang</th>
+            <th class="pb-3 pt-1 text-center px-4">Qty</th>
+            <th class="pb-3 pt-1 text-right px-4">Harga Satuan</th>
+            <th class="pb-3 pt-1 text-right">Subtotal</th>
           </tr>
         </thead>
         <tbody class="divide-y">
           ${data.items.map((i, idx) => `
-            <tr class="hover:bg-muted/10">
-              <td class="py-3 font-medium align-middle" style="word-break:break-word;">${i.name}</td>
-              <td class="py-3 pr-4 text-right align-middle font-mono font-medium">${i.quantity}</td>
-              <td class="py-2 pr-4 align-middle">
+            <tr class="hover:bg-muted/10 transition-colors">
+              <td class="py-4 pr-4 font-medium align-middle" style="word-break:break-word;">${i.name}</td>
+              <td class="py-4 px-4 text-center align-middle font-mono font-semibold">${i.quantity}</td>
+              <td class="py-3 px-4 align-middle">
                 <div style="position:relative; width:100%;">
-                  <span style="position:absolute; left:.6rem; top:50%; transform:translateY(-50%); color:var(--color-muted-foreground); font-size:.85rem; pointer-events:none;">Rp</span>
-                  <input type="number" name="prices[]" data-qty="${i.quantity}" min="0" max="999999999999" placeholder="0" class="input font-mono" style="width:100%; text-align:right; padding-left:2.1rem;" oninput="updateSubtotal()" required />
+                  <span style="position:absolute; left:.65rem; top:50%; transform:translateY(-50%); color:var(--color-muted-foreground); font-size:.8rem; pointer-events:none; font-weight:500;">Rp</span>
+                  <input type="number" name="prices[]" data-qty="${i.quantity}" min="0" max="999999999999" placeholder="0" class="input font-mono" style="width:100%; text-align:right; padding-left:2.2rem; padding-right:.6rem;" oninput="updateSubtotal()" required />
                 </div>
               </td>
-              <td id="subtotal-${idx}" class="py-3 text-right align-middle font-mono font-semibold text-primary" style="word-break:break-all; overflow-wrap:anywhere;">Rp 0</td>
+              <td id="subtotal-${idx}" class="py-4 text-right align-middle font-mono font-semibold text-primary" style="word-break:break-all; overflow-wrap:anywhere;">Rp 0</td>
             </tr>`).join('')}
         </tbody>
       `;
