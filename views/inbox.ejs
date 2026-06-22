@@ -47,7 +47,7 @@
                     <td class="p-4 font-medium"><%= proc.pemohon_name || 'Unit/Staf' %></td>
                     <td class="p-4"><%- include('partials/status-badge', { status: proc.status }) %></td>
                     <td class="p-4 text-right">
-                      <a href="/approval/<%= proc.id %>" class="btn-xs-outline inline-flex items-center" onclick="event.stopPropagation()">Detail</a>
+                      <a href="/approval/<%= proc.id %>" class="btn-action-view" onclick="event.stopPropagation()">Detail</a>
                     </td>
                   </tr>
                 <% }) %>
