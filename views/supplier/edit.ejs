@@ -60,7 +60,7 @@
 
         <div class="grid gap-2">
           <label for="address" class="text-sm font-medium">Alamat Pemasok</label>
-          <textarea name="address" id="address" placeholder="Tuliskan alamat lengkap supplier..." class="input w-full" rows="4"><%= supplier.address || '' %></textarea>
+          <textarea name="address" id="address" placeholder="Tuliskan alamat lengkap supplier..." class="input w-full" rows="4" ><%= supplier.address || '' %></textarea>
         </div>
 
         <!-- Action Buttons -->
@@ -72,6 +72,42 @@
 
     </div>
   </div>
+
+
+
+<style>
+  /* Mirror exact Basecoat .input styling for textarea */
+  textarea.input {
+    display: block;
+    width: 100%;
+    appearance: none;
+    border-radius: var(--radius-md);
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--color-input);
+    background-color: transparent;
+    padding-inline: calc(var(--spacing) * 3);
+    padding-block: calc(var(--spacing) * 2);
+    font-size: var(--text-base);
+    line-height: var(--tw-leading, var(--text-base--line-height));
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    transition-property: color, box-shadow;
+    transition-duration: 150ms;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    color: var(--color-foreground);
+  }
+  textarea.input::placeholder {
+    color: var(--color-muted-foreground);
+  }
+  textarea.input:focus {
+    border-color: var(--color-ring);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ring) 20%, transparent),
+                0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+</style>
+
 </main>
 
 <%- include('../partials/footer') %>

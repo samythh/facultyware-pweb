@@ -77,7 +77,10 @@ const index = async (req, res, next) => {
                CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) > 1
                     THEN CONCAT(' +', (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) - 1, ' lainnya')
                     ELSE '' END
-             )) AS title
+             )) AS title,
+             (SELECT pur.status FROM inventory_purchases pur
+               WHERE pur.inventory_procurement_id = r.inventory_procurement_id
+               ORDER BY pur.id DESC LIMIT 1) AS po_status
       FROM inventory_requests r
       WHERE r.employee_id = ?
     `;
@@ -227,7 +230,7 @@ const detail = async (req, res, next) => {
 
   try {
     const [procurementRows] = await db.query(
-      `SELECT r.*,
+      `SELECT r.*, e.name AS pemohon_name,
               COALESCE(NULLIF(r.title, ''), CONCAT(
                 COALESCE((SELECT item_name FROM inventory_request_details WHERE inventory_request_id = r.id ORDER BY id LIMIT 1), 'Permintaan Barang'),
                 CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) > 1
@@ -235,6 +238,7 @@ const detail = async (req, res, next) => {
                      ELSE '' END
               )) AS title
        FROM inventory_requests r
+       LEFT JOIN employees e ON r.employee_id = e.id
        WHERE r.id = ? AND r.employee_id = ?`,
       [id, employeeId]
     );
@@ -253,11 +257,36 @@ const detail = async (req, res, next) => {
       [id]
     );
 
+    let po = null;
+    if (procurement.inventory_procurement_id) {
+      const [poRows] = await db.query(
+        'SELECT * FROM inventory_purchases WHERE inventory_procurement_id = ? LIMIT 1',
+        [procurement.inventory_procurement_id]
+      );
+      if (poRows.length > 0) {
+        po = poRows[0];
+      }
+    }
+
+    // Alasan penolakan (bila ditolak) -> dari catatan persetujuan Wakil Dekan.
+    let rejectionNote = null;
+    if (procurement.status === 'rejected') {
+      const [noteRows] = await db.query(
+        `SELECT notes FROM inventory_request_approvals
+          WHERE inventory_request_id = ? AND status = 'rejected'
+          ORDER BY id DESC LIMIT 1`,
+        [id]
+      );
+      if (noteRows.length > 0) rejectionNote = noteRows[0].notes;
+    }
+
     res.render('inventory-procurement/detail', {
       title: `Detail ${procurement.request_number}`,
       user: req.session.username,
       procurement,
-      items
+      items,
+      po,
+      rejectionNote
     });
   } catch (error) {
     next(error);

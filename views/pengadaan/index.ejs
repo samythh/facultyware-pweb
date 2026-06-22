@@ -69,7 +69,7 @@
                     <td class="p-4 text-muted-foreground"><%= proc.request_count %> permintaan</td>
                     <td class="p-4"><%- include('../partials/status-badge', { status: proc.status }) %></td>
                     <td class="p-4 text-right">
-                      <a href="/pengadaan/<%= proc.id %>" class="btn-xs-outline inline-flex items-center" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+                      <a href="/pengadaan/<%= proc.id %>" class="btn-action-view" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
                         Detail
                       </a>
                     </td>

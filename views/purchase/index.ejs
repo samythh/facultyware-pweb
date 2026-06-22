@@ -67,7 +67,7 @@
                     <td class="p-4 text-muted-foreground"><%= fmtDate(po.purchase_date) %></td>
                     <td class="p-4"><%- include('../partials/status-badge', { status: po.status }) %></td>
                     <td class="p-4 text-right">
-                      <a href="/purchase/<%= po.id %>" class="btn-xs-outline inline-flex items-center">
+                      <a href="/purchase/<%= po.id %>" class="btn-action-view">
                         Detail
                       </a>
                     </td>

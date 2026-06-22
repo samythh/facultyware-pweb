@@ -39,7 +39,7 @@
   <nav aria-label="Sidebar navigation">
     <header>
       <a href="/home" class="btn-ghost p-2 h-12 w-full justify-start">
-        <div class="flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden">
+        <div class="flex aspect-square size-8 items-center justify-center">
           <img src="/img/logo-unand.png" alt="Logo Universitas Andalas" class="h-full w-full object-contain" />
         </div>
         <div class="grid flex-1 text-left text-sm leading-tight">
@@ -151,7 +151,7 @@
                 <path d="M22 12h-6l-2 3h-4l-2-3H2" />
                 <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
               </svg>
-              <span>Inbox Wakil Dekan</span>
+              <span>Persetujuan Permintaan</span>
             </a>
           </li>
           <li>
@@ -164,6 +164,16 @@
             </a>
           </li>
           <li>
+            <a href="/approval/history" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 8v13H3V8" />
+                <path d="M1 3h22v5H1z" />
+                <path d="M10 12h4" />
+              </svg>
+              <span>Arsip Pengadaan</span>
+            </a>
+          </li>
+          <li>
             <a href="/approval/po/archive" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 12v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8" />
@@ -173,16 +183,6 @@
                 <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
               </svg>
               <span>Arsip PO</span>
-            </a>
-          </li>
-          <li>
-            <a href="/approval/history" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 8v13H3V8" />
-                <path d="M1 3h22v5H1z" />
-                <path d="M10 12h4" />
-              </svg>
-              <span>Arsip Persetujuan</span>
             </a>
           </li>
         </ul>

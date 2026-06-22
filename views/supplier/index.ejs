@@ -83,10 +83,10 @@
                       <%= item.address || '-' %>
                     </td>
                     <td class="p-4 text-right space-x-1">
-                      <a href="/supplier/<%= item.id %>/edit" class="btn-xs-outline inline-flex items-center" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+                      <a href="/supplier/<%= item.id %>/edit" class="btn-action-edit inline-flex items-center" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
                         Edit
                       </a>
-                      <button type="button" onclick="window.confirmDelete('<%= item.id %>', '<%= item.name %>')" class="btn-xs-outline text-destructive hover:bg-destructive/10 inline-flex items-center">
+                      <button type="button" onclick="window.confirmDelete('<%= item.id %>', '<%= item.name %>')" class="btn-action-delete inline-flex items-center">
                         Hapus
                       </button>
                     </td>

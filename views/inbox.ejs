@@ -6,10 +6,11 @@
 
   <div class="p-4 md:p-6 xl:p-12">
     <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
-      <header class="flex flex-wrap items-end justify-between gap-4">
-        <div class="flex flex-col gap-2">
+      <!-- Judul -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
           <h1 class="text-2xl font-bold tracking-tight sm:text-3xl"><%= title %></h1>
-          <p class="text-muted-foreground">
+          <p class="text-sm text-muted-foreground">
             <% if (tab === 'history') { %>
               Riwayat keputusan persetujuan pengadaan barang.
             <% } else { %>
@@ -17,14 +18,27 @@
             <% } %>
           </p>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <%- include('partials/sort-control', { action: (tab === 'history' ? '/approval/history' : '/approval/inbox'), current: (typeof sort !== 'undefined' ? sort : ''), opts: (typeof sortOptions !== 'undefined' ? sortOptions : []), keep: {} }) %>
-          <% if (tab === 'history') { %>
-            <a href="/approval/rekap/export?format=pdf" class="btn-outline">Export PDF</a>
-            <a href="/approval/rekap/export?format=excel" class="btn-outline">Export Excel</a>
-          <% } %>
+        <% if (tab === 'history') { %>
+        <div class="flex gap-2 shrink-0">
+          <a href="/approval/rekap/export?format=pdf" class="btn-outline">Export PDF</a>
+          <a href="/approval/rekap/export?format=excel" class="btn-outline">Export Excel</a>
         </div>
-      </header>
+        <% } %>
+      </div>
+
+      <!-- Cari & Urutkan -->
+      <div class="card p-4 bg-card rounded-xl border shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="relative" style="flex:1 1 260px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-input" placeholder="Cari nomor, pemohon, atau judul..." class="input w-full" style="padding-left: 2.5rem !important;" />
+          </div>
+          <%- include('partials/sort-control', { action: (tab === 'history' ? '/approval/history' : '/approval/inbox'), current: (typeof sort !== 'undefined' ? sort : ''), opts: (typeof sortOptions !== 'undefined' ? sortOptions : []), keep: {} }) %>
+        </div>
+      </div>
 
       <div class="card card--table overflow-hidden">
         <div class="overflow-x-auto">
@@ -42,12 +56,15 @@
               <% if (procurements && procurements.length > 0) { %>
                 <% procurements.forEach(function (proc) { %>
                   <tr class="hover:bg-muted/30 transition-colors cursor-pointer" onclick="window.location.href='/approval/<%= proc.id %>'">
-                    <td class="p-4 font-mono font-semibold text-primary">#<%= proc.request_number %></td>
+                    <td class="p-4">
+                      <span class="font-mono font-semibold text-primary block">#<%= proc.request_number %></span>
+                      <span class="text-xs text-muted-foreground block mt-0.5 max-w-[240px] truncate" title="<%= proc.title %>"><%= proc.title %></span>
+                    </td>
                     <td class="p-4 text-muted-foreground"><%= new Date(proc.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
                     <td class="p-4 font-medium"><%= proc.pemohon_name || 'Unit/Staf' %></td>
                     <td class="p-4"><%- include('partials/status-badge', { status: proc.status }) %></td>
                     <td class="p-4 text-right">
-                      <a href="/approval/<%= proc.id %>" class="btn-xs-outline inline-flex items-center" onclick="event.stopPropagation()">Detail</a>
+                      <a href="/approval/<%= proc.id %>" class="btn-action-view" onclick="event.stopPropagation()">Detail</a>
                     </td>
                   </tr>
                 <% }) %>
@@ -64,7 +81,7 @@
 
         <div id="pagination-container" class="flex items-center justify-between border-t px-4 py-4 text-sm text-muted-foreground">
           <span id="page-info">Menampilkan <%= procurements ? procurements.length : 0 %> permintaan</span>
-          
+
           <div class="flex items-center gap-2" id="pagination-buttons">
             <button type="button" id="btn-prev" class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed select-none transition-colors" disabled>Sebelumnya</button>
             <div id="page-numbers" class="flex gap-2"></div>
@@ -76,70 +93,7 @@
     </div>
   </div>
 
-  <script>
-    // Dibungkus dalam Block Scope {} agar aman saat dieksekusi ulang oleh Turbo/Turbolinks
-    {
-      const initInboxPagination = () => {
-        const rows = document.querySelectorAll('tbody tr.cursor-pointer');
-        const itemsPerPage = 10;
-        let totalPages = Math.ceil(rows.length / itemsPerPage);
-        
-        if (totalPages === 0) totalPages = 1;
-    
-        let currentPage = 1;
-        const btnPrev = document.getElementById('btn-prev');
-        const btnNext = document.getElementById('btn-next');
-        const pageNumbers = document.getElementById('page-numbers');
-        const pageInfo = document.getElementById('page-info');
-        const paginationButtons = document.getElementById('pagination-buttons');
-    
-        if (!paginationButtons || !btnPrev || !btnNext || !pageNumbers) return;
-    
-        paginationButtons.style.display = 'flex';
-    
-        const render = () => {
-          // Filter baris tabel
-          rows.forEach((row, index) => {
-            row.style.display = (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) ? '' : 'none';
-          });
-    
-          // Teks info halaman ("Halaman 1 dari 1")
-          if (pageInfo) {
-            pageInfo.innerHTML = `Halaman ${currentPage} dari ${totalPages}`;
-          }
-          
-          btnPrev.disabled = currentPage === 1;
-          btnNext.disabled = currentPage === totalPages;
-    
-          pageNumbers.innerHTML = '';
-          for (let i = 1; i <= totalPages; i++) {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            
-            if (i === currentPage) {
-              // Gaya tombol angka aktif (Background abu-abu terang)
-              btn.className = 'px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium bg-gray-100 text-gray-800 select-none';
-              btn.textContent = i;
-            } else {
-              // Gaya tombol angka tidak aktif
-              btn.className = 'px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 select-none transition-colors';
-              btn.textContent = i;
-              btn.onclick = () => { currentPage = i; render(); };
-            }
-            pageNumbers.appendChild(btn);
-          }
-        };
-    
-        btnPrev.onclick = () => { if (currentPage > 1) { currentPage--; render(); } };
-        btnNext.onclick = () => { if (currentPage < totalPages) { currentPage++; render(); } };
-    
-        render();
-      };
-
-      // Langsung eksekusi fungsi pendukung pagination
-      initInboxPagination();
-    }
-  </script>
+  <%- include('partials/list-search-pagination') %>
 </main>
 
 <%- include('partials/footer') %>

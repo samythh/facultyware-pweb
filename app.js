@@ -11,6 +11,7 @@ var usersRouter = require('./routes/users');
 var receivingRouter = require('./routes/receiving');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 const purchaseController = require('./controllers/purchaseController');
+const dashboardController = require('./controllers/dashboardController');
 
 var app = express();
 
@@ -81,7 +82,9 @@ app.use('/approval', require('./routes/approval'));
 app.use('/supplier', require('./routes/supplier'));
 
 // Dashboard sebagai landing ter-autentikasi (semua role yang sudah login).
-app.get('/dashboard', require('./middlewares/auth').isAuthenticated, purchaseController.dashboard);
+app.get('/dashboard', require('./middlewares/auth').isAuthenticated, dashboardController.getDashboardPage);
+app.get('/dashboard/activity', require('./middlewares/auth').isAuthenticated, dashboardController.getActivityPage);
+app.get('/api/dashboard/stats', require('./middlewares/auth').isAuthenticated, dashboardController.getStats);
 app.get('/api/purchase', purchaseController.apiList);
 app.get('/api/procurement', require('./middlewares/auth').isAuthenticated, require('./middlewares/acl').checkPermission('manage_procurement'), require('./controllers/inventoryProcurementController').apiList);
 

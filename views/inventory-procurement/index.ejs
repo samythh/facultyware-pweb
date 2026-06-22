@@ -72,12 +72,25 @@
                     <td class="p-4">
                       <%= item.title %>
                     </td>
-                    <td class="p-4"><%- include('../partials/status-badge', { status: item.status }) %></td>
+                    <td class="p-4">
+                      <span class="inline-flex items-center gap-1.5">
+                        <%- include('../partials/status-badge', { status: item.status }) %>
+                        <% if (item.status === 'approved' && item.po_status === 'rejected') { %>
+                          <span title="Belanja ditolak Wakil Dekan" class="text-red-600 cursor-help" aria-label="Belanja ditolak Wakil Dekan">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                              <line x1="12" y1="9" x2="12" y2="13"></line>
+                              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                          </span>
+                        <% } %>
+                      </span>
+                    </td>
                     <td class="p-4 text-muted-foreground">
                       <%= fmtDate(item.created_at) %>
                     </td>
                     <td class="p-4 text-right">
-                      <a href="/procurement/<%= item.id %>" class="btn-xs-outline inline-flex items-center" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
+                      <a href="/procurement/<%= item.id %>" class="btn-action-view" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
                         Detail
                       </a>
                     </td>

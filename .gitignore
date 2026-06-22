@@ -70,10 +70,6 @@ typings/
 scratch/
 scripts/
 
-# Pengujian E2E & konfigurasi Playwright
-tests/
-playwright.config.js
-
 # Editor / IDE
 .vscode/
 *.code-workspace

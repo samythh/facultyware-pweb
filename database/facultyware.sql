@@ -1826,7 +1826,7 @@ CREATE TABLE `inventory_purchases` (
   `inventory_procurement_id` bigint(20) unsigned DEFAULT NULL,
   `purchase_date` date NOT NULL,
   `supplier` varchar(255) DEFAULT NULL,
-  `status` enum('draft','completed') NOT NULL,
+  `status` enum('pending','approved','rejected','completed') NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -1954,20 +1954,24 @@ DROP TABLE IF EXISTS `inventory_requests`;
 CREATE TABLE `inventory_requests` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `request_number` varchar(255) NOT NULL,
+  `title` varchar(255) DEFAULT NULL,
   `employee_id` bigint(20) unsigned NOT NULL,
   `request_date` date NOT NULL,
   `status` enum('pending','approved','rejected','fulfilled') NOT NULL,
   `approved_by` bigint(20) unsigned DEFAULT NULL,
   `approved_at` timestamp NULL DEFAULT NULL,
   `approved_by_id` bigint(20) unsigned NOT NULL,
+  `inventory_procurement_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `inventory_requests_request_number_unique` (`request_number`),
   KEY `inventory_requests_employee_id_foreign` (`employee_id`),
   KEY `inventory_requests_approved_by_foreign` (`approved_by`),
+  KEY `inventory_requests_inventory_procurement_id_foreign` (`inventory_procurement_id`),
   CONSTRAINT `inventory_requests_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `employees` (`id`),
-  CONSTRAINT `inventory_requests_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`)
+  CONSTRAINT `inventory_requests_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
+  CONSTRAINT `inventory_requests_inventory_procurement_id_foreign` FOREIGN KEY (`inventory_procurement_id`) REFERENCES `inventory_procurements` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

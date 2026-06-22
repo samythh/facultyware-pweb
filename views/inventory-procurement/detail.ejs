@@ -36,95 +36,321 @@
         </div>
       </div>
 
-      <!-- Tracking Status Timeline Stepper -->
-      <div class="card p-6 bg-card rounded-xl border shadow-sm mb-6">
-        <h3 class="text-sm font-semibold text-center text-muted-foreground uppercase tracking-wider mb-6">Status Perkembangan Pengajuan</h3>
-        
-        <div class="flex items-center justify-between w-full max-w-sm mx-auto my-6">
-          <!-- Step 1: Pending -->
-          <div class="flex flex-col items-center">
-            <div class="size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow">✓</div>
-            <span class="text-xs font-semibold mt-2 text-foreground">Pending</span>
-          </div>
-          
-          <!-- Connector -->
-          <div class="flex-1 h-1 bg-muted relative mx-2">
-            <div class="absolute left-0 top-0 bottom-0 bg-primary transition-all duration-300" style="width: <%= (procurement.status !== 'pending') ? '100%' : '0%' %>"></div>
-          </div>
-          
-          <!-- Step 2: Approved / Rejected -->
-          <div class="flex flex-col items-center">
-            <% if (procurement.status === 'approved') { %>
-              <div class="size-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow">✓</div>
-              <span class="text-xs font-semibold mt-2 text-emerald-600">Approved</span>
-            <% } else if (procurement.status === 'rejected') { %>
-              <div class="size-8 rounded-full bg-rose-600 text-white flex items-center justify-center font-bold text-sm shadow">✗</div>
-              <span class="text-xs font-semibold mt-2 text-rose-600">Rejected</span>
-            <% } else if (procurement.status === 'fulfilled') { %>
-              <div class="size-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow">✓</div>
-              <span class="text-xs font-semibold mt-2 text-blue-600">Fulfilled</span>
+  <style>
+    /* Premium Responsive Stepper */
+    .stepper-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      width: 100%;
+    }
+    @media (min-width: 768px) {
+      .stepper-container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+    }
+
+    .stepper-step {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.75rem;
+      position: relative;
+      flex: 1;
+    }
+    @media (min-width: 768px) {
+      .stepper-step {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+      }
+    }
+
+    /* Step Badge styles */
+    .step-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      z-index: 2;
+      position: relative;
+      transition: all 0.25s ease;
+      background: var(--color-background, #ffffff);
+    }
+
+    .step-badge-pending {
+      border: 2px solid var(--color-border);
+      color: var(--color-muted-foreground);
+    }
+
+    .step-badge-active {
+      border: 2px solid var(--color-primary);
+      background: var(--color-primary);
+      color: #ffffff;
+      box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-primary) 15%, transparent);
+    }
+
+    .step-badge-done {
+      border: 2px solid #10b981;
+      background: #10b981;
+      color: #ffffff;
+    }
+
+    .step-badge-rejected {
+      border: 2px solid #ef4444;
+      background: #ef4444;
+      color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+    }
+
+    /* Connectors */
+    @media (min-width: 768px) {
+      .stepper-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 1.125rem;
+        left: calc(50% + 1.25rem);
+        width: calc(100% - 2.5rem);
+        height: 2px;
+        background: var(--color-border);
+        z-index: 1;
+        transition: background-color 0.25s ease;
+      }
+      .stepper-step.is-done:not(:last-child)::after {
+        background: #10b981;
+      }
+    }
+    @media (max-width: 767px) {
+      .stepper-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 1.125rem;
+        top: 2.25rem;
+        width: 2px;
+        height: calc(100% + 1.5rem);
+        background: var(--color-border);
+        z-index: 1;
+        transition: background-color 0.25s ease;
+      }
+      .stepper-step.is-done:not(:last-child)::after {
+        background: #10b981;
+      }
+    }
+
+    .step-content {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+    @media (min-width: 768px) {
+      .step-content {
+        text-align: center;
+        align-items: center;
+      }
+    }
+
+    .step-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-muted-foreground);
+    }
+    .stepper-step.is-active .step-title {
+      color: var(--color-primary);
+      font-weight: 700;
+    }
+    .stepper-step.is-done .step-title {
+      color: var(--color-foreground);
+    }
+    .stepper-step.is-rejected .step-title {
+      color: #ef4444;
+      font-weight: 700;
+    }
+
+    .step-desc {
+      font-size: 0.68rem;
+      color: var(--color-muted-foreground);
+      margin-top: 0.125rem;
+    }
+  </style>
+
+  <%
+    let currentStage = 1;
+    let hasPo = (typeof po !== 'undefined' && po !== null);
+    let poStatus = hasPo ? po.status : null;
+    
+    if (procurement.status === 'pending') {
+      currentStage = 1;
+    } else if (procurement.status === 'rejected') {
+      currentStage = 2; // Stays at 2 with error
+    } else if (procurement.status === 'approved') {
+      if (!procurement.inventory_procurement_id) {
+        currentStage = 3; // Passed Stage 2, waiting for consolidation
+      } else {
+        if (!hasPo) {
+          currentStage = 4; // Consolidated, waiting for PO creation
+        } else {
+          if (poStatus === 'pending') {
+            currentStage = 5; // PO created, waiting for PO approval
+          } else if (poStatus === 'approved') {
+            currentStage = 6; // PO approved, waiting for receipt of goods
+          } else if (poStatus === 'rejected') {
+            currentStage = 5; // PO rejected, stays at 5 with error
+          } else if (poStatus === 'completed') {
+            currentStage = 6; // Goods received, completed
+          }
+        }
+      }
+    } else if (procurement.status === 'fulfilled') {
+      currentStage = 6;
+    }
+
+    const steps = [
+      {
+        num: 1,
+        title: "Diajukan",
+        desc: "Menunggu Persetujuan",
+        isDone: currentStage > 1,
+        isActive: currentStage === 1,
+        isRejected: false
+      },
+      {
+        num: 2,
+        title: procurement.status === 'rejected' ? "Ditolak Wakil Dekan" : (currentStage > 2 ? "Disetujui Wakil Dekan" : "Persetujuan Permintaan"),
+        desc: procurement.status === 'rejected' ? "Permintaan Ditolak" : (currentStage > 2 ? "Permintaan Disetujui" : "Menunggu Keputusan"),
+        isDone: currentStage > 2,
+        isActive: currentStage === 2 && procurement.status !== 'rejected',
+        isRejected: procurement.status === 'rejected'
+      },
+      {
+        num: 3,
+        title: "Masuk Pengadaan",
+        desc: currentStage > 3 ? "Digabung ke Paket" : "Proses Penggabungan",
+        isDone: currentStage > 3,
+        isActive: currentStage === 3,
+        isRejected: false
+      },
+      {
+        num: 4,
+        title: "PO Dibuat",
+        desc: currentStage > 4 ? "Pesanan Dibuat" : "Menunggu Persetujuan Belanja",
+        isDone: currentStage > 4,
+        isActive: currentStage === 4,
+        isRejected: false
+      },
+      {
+        num: 5,
+        title: hasPo && poStatus === 'rejected' ? "Belanja Ditolak" : (currentStage > 5 ? "Belanja Disetujui" : "Persetujuan Belanja"),
+        desc: hasPo && poStatus === 'rejected' ? "Ditolak Wakil Dekan" : (currentStage > 5 ? "Siap Kirim & Terima" : "Menunggu Keputusan"),
+        isDone: currentStage > 5,
+        isActive: currentStage === 5 && poStatus !== 'rejected',
+        isRejected: hasPo && poStatus === 'rejected'
+      },
+      {
+        num: 6,
+        title: "Barang Diterima",
+        desc: currentStage === 6 ? "Selesai / Terpenuhi" : "Menunggu Penerimaan",
+        isDone: currentStage === 6 && (procurement.status === 'fulfilled' || poStatus === 'completed'),
+        isActive: currentStage === 6 && (procurement.status !== 'fulfilled' && poStatus !== 'completed'),
+        isRejected: false
+      }
+    ];
+  %>
+
+  <!-- Tracking Status Timeline Stepper -->
+  <div class="card p-6 bg-card rounded-xl border shadow-sm mb-6">
+    <h3 class="text-sm font-semibold text-center text-muted-foreground uppercase tracking-wider mb-6">Status Perkembangan Pengajuan</h3>
+    
+    <div class="stepper-container my-4">
+      <% steps.forEach(step => { %>
+        <div class="stepper-step <%= step.isDone ? 'is-done' : '' %> <%= step.isActive ? 'is-active' : '' %> <%= step.isRejected ? 'is-rejected' : '' %>">
+          <div class="step-badge <%= step.isDone ? 'step-badge-done' : (step.isRejected ? 'step-badge-rejected' : (step.isActive ? 'step-badge-active' : 'step-badge-pending')) %>">
+            <% if (step.isDone) { %>
+              ✓
+            <% } else if (step.isRejected) { %>
+              ✗
             <% } else { %>
-              <div class="size-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold text-sm shadow">2</div>
-              <span class="text-xs font-semibold mt-2 text-muted-foreground">Keputusan</span>
+              <%= step.num %>
             <% } %>
           </div>
-        </div>
-      </div>
-
-      <!-- Main Layout Details -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        <!-- Left Side: Items Table -->
-        <div class="card p-6 bg-card rounded-xl border shadow-sm md:col-span-2 space-y-4">
-          <h3 class="text-base font-semibold">Daftar Barang Permintaan</h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead>
-                <tr class="border-b text-muted-foreground font-semibold">
-                  <th class="pb-3 w-[60px]">No</th>
-                  <th class="pb-3">Nama Barang</th>
-                  <th class="pb-3 text-right w-[150px]">Jumlah (Quantity)</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y">
-                <% items.forEach((item, index) => { %>
-                  <tr class="hover:bg-muted/10">
-                    <td class="py-3 font-medium text-muted-foreground"><%= index + 1 %></td>
-                    <td class="py-3"><%= item.item_name %></td>
-                    <td class="py-3 text-right font-medium"><%= item.quantity %></td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
+          <div class="step-content">
+            <span class="step-title"><%= step.title %></span>
+            <span class="step-desc"><%= step.desc %></span>
           </div>
         </div>
+      <% }) %>
+    </div>
+  </div>
 
-        <!-- Right Side: Details Info -->
-        <div class="space-y-6">
-          <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
-            <h3 class="text-base font-semibold">Informasi Pengajuan</h3>
-            <div class="space-y-3 text-sm">
-              <div>
-                <span class="text-xs uppercase tracking-wide text-muted-foreground block mb-1">Nomor Permintaan</span>
-                <span class="font-mono font-medium text-primary"><%= procurement.request_number %></span>
-              </div>
-              <div>
-                <span class="text-xs uppercase tracking-wide text-muted-foreground block mb-1">Deskripsi Utama</span>
-                <span class="font-medium"><%= procurement.title %></span>
-              </div>
-              <div>
-                <span class="text-xs text-muted-foreground block mb-1">Status</span>
-                <%- include('../partials/status-badge', { status: procurement.status }) %>
-              </div>
-              <div>
-                <span class="text-xs uppercase tracking-wide text-muted-foreground block mb-1">Tanggal Pengajuan</span>
-                <span><%= fmtDate(procurement.request_date) %></span>
-              </div>
-            </div>
-          </div>
+  <!-- Info Pengajuan -->
+  <div class="card mb-6">
+    <section class="po-info">
+      <div class="po-head">
+        <div>
+          <span class="po-eyebrow">Nomor Permintaan</span>
+          <span class="po-number font-mono text-primary"><%= procurement.request_number %></span>
         </div>
-
+        <%- include('../partials/status-badge', { status: procurement.status }) %>
       </div>
+      <div class="info-grid">
+        <div class="info-tile">
+          <div class="info-label">Deskripsi Utama</div>
+          <div class="info-value"><%= procurement.title %></div>
+        </div>
+        <div class="info-tile">
+          <div class="info-label">Tanggal Pengajuan</div>
+          <div class="info-value"><%= fmtDate(procurement.request_date) %></div>
+        </div>
+        <div class="info-tile">
+          <div class="info-label">Pemohon</div>
+          <div class="info-value"><%= procurement.pemohon_name || 'Staf / Admin' %></div>
+        </div>
+        <div class="info-tile">
+          <div class="info-label">Jumlah Jenis Barang</div>
+          <div class="info-value"><%= items.length %> item</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Alasan Penolakan (muncul bila permintaan ditolak) -->
+  <% if (procurement.status === 'rejected') { %>
+  <div class="card p-6 bg-card rounded-xl border border-red-500/40 bg-red-50/40 mb-6 space-y-1">
+    <h3 class="text-base font-semibold text-red-700">Alasan Penolakan</h3>
+    <p class="text-sm text-red-900"><%= rejectionNote ? rejectionNote : 'Tidak ada catatan yang diberikan.' %></p>
+  </div>
+  <% } %>
+
+  <!-- Daftar Barang Permintaan -->
+  <div class="card p-6 bg-card rounded-xl border shadow-sm mb-6 space-y-4">
+    <h3 class="text-base font-semibold">Daftar Barang Permintaan</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b text-muted-foreground font-semibold">
+            <th class="pb-3 w-[60px]">No</th>
+            <th class="pb-3">Nama Barang</th>
+            <th class="pb-3 text-right w-[150px]">Jumlah (Quantity)</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <% items.forEach((item, index) => { %>
+            <tr class="hover:bg-muted/10">
+              <td class="py-3 font-medium text-muted-foreground"><%= index + 1 %></td>
+              <td class="py-3"><%= item.item_name %></td>
+              <td class="py-3 text-right font-medium"><%= item.quantity %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
     </div>
   </div>
