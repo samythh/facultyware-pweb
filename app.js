@@ -83,6 +83,7 @@ app.use('/supplier', require('./routes/supplier'));
 
 // Dashboard sebagai landing ter-autentikasi (semua role yang sudah login).
 app.get('/dashboard', require('./middlewares/auth').isAuthenticated, dashboardController.getDashboardPage);
+app.get('/dashboard/activity', require('./middlewares/auth').isAuthenticated, dashboardController.getActivityPage);
 app.get('/api/dashboard/stats', require('./middlewares/auth').isAuthenticated, dashboardController.getStats);
 app.get('/api/purchase', purchaseController.apiList);
 app.get('/api/procurement', require('./middlewares/auth').isAuthenticated, require('./middlewares/acl').checkPermission('manage_procurement'), require('./controllers/inventoryProcurementController').apiList);

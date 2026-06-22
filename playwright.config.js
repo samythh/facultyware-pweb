@@ -4,7 +4,7 @@
 //
 // Prasyarat: MySQL berjalan & seeding RBAC sudah dijalankan
 //   node scripts/seed_rbac.js
-// (akun: admin@unand.ac.id/admin123, wadir@unand.ac.id/wadir123).
+// (akun: admin@unand.ac.id/admin123, wadek@unand.ac.id/wadek123).
 //
 // Menjalankan:  npx playwright test
 const { defineConfig, devices } = require('@playwright/test');

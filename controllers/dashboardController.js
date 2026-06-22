@@ -51,6 +51,87 @@ function fmtRp(n) {
   return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
 }
 
+// ═════════════════════════════════════════════════════════════════════════
+// Helper: kumpulkan aktivitas dari berbagai tabel.
+// limit = jumlah maksimum baris (0 = tanpa batas, untuk halaman penuh).
+// ═════════════════════════════════════════════════════════════════════════
+async function collectActivities(req, limit = 0) {
+  const can = (p) => Array.isArray(req.session.permissions) && req.session.permissions.includes(p);
+  const isApprover = can('manage_approval');
+  const isOps = can('manage_procurement') || can('manage_po') || can('manage_receiving');
+  const lim = limit > 0 ? `LIMIT ${limit}` : '';
+
+  const acts = [];
+  const pushRows = (rows, mapFn) => rows.forEach((r) => { const e = mapFn(r); if (e && e.at) acts.push(e); });
+
+  if (isApprover || isOps) {
+    pushRows(await safeRows(`
+      SELECT a.status, a.action_date AS at, r.request_number AS num,
+             COALESCE(NULLIF(r.title, ''),
+                      (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = r.id ORDER BY id LIMIT 1),
+                      'Permintaan Barang') AS judul
+      FROM inventory_request_approvals a
+      JOIN inventory_requests r ON r.id = a.inventory_request_id
+      WHERE a.action_date IS NOT NULL
+      ORDER BY a.action_date DESC ${lim}
+    `), (r) => ({
+      at: r.at,
+      kind: r.status === 'rejected' ? 'rejected' : 'approved',
+      title: r.judul,
+      meta: `Permintaan ${r.num} ${r.status === 'rejected' ? 'ditolak' : 'disetujui'}`
+    }));
+
+    pushRows(await safeRows(`
+      SELECT request_number AS num, created_at AS at,
+             COALESCE(NULLIF(title, ''),
+                      (SELECT item_name FROM inventory_request_details WHERE inventory_request_id = inventory_requests.id ORDER BY id LIMIT 1),
+                      'Permintaan Barang') AS judul
+      FROM inventory_requests ORDER BY created_at DESC ${lim}
+    `), (r) => ({ at: r.at, kind: 'info', title: r.judul, meta: `Permintaan ${r.num} diajukan` }));
+
+    pushRows(await safeRows(`
+      SELECT p.purchase_number AS num, p.status, p.approved_at AS at,
+             COALESCE(NULLIF(proc.title, ''), 'Pengadaan') AS judul
+      FROM inventory_purchases p
+      LEFT JOIN inventory_procurements proc ON proc.id = p.inventory_procurement_id
+      WHERE p.approved_at IS NOT NULL
+      ORDER BY p.approved_at DESC ${lim}
+    `), (r) => ({
+      at: r.at,
+      kind: r.status === 'rejected' ? 'rejected' : 'approved',
+      title: r.judul,
+      meta: `PO ${r.num} ${r.status === 'rejected' ? 'ditolak' : 'disetujui'}`
+    }));
+  }
+  if (isOps) {
+    pushRows(await safeRows(`
+      SELECT request_number AS num, created_at AS at,
+             COALESCE(NULLIF(title, ''), 'Pengadaan') AS judul
+      FROM inventory_procurements ORDER BY created_at DESC ${lim}
+    `), (r) => ({ at: r.at, kind: 'info', title: r.judul, meta: `Pengadaan ${r.num} dibuat` }));
+
+    pushRows(await safeRows(`
+      SELECT p.purchase_number AS num, p.updated_at AS at,
+             COALESCE(NULLIF(proc.title, ''), 'Pengadaan') AS judul
+      FROM inventory_purchases p
+      LEFT JOIN inventory_procurements proc ON proc.id = p.inventory_procurement_id
+      WHERE p.status='completed'
+      ORDER BY p.updated_at DESC ${lim}
+    `), (r) => ({ at: r.at, kind: 'done', title: r.judul, meta: `Penerimaan PO ${r.num} selesai` }));
+  }
+
+  return acts
+    .sort((a, b) => new Date(b.at) - new Date(a.at))
+    .slice(0, limit || acts.length)
+    .map((a) => {
+      const d = new Date(a.at);
+      const label = Number.isNaN(d.getTime())
+        ? '-'
+        : `${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}, ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      return { kind: a.kind, title: a.title, meta: a.meta, at_label: label };
+    });
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Fungsi internal: kumpulkan seluruh data statistik dashboard.
 // Dipakai bersama oleh getDashboardPage (SSR) dan getStats (REST API).
@@ -302,61 +383,7 @@ async function collectStats(req) {
   `);
 
   // ── 7. AKTIVITAS TERBARU ─────────────────────────────────────────────
-  const acts = [];
-  const pushRows = (rows, mapFn) => rows.forEach((r) => { const e = mapFn(r); if (e && e.at) acts.push(e); });
-
-  if (isApprover || isOps) {
-    pushRows(await safeRows(`
-      SELECT a.status, a.action_date AS at, r.request_number AS num
-      FROM inventory_request_approvals a
-      JOIN inventory_requests r ON r.id = a.inventory_request_id
-      WHERE a.action_date IS NOT NULL
-      ORDER BY a.action_date DESC LIMIT 8
-    `), (r) => ({
-      at: r.at,
-      kind: r.status === 'rejected' ? 'rejected' : 'approved',
-      text: r.status === 'rejected' ? `Permintaan ${r.num} ditolak` : `Permintaan ${r.num} disetujui`
-    }));
-
-    pushRows(await safeRows(`
-      SELECT request_number AS num, created_at AS at
-      FROM inventory_requests ORDER BY created_at DESC LIMIT 8
-    `), (r) => ({ at: r.at, kind: 'info', text: `Permintaan ${r.num} diajukan` }));
-
-    pushRows(await safeRows(`
-      SELECT purchase_number AS num, status, approved_at AS at
-      FROM inventory_purchases
-      WHERE approved_at IS NOT NULL
-      ORDER BY approved_at DESC LIMIT 8
-    `), (r) => ({
-      at: r.at,
-      kind: r.status === 'rejected' ? 'rejected' : 'approved',
-      text: r.status === 'rejected' ? `PO ${r.num} ditolak` : `PO ${r.num} disetujui`
-    }));
-  }
-  if (isOps) {
-    pushRows(await safeRows(`
-      SELECT request_number AS num, created_at AS at
-      FROM inventory_procurements ORDER BY created_at DESC LIMIT 8
-    `), (r) => ({ at: r.at, kind: 'info', text: `Pengadaan ${r.num} dibuat` }));
-
-    pushRows(await safeRows(`
-      SELECT purchase_number AS num, updated_at AS at
-      FROM inventory_purchases WHERE status='completed'
-      ORDER BY updated_at DESC LIMIT 8
-    `), (r) => ({ at: r.at, kind: 'done', text: `Penerimaan PO ${r.num} selesai` }));
-  }
-
-  const activities = acts
-    .sort((a, b) => new Date(b.at) - new Date(a.at))
-    .slice(0, 8)
-    .map((a) => {
-      const d = new Date(a.at);
-      const label = Number.isNaN(d.getTime())
-        ? '-'
-        : `${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}, ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-      return { kind: a.kind, text: a.text, at_label: label };
-    });
+  const activities = await collectActivities(req, 8);
 
   // ── 8. JUMLAH TOTAL PO ───────────────────────────────────────────────
   const totalPO = statusPO.pending + statusPO.approved + statusPO.completed + statusPO.rejected;
@@ -423,6 +450,40 @@ exports.getStats = async (req, res, next) => {
   try {
     const stats = await collectStats(req);
     res.json({ success: true, ...stats });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ═════════════════════════════════════════════════════════════════════════
+// PAGE RENDER: GET /dashboard/activity
+// Halaman riwayat aktivitas lengkap dengan pagination sederhana.
+// ═════════════════════════════════════════════════════════════════════════
+exports.getActivityPage = async (req, res, next) => {
+  try {
+    const PAGE_SIZE = 20;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const offset = (page - 1) * PAGE_SIZE;
+
+    const all = await collectActivities(req, 0); // ambil semua
+    const totalItems = all.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+    const activities = all.slice(offset, offset + PAGE_SIZE);
+
+    const can = (p) => Array.isArray(req.session.permissions) && req.session.permissions.includes(p);
+    const isApprover = can('manage_approval');
+    const isOps = can('manage_procurement') || can('manage_po') || can('manage_receiving');
+
+    res.render('dashboard/activity', {
+      title: 'Riwayat Aktivitas',
+      user: req.session.username,
+      isApprover,
+      isOps,
+      activities,
+      page,
+      totalPages,
+      totalItems
+    });
   } catch (err) {
     next(err);
   }

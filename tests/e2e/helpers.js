@@ -5,7 +5,7 @@ const { expect } = require('@playwright/test');
 // Akun hasil scripts/seed_rbac.js.
 const USERS = {
   admin: { email: 'admin@unand.ac.id', password: 'admin123' },
-  wadir: { email: 'wadir@unand.ac.id', password: 'wadir123' },
+  wadir: { email: 'wadek@unand.ac.id', password: 'wadek123' },
 };
 
 // Login lewat form /login lalu pastikan redirect ke /dashboard.
