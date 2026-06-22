@@ -42,7 +42,10 @@
               <% if (procurements && procurements.length > 0) { %>
                 <% procurements.forEach(function (proc) { %>
                   <tr class="hover:bg-muted/30 transition-colors cursor-pointer" onclick="window.location.href='/approval/<%= proc.id %>'">
-                    <td class="p-4 font-mono font-semibold text-primary">#<%= proc.request_number %></td>
+                    <td class="p-4">
+                      <span class="font-mono font-semibold text-primary block">#<%= proc.request_number %></span>
+                      <span class="text-xs text-muted-foreground block mt-0.5 max-w-[240px] truncate" title="<%= proc.title %>"><%= proc.title %></span>
+                    </td>
                     <td class="p-4 text-muted-foreground"><%= new Date(proc.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
                     <td class="p-4 font-medium"><%= proc.pemohon_name || 'Unit/Staf' %></td>
                     <td class="p-4"><%- include('partials/status-badge', { status: proc.status }) %></td>

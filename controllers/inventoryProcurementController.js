@@ -227,7 +227,7 @@ const detail = async (req, res, next) => {
 
   try {
     const [procurementRows] = await db.query(
-      `SELECT r.*,
+      `SELECT r.*, e.name AS pemohon_name,
               COALESCE(NULLIF(r.title, ''), CONCAT(
                 COALESCE((SELECT item_name FROM inventory_request_details WHERE inventory_request_id = r.id ORDER BY id LIMIT 1), 'Permintaan Barang'),
                 CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) > 1
@@ -235,6 +235,7 @@ const detail = async (req, res, next) => {
                      ELSE '' END
               )) AS title
        FROM inventory_requests r
+       LEFT JOIN employees e ON r.employee_id = e.id
        WHERE r.id = ? AND r.employee_id = ?`,
       [id, employeeId]
     );
@@ -253,11 +254,23 @@ const detail = async (req, res, next) => {
       [id]
     );
 
+    let po = null;
+    if (procurement.inventory_procurement_id) {
+      const [poRows] = await db.query(
+        'SELECT * FROM inventory_purchases WHERE inventory_procurement_id = ? LIMIT 1',
+        [procurement.inventory_procurement_id]
+      );
+      if (poRows.length > 0) {
+        po = poRows[0];
+      }
+    }
+
     res.render('inventory-procurement/detail', {
       title: `Detail ${procurement.request_number}`,
       user: req.session.username,
       procurement,
-      items
+      items,
+      po
     });
   } catch (error) {
     next(error);
