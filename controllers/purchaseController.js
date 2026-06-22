@@ -166,7 +166,16 @@ exports.store = async (req, res, next) => {
 exports.detail = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const [poRows] = await db.query(`SELECT * FROM inventory_purchases WHERE id=?`, [id]);
+    const [poRows] = await db.query(
+      `SELECT pur.*,
+              COALESCE(NULLIF(proc.title, ''),
+                       (SELECT item_name FROM inventory_procurement_items WHERE inventory_procurement_id = proc.id LIMIT 1),
+                       'Pengadaan') AS procurement_title
+         FROM inventory_purchases pur
+         LEFT JOIN inventory_procurements proc ON proc.id = pur.inventory_procurement_id
+        WHERE pur.id = ?`,
+      [id]
+    );
     if (!poRows || poRows.length === 0) return res.status(404).send('PO not found');
     const po = poRows[0];
 
