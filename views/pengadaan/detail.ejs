@@ -89,32 +89,42 @@
         </div>
       </div>
 
-      <!-- Rincian Barang (gabungan) -->
-      <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
-        <h3 class="text-base font-semibold">Rincian Barang (Gabungan)</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr class="border-b text-muted-foreground font-semibold">
-                <th class="pb-3 pr-4">Nama Barang</th>
-                <th class="pb-3 text-right w-[150px]">Jumlah (Quantity)</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y">
-              <% items.forEach(function (it) { %>
-                <tr class="hover:bg-muted/10">
-                  <td class="py-3 font-medium align-middle text-foreground">
-                    <%= it.item_name %>
-                    <% if (it.item_code) { %>
-                      <span class="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded ml-2"><%= it.item_code %></span>
-                    <% } %>
-                  </td>
-                  <td class="py-3 text-right align-middle font-mono font-medium text-primary"><%= it.quantity %></td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-        </div>
+      <!-- Rincian Barang per Permintaan -->
+      <div class="flex flex-col gap-4">
+        <h3 class="text-base font-semibold px-1">Rincian Barang per Permintaan</h3>
+        <% requests.forEach(function (r) { %>
+          <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-3" style="border-color: var(--color-border);">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-mono font-semibold text-primary"><%= r.request_number %></span>
+                <% if (r.title) { %><span class="text-sm text-muted-foreground">&middot; <%= r.title %></span><% } %>
+              </div>
+              <span class="text-xs text-muted-foreground"><%= r.requester_name || '-' %></span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr class="border-b text-muted-foreground font-semibold">
+                    <th class="pb-2 pr-4">Nama Barang</th>
+                    <th class="pb-2 text-right w-[150px]">Jumlah (Quantity)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <% if (r.items && r.items.length > 0) { %>
+                    <% r.items.forEach(function (it) { %>
+                      <tr class="hover:bg-muted/10">
+                        <td class="py-2.5 font-medium align-middle text-foreground"><%= it.item_name %></td>
+                        <td class="py-2.5 text-right align-middle font-mono font-medium text-primary"><%= it.quantity %></td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr><td colspan="2" class="py-4 text-center text-muted-foreground">Tidak ada barang pada permintaan ini.</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <% }) %>
       </div>
 
     </div>

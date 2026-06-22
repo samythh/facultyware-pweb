@@ -241,7 +241,7 @@ exports.detail = async (req, res, next) => {
     const procurement = procurementRows[0];
 
     const [requests] = await db.query(
-      `SELECT r.request_number, r.request_date, r.status, e.name AS requester_name
+      `SELECT r.id, r.request_number, r.request_date, r.status, r.title, e.name AS requester_name
          FROM inventory_requests r
          LEFT JOIN employees e ON r.employee_id = e.id
         WHERE r.inventory_procurement_id = ?
@@ -249,21 +249,29 @@ exports.detail = async (req, res, next) => {
       [id]
     );
 
-    const [items] = await db.query(
-      `SELECT pi.*, i.code AS item_code
-         FROM inventory_procurement_items pi
-         LEFT JOIN items i ON pi.item_id = i.id
-        WHERE pi.inventory_procurement_id = ?
-        ORDER BY pi.id ASC`,
-      [id]
-    );
+    // Barang per permintaan -> diambil langsung dari sumbernya (request_details),
+    // sehingga jelas barang mana berasal dari permintaan mana.
+    if (requests.length > 0) {
+      const reqIds = requests.map((r) => r.id);
+      const [details] = await db.query(
+        `SELECT inventory_request_id, item_name, quantity
+           FROM inventory_request_details
+          WHERE inventory_request_id IN (?)
+          ORDER BY id ASC`,
+        [reqIds]
+      );
+      const byReq = {};
+      for (const d of details) {
+        (byReq[d.inventory_request_id] = byReq[d.inventory_request_id] || []).push(d);
+      }
+      requests.forEach((r) => { r.items = byReq[r.id] || []; });
+    }
 
     res.render('pengadaan/detail', {
       title: `Detail Pengadaan ${procurement.request_number}`,
       user: req.session.username,
       procurement,
-      requests,
-      items
+      requests
     });
   } catch (error) {
     next(error);
