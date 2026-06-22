@@ -6,18 +6,29 @@
 
   <div class="p-4 md:p-6 xl:p-12">
     <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
-      <header class="flex flex-wrap items-end justify-between gap-4">
-        <div class="flex flex-col gap-2">
+      <!-- Judul -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
           <h1 class="text-2xl font-bold tracking-tight sm:text-3xl"><%= title %></h1>
-          <p class="text-muted-foreground">
+          <p class="text-sm text-muted-foreground">
             Riwayat keputusan persetujuan Purchase Order (gerbang kedua, sadar-harga).
           </p>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <input type="text" id="search-input" placeholder="Cari No PO, supplier, atau judul..." class="input" style="min-width: 240px;" />
+      </div>
+
+      <!-- Cari & Urutkan -->
+      <div class="card p-4 bg-card rounded-xl border shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="relative" style="flex:1 1 260px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-input" placeholder="Cari No PO, supplier, atau judul..." class="input w-full" style="padding-left: 2.5rem !important;" />
+          </div>
           <%- include('partials/sort-control', { action: '/approval/po/archive', current: (typeof sort !== 'undefined' ? sort : ''), opts: (typeof sortOptions !== 'undefined' ? sortOptions : []), keep: {} }) %>
         </div>
-      </header>
+      </div>
 
       <div class="card card--table overflow-hidden">
         <div class="overflow-x-auto">
