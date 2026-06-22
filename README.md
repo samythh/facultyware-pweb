@@ -50,7 +50,7 @@ Proyek ini adalah **Tugas Besar Pemrograman Web** kelompok **B09**.
 | 21 | Ghezy | Persetujuan Belanja (PO) + arsip | Utama | `manage_approval` |
 | 22 | Ghezy | Riwayat persetujuan & dashboard ringkasan | Utama | `manage_approval` |
 | 23 | Ghezy | Export rekap persetujuan (`/approval/rekap/export`) | Dokumen | `manage_approval` |
-| 24 | Ghezy | `GET /api/dashboard/stats` (statistik dashboard, JSON) | RestAPI | — |
+| 24 | Ghezy | `GET /api/dashboard/stats` (statistik dashboard, JSON) | RestAPI | `isAuthenticated` (login; data disaring per-peran) |
 
 ---
 
