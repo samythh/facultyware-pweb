@@ -265,12 +265,25 @@ const detail = async (req, res, next) => {
       }
     }
 
+    // Alasan penolakan (bila ditolak) -> dari catatan persetujuan Wakil Dekan.
+    let rejectionNote = null;
+    if (procurement.status === 'rejected') {
+      const [noteRows] = await db.query(
+        `SELECT notes FROM inventory_request_approvals
+          WHERE inventory_request_id = ? AND status = 'rejected'
+          ORDER BY id DESC LIMIT 1`,
+        [id]
+      );
+      if (noteRows.length > 0) rejectionNote = noteRows[0].notes;
+    }
+
     res.render('inventory-procurement/detail', {
       title: `Detail ${procurement.request_number}`,
       user: req.session.username,
       procurement,
       items,
-      po
+      po,
+      rejectionNote
     });
   } catch (error) {
     next(error);

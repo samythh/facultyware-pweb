@@ -319,6 +319,14 @@
     </section>
   </div>
 
+  <!-- Alasan Penolakan (muncul bila permintaan ditolak) -->
+  <% if (procurement.status === 'rejected') { %>
+  <div class="card p-6 bg-card rounded-xl border border-red-500/40 bg-red-50/40 mb-6 space-y-1">
+    <h3 class="text-base font-semibold text-red-700">Alasan Penolakan</h3>
+    <p class="text-sm text-red-900"><%= rejectionNote ? rejectionNote : 'Tidak ada catatan yang diberikan.' %></p>
+  </div>
+  <% } %>
+
   <!-- Daftar Barang Permintaan -->
   <div class="card p-6 bg-card rounded-xl border shadow-sm mb-6 space-y-4">
     <h3 class="text-base font-semibold">Daftar Barang Permintaan</h3>
