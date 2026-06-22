@@ -17,18 +17,24 @@
       <header class="flex flex-col gap-2">
         <a href="/approval" class="text-sm text-muted-foreground hover:underline">&larr; Kembali ke Inbox</a>
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
-          Detail Permintaan #<%= procurement.request_number %>
+          <%= procurement.title || 'Permintaan Barang' %>
         </h1>
       </header>
 
       <!-- Info Pemohon -->
       <div class="card">
         <section class="grid gap-4">
-          <div class="flex flex-col gap-1">
-            <span class="text-xs uppercase tracking-wide text-muted-foreground">Pemohon</span>
-            <span class="text-lg font-semibold"><%= procurement.pemohon_name || 'Staf / Admin' %></span>
-          </div>
           <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <span class="text-xs uppercase tracking-wide text-muted-foreground">Nomor Permintaan</span>
+              <span class="text-lg font-semibold font-mono text-primary">#<%= procurement.request_number %></span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs uppercase tracking-wide text-muted-foreground">Pemohon</span>
+              <span class="text-lg font-semibold"><%= procurement.pemohon_name || 'Staf / Admin' %></span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 border-t pt-3" style="border-color: var(--color-border, #e2e8f0);">
             <div class="flex flex-col gap-1">
               <span class="text-xs uppercase tracking-wide text-muted-foreground">Tanggal</span>
               <span class="font-medium">

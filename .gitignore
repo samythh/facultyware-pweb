@@ -91,3 +91,6 @@ public/assets/uploads/**/*
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Database dumps
+facultyware_dump.sql
