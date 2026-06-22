@@ -8,13 +8,13 @@
     <div class="max-w-screen-lg mx-auto">
       <header class="flex flex-col gap-2 mb-8">
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Dashboard</h1>
-        <p class="text-muted-foreground">Ringkasan aktivitas pengadaan barang fakultas.</p>
+        <p class="text-muted-foreground">Ringkasan aktivitas persetujuan pengadaan barang fakultas.</p>
       </header>
 
       <!-- ═══════════════════════════════════════════════════════════════ -->
       <!-- DASBOR WAKIL DEKAN: Fokus Persetujuan                         -->
       <!-- ═══════════════════════════════════════════════════════════════ -->
-      <% if (isApprover) { %>
+      <% if (isApprover && wakilDekanStats) { %>
       <section class="mb-8" id="sec-wadir">
         <!-- Card Besar: Menunggu Persetujuan Anda -->
         <div class="card p-6 bg-card rounded-xl border shadow-sm mb-6" style="border-left: 4px solid #f59e0b;">
@@ -28,12 +28,12 @@
             </div>
             <div class="flex items-center gap-6 text-center">
               <div>
-                <p class="text-3xl font-bold text-amber-600" id="kpi-wd-antrean">—</p>
+                <p class="text-3xl font-bold text-amber-600" id="kpi-wd-antrean"><%= wakilDekanStats.totalAntrean %></p>
                 <p class="text-xs text-muted-foreground mt-1">Dokumen</p>
               </div>
               <div style="width:1px;height:40px;background:var(--color-border)"></div>
               <div>
-                <p class="text-xl font-bold text-primary" id="kpi-wd-nominal">—</p>
+                <p class="text-xl font-bold text-primary" id="kpi-wd-nominal"><%= wakilDekanStats.nominalPOPending_label %></p>
                 <p class="text-xs text-muted-foreground mt-1">Total Nominal PO</p>
               </div>
             </div>
@@ -43,23 +43,24 @@
         <!-- Grid: Ringkasan & Tabel PO Pending -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <!-- Ringkasan Bulanan -->
-          <div class="card p-6 bg-card rounded-xl border shadow-sm">
-            <h3 class="text-lg font-semibold mb-4">Ringkasan Bulan Ini</h3>
-            <div class="flex flex-col gap-4">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-muted-foreground">Disetujui</span>
-                <span class="text-lg font-bold text-green-600" id="kpi-wd-disetujui">—</span>
+          <div class="card p-6 bg-card rounded-xl border shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 class="text-lg font-semibold mb-4">Ringkasan Bulan Ini</h3>
+              <div class="flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-muted-foreground">Disetujui</span>
+                  <span class="text-lg font-bold text-green-600" id="kpi-wd-disetujui"><%= wakilDekanStats.belanjaDisetujuiBulanIni_label %></span>
+                </div>
+                <div style="height:1px;background:var(--color-border)"></div>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-muted-foreground">Ditolak</span>
+                  <span class="text-lg font-bold text-red-600" id="kpi-wd-ditolak"><%= wakilDekanStats.belanjaDitolakBulanIni_label %></span>
+                </div>
               </div>
-              <div style="height:1px;background:var(--color-border)"></div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-muted-foreground">Ditolak</span>
-                <span class="text-lg font-bold text-red-600" id="kpi-wd-ditolak">—</span>
-              </div>
-              <div style="height:1px;background:var(--color-border)"></div>
-              <div class="flex gap-3 mt-2">
-                <a href="/approval/inbox" class="btn-outline flex-1 justify-center text-sm">Persetujuan Permintaan</a>
-                <a href="/approval/po" class="btn-outline flex-1 justify-center text-sm" style="border-color:#f59e0b;color:#f59e0b;">Persetujuan PO &rarr;</a>
-              </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+              <a href="/approval/inbox" class="btn-outline flex-1 justify-center text-sm">Persetujuan Permintaan</a>
+              <a href="/approval/po" class="btn-outline flex-1 justify-center text-sm" style="border-color:#f59e0b;color:#f59e0b;">Persetujuan PO &rarr;</a>
             </div>
           </div>
 
@@ -79,10 +80,30 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y" id="tbl-wd-po">
-                  <tr><td colspan="3" class="p-6 text-center text-muted-foreground">Memuat...</td></tr>
+                  <% if (wakilDekanStats.daftarPOPending && wakilDekanStats.daftarPOPending.length > 0) { %>
+                    <% wakilDekanStats.daftarPOPending.forEach(function (po) { %>
+                      <tr class="hover:bg-muted/30 transition-colors cursor-pointer" onclick="window.location.href='/purchase/<%= po.id %>'">
+                        <td class="p-3 font-mono font-semibold text-primary"><%= po.purchase_number %></td>
+                        <td class="p-3"><%= po.supplier || '-' %></td>
+                        <td class="p-3 text-right font-mono font-semibold"><%= fmtRp(po.total) %></td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="3" class="p-6 text-center text-muted-foreground">Tidak ada PO menunggu persetujuan.</td>
+                    </tr>
+                  <% } %>
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+
+        <!-- Bar Chart Komparasi Belanja Bulan Ini (Disetujui vs Ditolak) -->
+        <div class="card p-6 bg-card rounded-xl border shadow-sm mb-8">
+          <h3 class="text-lg font-semibold mb-4 text-gray-800">Perbandingan Nilai Belanja Bulan Ini (Disetujui vs Ditolak)</h3>
+          <div class="relative h-64 w-full">
+            <canvas id="wadirCompareChart"></canvas>
           </div>
         </div>
       </section>
@@ -93,43 +114,52 @@
       <!-- ═══════════════════════════════════════════════════════════════ -->
       <% if (isOps) { %>
       <section id="sec-admin">
+        <!-- Baris KPI Cards Lama yang Wajib Dipertahankan untuk E2E Tests -->
+        <section class="flex flex-wrap gap-6 mb-8">
+          <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
+            <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Permintaan</h2>
+            <p class="text-3xl font-bold text-blue-600 mt-2" id="kpi-permintaan"><%= totalPermintaan %></p>
+          </div>
 
-        <!-- Baris KPI Cards -->
+          <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
+            <h2 class="text-sm font-medium uppercase text-muted-foreground">Menunggu Approval</h2>
+            <p class="text-3xl font-bold text-yellow-500 mt-2" id="kpi-menunggu"><%= statusPermintaan.pending %></p>
+          </div>
+
+          <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
+            <h2 class="text-sm font-medium uppercase text-muted-foreground">Total PO Dibuat</h2>
+            <p class="text-3xl font-bold text-green-600 mt-2" id="kpi-po-dibuat"><%= totalPO %></p>
+          </div>
+
+          <div class="card p-6 bg-card rounded-xl border shadow-sm text-center flex-1">
+            <h2 class="text-sm font-medium uppercase text-muted-foreground">Total Ditolak</h2>
+            <p class="text-3xl font-bold text-red-600 mt-2" id="kpi-ditolak"><%= statusPermintaan.rejected %></p>
+          </div>
+        </section>
+
+        <!-- Baris KPI Cards Baru (Finansial & Status Detail) -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div class="card p-5 bg-card rounded-xl border shadow-sm text-center">
-            <div class="flex items-center justify-center w-10 h-10 rounded-lg mx-auto mb-2" style="background:color-mix(in oklab, #3b82f6 14%, transparent);">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            </div>
-            <p class="text-xs uppercase text-muted-foreground font-medium">Permintaan</p>
-            <p class="text-2xl font-bold text-blue-600 mt-1" id="kpi-permintaan">—</p>
-            <p class="text-xs text-muted-foreground mt-1"><span id="kpi-permintaan-pending">0</span> menunggu</p>
+            <h3 class="text-xs uppercase text-muted-foreground font-semibold">Total Nilai Belanja</h3>
+            <p class="text-xl font-bold text-primary mt-2" id="kpi-total-belanja"><%= kpiUmum.totalBelanja_label %></p>
           </div>
 
           <div class="card p-5 bg-card rounded-xl border shadow-sm text-center">
-            <div class="flex items-center justify-center w-10 h-10 rounded-lg mx-auto mb-2" style="background:color-mix(in oklab, #22c55e 14%, transparent);">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-            </div>
-            <p class="text-xs uppercase text-muted-foreground font-medium">Purchase Order</p>
-            <p class="text-2xl font-bold text-green-600 mt-1" id="kpi-po">—</p>
-            <p class="text-xs text-muted-foreground mt-1"><span id="kpi-po-approved">0</span> menunggu penerimaan</p>
+            <h3 class="text-xs uppercase text-muted-foreground font-semibold">Belanja Bulan Ini</h3>
+            <p class="text-xl font-bold text-amber-600 mt-2" id="kpi-belanja-ini"><%= kpiUmum.belanjaBulanIni_label %></p>
+            <p class="text-[10px] text-muted-foreground mt-1">rata-rata <span id="kpi-rata-po"><%= kpiUmum.rataRataPO_label %></span>/PO</p>
           </div>
 
           <div class="card p-5 bg-card rounded-xl border shadow-sm text-center">
-            <div class="flex items-center justify-center w-10 h-10 rounded-lg mx-auto mb-2" style="background:color-mix(in oklab, #f59e0b 14%, transparent);">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <p class="text-xs uppercase text-muted-foreground font-medium">Belanja Bulan Ini</p>
-            <p class="text-xl font-bold text-amber-600 mt-1" id="kpi-belanja">—</p>
-            <p class="text-xs text-muted-foreground mt-1">rata-rata <span id="kpi-rata">—</span>/PO</p>
+            <h3 class="text-xs uppercase text-muted-foreground font-semibold">Menunggu Penerimaan</h3>
+            <p class="text-2xl font-bold text-blue-600 mt-1" id="kpi-menunggu-terima"><%= poMenungguPenerimaan %></p>
+            <p class="text-[10px] text-muted-foreground mt-1">PO berstatus 'approved'</p>
           </div>
 
           <div class="card p-5 bg-card rounded-xl border shadow-sm text-center">
-            <div class="flex items-center justify-center w-10 h-10 rounded-lg mx-auto mb-2" style="background:color-mix(in oklab, #ef4444 14%, transparent);">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-            </div>
-            <p class="text-xs uppercase text-muted-foreground font-medium">Barang Cacat</p>
-            <p class="text-2xl font-bold text-red-600 mt-1" id="kpi-cacat">—</p>
-            <p class="text-xs text-muted-foreground mt-1"><span id="kpi-supplier">0</span> pemasok terdaftar</p>
+            <h3 class="text-xs uppercase text-muted-foreground font-semibold">Barang Cacat/Retur</h3>
+            <p class="text-2xl font-bold text-red-600 mt-1" id="kpi-cacat"><%= totalBarangCacat %> <span class="text-xs font-normal text-muted-foreground">item</span></p>
+            <p class="text-[10px] text-muted-foreground mt-1"><span id="kpi-total-supp"><%= totalSupplier %></span> pemasok terdaftar</p>
           </div>
         </div>
 
@@ -139,19 +169,43 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             Perlu Tindakan
           </h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Permintaan Menunggu Persetujuan -->
             <div>
-              <h4 class="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Permintaan Menunggu Persetujuan</h4>
+              <h4 class="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Permintaan Menunggu Persetujuan</h4>
               <div id="list-req-pending" class="flex flex-col gap-2">
-                <p class="text-sm text-muted-foreground">Memuat...</p>
+                <% if (adminStats && adminStats.permintaanMenunggu && adminStats.permintaanMenunggu.length > 0) { %>
+                  <% adminStats.permintaanMenunggu.forEach(function (r) { %>
+                    <a href="/procurement" class="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/30 transition-colors text-sm">
+                      <div>
+                        <span class="font-mono font-semibold text-primary">#<%= r.request_number %></span>
+                        <span class="text-muted-foreground ml-2"><%= r.pemohon_name || 'Staf' %></span>
+                      </div>
+                      <span class="status-badge" style="background:#dbeafe;color:#1e40af;">Menunggu</span>
+                    </a>
+                  <% }) %>
+                <% } else { %>
+                  <p class="text-sm text-muted-foreground">Tidak ada permintaan menunggu.</p>
+                <% } %>
               </div>
             </div>
             <!-- PO Menunggu Persetujuan -->
             <div>
-              <h4 class="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wide">PO Menunggu Persetujuan Belanja</h4>
+              <h4 class="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">PO Menunggu Persetujuan Belanja</h4>
               <div id="list-po-pending" class="flex flex-col gap-2">
-                <p class="text-sm text-muted-foreground">Memuat...</p>
+                <% if (adminStats && adminStats.poMenungguPersetujuan && adminStats.poMenungguPersetujuan.length > 0) { %>
+                  <% adminStats.poMenungguPersetujuan.forEach(function (po) { %>
+                    <a href="/purchase/<%= po.id %>" class="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/30 transition-colors text-sm">
+                      <div>
+                        <span class="font-mono font-semibold text-primary"><%= po.purchase_number %></span>
+                        <span class="text-muted-foreground ml-2"><%= po.supplier || '-' %></span>
+                      </div>
+                      <span class="font-mono font-semibold"><%= fmtRp(po.total) %></span>
+                    </a>
+                  <% }) %>
+                <% } else { %>
+                  <p class="text-sm text-muted-foreground">Tidak ada PO menunggu persetujuan.</p>
+                <% } %>
               </div>
             </div>
           </div>
@@ -160,26 +214,61 @@
         <!-- Grafik: Tren Belanja & Distribusi Status -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div class="card p-6 bg-card rounded-xl border shadow-sm">
-            <h3 class="text-lg font-semibold mb-4">Tren Nilai Belanja (6 Bulan)</h3>
+            <h3 class="text-lg font-semibold mb-4 text-gray-800">Tren Nilai Belanja (6 Bulan Terakhir)</h3>
             <div class="relative h-64 w-full">
-              <canvas id="lineChart"></canvas>
+              <canvas id="barChartTrend"></canvas>
             </div>
           </div>
 
           <div class="card p-6 bg-card rounded-xl border shadow-sm">
-            <h3 class="text-lg font-semibold mb-4">Distribusi Status PO</h3>
+            <h3 class="text-lg font-semibold mb-4 text-gray-800">Komposisi Status PO</h3>
             <div class="relative h-64 w-full flex justify-center">
-              <canvas id="doughnutChart"></canvas>
+              <canvas id="donutChartPO"></canvas>
             </div>
           </div>
         </div>
 
-        <!-- Tabel: Pemasok Teratas & 5 Barang Terbanyak Diminta -->
+        <!-- Tabel: Pemasok Teratas & PO Perlu Tindak Lanjut -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <!-- Pemasok Teratas -->
+          <!-- PO Perlu Tindak Lanjut -->
           <div class="card card--table bg-card rounded-xl border shadow-sm overflow-hidden">
-            <div class="p-4 border-b">
-              <h3 class="text-lg font-semibold">Pemasok Teratas</h3>
+            <div class="p-4 border-b flex justify-between items-center">
+              <h3 class="text-lg font-semibold">PO Perlu Tindak Lanjut</h3>
+              <a href="/purchase" class="text-sm font-medium text-primary hover:underline">Semua &rarr;</a>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-muted/50 border-b">
+                    <th class="p-3 font-semibold text-muted-foreground">No PO</th>
+                    <th class="p-3 font-semibold text-muted-foreground">Pemasok</th>
+                    <th class="p-3 font-semibold text-muted-foreground text-right">Nilai</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y" id="tbl-wd-po">
+                  <% if (adminStats && adminStats.poPerluTindakan && adminStats.poPerluTindakan.length > 0) { %>
+                    <% adminStats.poPerluTindakan.forEach(function (po) { %>
+                      <tr class="hover:bg-muted/30 transition-colors cursor-pointer" onclick="window.location.href='/purchase/<%= po.id %>'">
+                        <td class="p-3 font-mono font-semibold text-primary"><%= po.purchase_number %></td>
+                        <td class="p-3"><%= po.supplier || '-' %></td>
+                        <td class="p-3 text-right font-mono font-semibold"><%= fmtRp(po.total) %></td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="3" class="p-6 text-center text-muted-foreground">Tidak ada PO memerlukan tindakan.</td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pemasok Teraktif -->
+          <div class="card card--table bg-card rounded-xl border shadow-sm overflow-hidden">
+            <div class="p-4 border-b flex justify-between items-center">
+              <h3 class="text-lg font-semibold">Pemasok Teraktif</h3>
+              <span class="text-xs text-muted-foreground"><%= totalSupplier %> pemasok terdaftar</span>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse text-sm">
@@ -191,28 +280,19 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y" id="tbl-top-supplier">
-                  <tr><td colspan="3" class="p-4 text-center text-muted-foreground">Memuat...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- 5 Barang Terbanyak Diminta -->
-          <div class="card card--table bg-card rounded-xl border shadow-sm overflow-hidden">
-            <div class="p-4 border-b">
-              <h3 class="text-lg font-semibold">5 Barang Paling Banyak Diminta</h3>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse text-sm">
-                <thead>
-                  <tr class="bg-muted/50 border-b">
-                    <th class="p-3 font-semibold text-muted-foreground">#</th>
-                    <th class="p-3 font-semibold text-muted-foreground">Nama Barang</th>
-                    <th class="p-3 font-semibold text-muted-foreground text-right">Total Diminta</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y" id="tbl-top-barang">
-                  <tr><td colspan="3" class="p-4 text-center text-muted-foreground">Memuat...</td></tr>
+                  <% if (topSuppliers && topSuppliers.length > 0) { %>
+                    <% topSuppliers.forEach(function (s) { %>
+                      <tr class="hover:bg-muted/30 transition-colors">
+                        <td class="p-3 font-medium"><%= s.nama %></td>
+                        <td class="p-3 text-center"><%= s.jumlah_po %></td>
+                        <td class="p-3 text-right font-mono"><%= fmtRp(s.total_nilai) %></td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="3" class="p-4 text-center text-muted-foreground">Belum ada data pemasok.</td>
+                    </tr>
+                  <% } %>
                 </tbody>
               </table>
             </div>
@@ -222,22 +302,87 @@
       <% } %>
 
       <!-- ═══════════════════════════════════════════════════════════════ -->
-      <!-- AKTIVITAS TERBARU (Tampil untuk semua role)                    -->
+      <!-- SECTION AKTIVITAS TERBARU & BARANG POPULER (Tampil untuk semua) -->
       <!-- ═══════════════════════════════════════════════════════════════ -->
-      <section class="mb-8">
-        <div class="card p-6 bg-card rounded-xl border shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold">Aktivitas Terbaru</h3>
-            <span class="text-xs text-muted-foreground" id="act-count"></span>
+      <% if (isApprover || isOps) { %>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Aktivitas Terbaru -->
+        <section class="card p-6 bg-card rounded-xl border shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Aktivitas Terbaru</h3>
+              <% if (activities && activities.length > 0) { %>
+                <span class="text-xs text-muted-foreground"><%= activities.length %> kejadian terkini</span>
+              <% } %>
+            </div>
+            <% if (activities && activities.length > 0) { %>
+              <div class="act-feed" id="act-feed">
+                <% activities.forEach(function (a) { %>
+                  <div class="act-item">
+                    <span class="act-icon act-<%= a.kind %>">
+                      <% if (a.kind === 'approved') { %>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      <% } else if (a.kind === 'rejected') { %>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                      <% } else if (a.kind === 'done') { %>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                      <% } else { %>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      <% } %>
+                    </span>
+                    <div class="act-body">
+                      <span class="act-text"><%= a.text %></span>
+                      <span class="act-time"><%= a.at_label %></span>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <div class="flex flex-col items-center justify-center text-center py-8 gap-2 text-muted-foreground">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <p class="text-sm">Belum ada aktivitas terbaru.</p>
+              </div>
+            <% } %>
           </div>
-          <div class="act-feed" id="act-feed">
-            <div class="flex flex-col items-center justify-center text-center py-8 gap-2 text-muted-foreground">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <p class="text-sm">Memuat aktivitas...</p>
+        </section>
+
+        <!-- 5 Barang Paling Banyak Diminta (Hanya untuk Admin/Ops untuk mengisi grid, atau Wadir melihat tren) -->
+        <section class="card card--table bg-card rounded-xl border shadow-sm overflow-hidden flex flex-col justify-between">
+          <div>
+            <div class="p-4 border-b flex justify-between items-center">
+              <h3 class="text-lg font-semibold">5 Barang Paling Banyak Diminta</h3>
+              <span class="text-xs text-muted-foreground"><%= pengadaanBelumPO %> pengadaan belum jadi PO</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-muted/50 border-b">
+                    <th class="p-3 font-semibold text-muted-foreground w-12 text-center">#</th>
+                    <th class="p-3 font-semibold text-muted-foreground">Nama Barang</th>
+                    <th class="p-3 font-semibold text-muted-foreground text-right">Total Diminta</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y" id="tbl-top-barang">
+                  <% if (chart.topBarang && chart.topBarang.length > 0) { %>
+                    <% chart.topBarang.forEach(function (b, idx) { %>
+                      <tr class="hover:bg-muted/30 transition-colors">
+                        <td class="p-3 text-center text-muted-foreground font-medium"><%= idx + 1 %></td>
+                        <td class="p-3 font-medium"><%= b.nama %></td>
+                        <td class="p-3 text-right font-mono font-semibold"><%= Number(b.total_qty).toLocaleString('id-ID') %></td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="3" class="p-4 text-center text-muted-foreground">Belum ada data permintaan barang.</td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
+      <% } %>
 
       <!-- Pesan jika user tidak punya izin apa pun (edge case) -->
       <% if (!isApprover && !isOps) { %>
@@ -258,234 +403,141 @@
 
   <script>
   {
-    // ── Format angka Rupiah di frontend ──────────────────────────────────
-    const fmtRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
-
-    // ── Ikon SVG untuk feed aktivitas ───────────────────────────────────
-    const ACT_ICONS = {
-      approved: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-      rejected: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
-      done: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
-      info: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
-    };
-
-    // ── Fetch data dari REST API ────────────────────────────────────────
-    fetch('/api/dashboard/stats')
-      .then(r => r.json())
-      .then(d => {
-        if (!d.success) return;
-
-        // ── Wakil Dekan KPI ─────────────────────────────────────────
-        if (d.wakilDekanStats) {
-          const wd = d.wakilDekanStats;
-          const el = (id) => document.getElementById(id);
-          if (el('kpi-wd-antrean')) el('kpi-wd-antrean').textContent = wd.totalAntrean;
-          if (el('kpi-wd-nominal')) el('kpi-wd-nominal').textContent = wd.nominalPOPending_label;
-          if (el('kpi-wd-disetujui')) el('kpi-wd-disetujui').textContent = wd.belanjaDisetujuiBulanIni_label;
-          if (el('kpi-wd-ditolak')) el('kpi-wd-ditolak').textContent = wd.belanjaDitolakBulanIni_label;
-
-          // Tabel PO Pending
-          const tbody = el('tbl-wd-po');
-          if (tbody && wd.daftarPOPending) {
-            if (wd.daftarPOPending.length === 0) {
-              tbody.innerHTML = '<tr><td colspan="3" class="p-6 text-center text-muted-foreground">Tidak ada PO menunggu persetujuan.</td></tr>';
-            } else {
-              tbody.innerHTML = wd.daftarPOPending.map(po =>
-                `<tr class="hover:bg-muted/30 transition-colors cursor-pointer" onclick="window.location.href='/purchase/${po.id}'">
-                  <td class="p-3 font-mono font-semibold text-primary">${po.purchase_number}</td>
-                  <td class="p-3">${po.supplier || '-'}</td>
-                  <td class="p-3 text-right font-mono font-semibold">${fmtRp(po.total)}</td>
-                </tr>`
-              ).join('');
-            }
-          }
+    const initCharts = () => {
+      // ── Grafik Admin ──────────────────────────────────────────────────
+      <% if (isOps) { %>
+      const barCtxTrend = document.getElementById('barChartTrend');
+      if (barCtxTrend) {
+        if (window.adminBarChartInstance) {
+          window.adminBarChartInstance.destroy();
         }
-
-        // ── Admin KPI Cards ─────────────────────────────────────────
-        const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
-
-        set('kpi-permintaan', d.totalPermintaan);
-        set('kpi-permintaan-pending', d.statusPermintaan ? d.statusPermintaan.pending : 0);
-        set('kpi-po', d.totalPO);
-        set('kpi-po-approved', d.poMenungguPenerimaan);
-        set('kpi-belanja', d.kpiUmum ? d.kpiUmum.belanjaBulanIni_label : '-');
-        set('kpi-rata', d.kpiUmum ? d.kpiUmum.rataRataPO_label : '-');
-        set('kpi-cacat', d.totalBarangCacat);
-        set('kpi-supplier', d.totalSupplier);
-
-        // ── Panel Perlu Tindakan (Admin) ────────────────────────────
-        if (d.adminStats) {
-          const adm = d.adminStats;
-
-          // Permintaan menunggu
-          const reqDiv = document.getElementById('list-req-pending');
-          if (reqDiv) {
-            if (!adm.permintaanMenunggu || adm.permintaanMenunggu.length === 0) {
-              reqDiv.innerHTML = '<p class="text-sm text-muted-foreground">Tidak ada permintaan menunggu.</p>';
-            } else {
-              reqDiv.innerHTML = adm.permintaanMenunggu.map(r =>
-                `<a href="/procurement" class="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/30 transition-colors text-sm">
-                  <div>
-                    <span class="font-mono font-semibold text-primary">#${r.request_number}</span>
-                    <span class="text-muted-foreground ml-2">${r.pemohon_name || 'Staf'}</span>
-                  </div>
-                  <span class="status-badge" style="background:#dbeafe;color:#1e40af;">Menunggu</span>
-                </a>`
-              ).join('');
-            }
-          }
-
-          // PO menunggu persetujuan
-          const poDiv = document.getElementById('list-po-pending');
-          if (poDiv) {
-            if (!adm.poMenungguPersetujuan || adm.poMenungguPersetujuan.length === 0) {
-              poDiv.innerHTML = '<p class="text-sm text-muted-foreground">Tidak ada PO menunggu persetujuan.</p>';
-            } else {
-              poDiv.innerHTML = adm.poMenungguPersetujuan.map(po =>
-                `<a href="/purchase/${po.id}" class="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/30 transition-colors text-sm">
-                  <div>
-                    <span class="font-mono font-semibold text-primary">${po.purchase_number}</span>
-                    <span class="text-muted-foreground ml-2">${po.supplier || '-'}</span>
-                  </div>
-                  <span class="font-mono font-semibold">${fmtRp(po.total)}</span>
-                </a>`
-              ).join('');
-            }
-          }
-        }
-
-        // ── Pemasok Teratas ─────────────────────────────────────────
-        const suppTbody = document.getElementById('tbl-top-supplier');
-        if (suppTbody && d.topSuppliers) {
-          if (d.topSuppliers.length === 0) {
-            suppTbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-muted-foreground">Belum ada data pemasok.</td></tr>';
-          } else {
-            suppTbody.innerHTML = d.topSuppliers.map(s =>
-              `<tr class="hover:bg-muted/30 transition-colors">
-                <td class="p-3 font-medium">${s.nama}</td>
-                <td class="p-3 text-center">${s.jumlah_po}</td>
-                <td class="p-3 text-right font-mono">${fmtRp(s.total_nilai)}</td>
-              </tr>`
-            ).join('');
-          }
-        }
-
-        // ── 5 Barang Terbanyak ──────────────────────────────────────
-        const barangTbody = document.getElementById('tbl-top-barang');
-        if (barangTbody && d.chart && d.chart.topBarang) {
-          if (d.chart.topBarang.length === 0) {
-            barangTbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-muted-foreground">Belum ada data permintaan.</td></tr>';
-          } else {
-            barangTbody.innerHTML = d.chart.topBarang.map((b, i) =>
-              `<tr class="hover:bg-muted/30 transition-colors">
-                <td class="p-3 text-muted-foreground">${i + 1}</td>
-                <td class="p-3 font-medium">${b.nama}</td>
-                <td class="p-3 text-right font-mono font-semibold">${Number(b.total_qty).toLocaleString('id-ID')}</td>
-              </tr>`
-            ).join('');
-          }
-        }
-
-        // ── Grafik: Line (Tren Belanja) ─────────────────────────────
-        const lineCtx = document.getElementById('lineChart');
-        if (lineCtx && d.chart) {
-          new Chart(lineCtx, {
-            type: 'line',
-            data: {
-              labels: d.chart.trendLabels,
-              datasets: [{
-                label: 'Nilai Belanja (Rp)',
-                data: d.chart.trendData,
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.08)',
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#3b82f6',
-                pointRadius: 4,
-                pointHoverRadius: 6
-              }]
+        window.adminBarChartInstance = new Chart(barCtxTrend, {
+          type: 'bar',
+          data: {
+            labels: <%- JSON.stringify(chart.trendLabels) %>,
+            datasets: [{
+              label: 'Nilai Belanja (Rp)',
+              data: <%- JSON.stringify(chart.trendData) %>,
+              backgroundColor: 'rgba(37, 99, 235, 0.8)',
+              borderRadius: 6,
+              barThickness: 24
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => 'Rp ' + Number(ctx.parsed.y || 0).toLocaleString('id-ID')
+                }
+              }
             },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  callbacks: {
-                    label: (ctx) => fmtRp(ctx.parsed.y)
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { borderDash: [5, 5] },
+                ticks: {
+                  callback: (v) => {
+                    if (v >= 1000000) return 'Rp ' + (v / 1000000).toFixed(1) + 'jt';
+                    if (v >= 1000) return 'Rp ' + (v / 1000).toFixed(0) + 'rb';
+                    return 'Rp ' + v;
                   }
                 }
               },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  grid: { borderDash: [5, 5] },
-                  ticks: {
-                    callback: (v) => {
-                      if (v >= 1000000) return 'Rp ' + (v / 1000000).toFixed(1) + 'jt';
-                      if (v >= 1000) return 'Rp ' + (v / 1000).toFixed(0) + 'rb';
-                      return 'Rp ' + v;
-                    }
-                  }
-                },
-                x: { grid: { display: false } }
-              }
+              x: { grid: { display: false } }
             }
-          });
-        }
-
-        // ── Grafik: Doughnut (Distribusi Status PO) ─────────────────
-        const doughnutCtx = document.getElementById('doughnutChart');
-        if (doughnutCtx && d.chart && d.chart.donut) {
-          new Chart(doughnutCtx, {
-            type: 'doughnut',
-            data: {
-              labels: d.chart.donut.labels,
-              datasets: [{
-                data: d.chart.donut.data,
-                backgroundColor: d.chart.donut.colors.map(c => c + 'cc'),
-                borderWidth: 0,
-                hoverOffset: 6
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              cutout: '68%',
-              plugins: {
-                legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' } }
-              }
-            }
-          });
-        }
-
-        // ── Aktivitas Terbaru ───────────────────────────────────────
-        const feedEl = document.getElementById('act-feed');
-        const countEl = document.getElementById('act-count');
-        if (feedEl && d.activities) {
-          if (d.activities.length === 0) {
-            feedEl.innerHTML = `
-              <div class="flex flex-col items-center justify-center text-center py-8 gap-2 text-muted-foreground">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <p class="text-sm">Belum ada aktivitas terbaru.</p>
-              </div>`;
-          } else {
-            feedEl.innerHTML = d.activities.map(a =>
-              `<div class="act-item">
-                <span class="act-icon act-${a.kind}">${ACT_ICONS[a.kind] || ACT_ICONS.info}</span>
-                <div class="act-body">
-                  <span class="act-text">${a.text}</span>
-                  <span class="act-time">${a.at_label}</span>
-                </div>
-              </div>`
-            ).join('');
           }
-          if (countEl) countEl.textContent = d.activities.length + ' kejadian terkini';
+        });
+      }
+
+      const donutCtxPO = document.getElementById('donutChartPO');
+      if (donutCtxPO) {
+        if (window.adminDonutChartInstance) {
+          window.adminDonutChartInstance.destroy();
         }
-      })
-      .catch(err => {
-        console.error('[dashboard] Gagal memuat statistik:', err);
-      });
+        window.adminDonutChartInstance = new Chart(donutCtxPO, {
+          type: 'doughnut',
+          data: {
+            labels: <%- JSON.stringify(chart.donut.labels) %>,
+            datasets: [{
+              data: <%- JSON.stringify(chart.donut.data) %>,
+              backgroundColor: <%- JSON.stringify(chart.donut.colors) %>,
+              borderWidth: 0,
+              hoverOffset: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '68%',
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' }
+              }
+            }
+          }
+        });
+      }
+      <% } %>
+
+      // ── Grafik Wakil Dekan ─────────────────────────────────────────────
+      <% if (isApprover && wakilDekanStats) { %>
+      const wadirCompareCtx = document.getElementById('wadirCompareChart');
+      if (wadirCompareCtx) {
+        if (window.wadirCompareChartInstance) {
+          window.wadirCompareChartInstance.destroy();
+        }
+        window.wadirCompareChartInstance = new Chart(wadirCompareCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Disetujui', 'Ditolak'],
+            datasets: [{
+              label: 'Nilai Belanja Bulan Ini (Rp)',
+              data: [
+                <%= wakilDekanStats.belanjaDisetujuiBulanIni %>,
+                <%= wakilDekanStats.belanjaDitolakBulanIni %>
+              ],
+              backgroundColor: ['rgba(34, 197, 94, 0.8)', 'rgba(239, 68, 68, 0.8)'],
+              borderRadius: 6,
+              barThickness: 48
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => 'Rp ' + Number(ctx.parsed.y || 0).toLocaleString('id-ID')
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { borderDash: [5, 5] },
+                ticks: {
+                  callback: (v) => {
+                    if (v >= 1000000) return 'Rp ' + (v / 1000000).toFixed(1) + 'jt';
+                    if (v >= 1000) return 'Rp ' + (v / 1000).toFixed(0) + 'rb';
+                    return 'Rp ' + v;
+                  }
+                }
+              },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+      }
+      <% } %>
+    };
+
+    // Jalankan segera (untuk hx-boost / pendaratan pertama)
+    initCharts();
   }
   </script>
 </main>
