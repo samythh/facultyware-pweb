@@ -77,7 +77,10 @@ const index = async (req, res, next) => {
                CASE WHEN (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) > 1
                     THEN CONCAT(' +', (SELECT COUNT(*) FROM inventory_request_details WHERE inventory_request_id = r.id) - 1, ' lainnya')
                     ELSE '' END
-             )) AS title
+             )) AS title,
+             (SELECT pur.status FROM inventory_purchases pur
+               WHERE pur.inventory_procurement_id = r.inventory_procurement_id
+               ORDER BY pur.id DESC LIMIT 1) AS po_status
       FROM inventory_requests r
       WHERE r.employee_id = ?
     `;
