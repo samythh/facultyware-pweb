@@ -13,7 +13,10 @@
             Persetujuan tahap kedua: tinjau harga &amp; anggaran sebelum menyetujui Purchase Order.
           </p>
         </div>
-        <%- include('partials/sort-control', { action: '/approval/po', current: (typeof sort !== 'undefined' ? sort : ''), opts: (typeof sortOptions !== 'undefined' ? sortOptions : []), keep: {} }) %>
+        <div class="flex flex-wrap items-center gap-2">
+          <input type="text" id="search-input" placeholder="Cari No PO, supplier, atau judul..." class="input" style="min-width: 240px;" />
+          <%- include('partials/sort-control', { action: '/approval/po', current: (typeof sort !== 'undefined' ? sort : ''), opts: (typeof sortOptions !== 'undefined' ? sortOptions : []), keep: {} }) %>
+        </div>
       </header>
 
       <div class="card card--table overflow-hidden">
@@ -70,56 +73,7 @@
     </div>
   </div>
 
-  <script>
-    // Pagination sisi-klien (10 baris/halaman), seragam dengan halaman riwayat persetujuan.
-    {
-      const initInboxPagination = () => {
-        const rows = document.querySelectorAll('tbody tr.cursor-pointer');
-        const itemsPerPage = 10;
-        let totalPages = Math.ceil(rows.length / itemsPerPage);
-        if (totalPages === 0) totalPages = 1;
-
-        let currentPage = 1;
-        const btnPrev = document.getElementById('btn-prev');
-        const btnNext = document.getElementById('btn-next');
-        const pageNumbers = document.getElementById('page-numbers');
-        const pageInfo = document.getElementById('page-info');
-        const paginationButtons = document.getElementById('pagination-buttons');
-
-        if (!paginationButtons || !btnPrev || !btnNext || !pageNumbers) return;
-        paginationButtons.style.display = 'flex';
-
-        const render = () => {
-          rows.forEach((row, index) => {
-            row.style.display = (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) ? '' : 'none';
-          });
-          if (pageInfo) pageInfo.innerHTML = `Halaman ${currentPage} dari ${totalPages}`;
-          btnPrev.disabled = currentPage === 1;
-          btnNext.disabled = currentPage === totalPages;
-
-          pageNumbers.innerHTML = '';
-          for (let i = 1; i <= totalPages; i++) {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            if (i === currentPage) {
-              btn.className = 'px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium bg-gray-100 text-gray-800 select-none';
-              btn.textContent = i;
-            } else {
-              btn.className = 'px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 select-none transition-colors';
-              btn.textContent = i;
-              btn.onclick = () => { currentPage = i; render(); };
-            }
-            pageNumbers.appendChild(btn);
-          }
-        };
-
-        btnPrev.onclick = () => { if (currentPage > 1) { currentPage--; render(); } };
-        btnNext.onclick = () => { if (currentPage < totalPages) { currentPage++; render(); } };
-        render();
-      };
-      initInboxPagination();
-    }
-  </script>
+  <%- include('partials/list-search-pagination') %>
 </main>
 
 <%- include('partials/footer') %>
