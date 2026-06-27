@@ -1,16 +1,6 @@
 const multer = require("multer");
 const path = require("path");
 
-/**
- * Middleware upload untuk Modul Penerimaan Barang.
- *
- * - Menyimpan bukti foto / surat jalan vendor ke disk.
- * - Destination : public/assets/uploads/receiving/
- * - Filename    : <timestamp>-<acak>.<ext asli>
- * - Filter      : hanya .jpg, .jpeg, .png, .pdf
- * - Limit       : maksimal 5MB per file
- */
-
 const UPLOAD_DIR = path.join(
   __dirname,
   "..",
@@ -33,8 +23,6 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    // Suffix acak agar tidak tabrakan saat beberapa berkas diunggah
-    // pada milidetik yang sama (endpoint ini menerima multi-file).
     const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
     cb(null, `${unique}${ext}`);
   },

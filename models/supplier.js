@@ -2,7 +2,6 @@ const db = require("../lib/db");
 
 class Supplier {
   /**
-   * Mengambil semua data supplier dengan filter pencarian opsional.
    * @param {string} search - Pencarian berdasarkan nama atau kode supplier.
    * @returns {Promise<Array>} List supplier.
    */
@@ -16,7 +15,6 @@ class Supplier {
       params.push(searchTerm, searchTerm);
     }
 
-    // `orderBy` selalu berasal dari whitelist controller (bukan input mentah).
     query += " ORDER BY " + orderBy;
     const [rows] = await db.query(query, params);
     return rows;

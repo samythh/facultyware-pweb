@@ -2,7 +2,6 @@ const db = require('../lib/db');
 const PDFDocument = require('pdfkit');
 const { resolveSort, toSelectOptions } = require('../lib/sort');
 
-// Opsi urutan daftar permintaan (whitelist aman untuk ORDER BY).
 const REQUEST_SORTS = {
   terbaru: { label: 'Terbaru',     orderBy: 'r.id DESC' },
   terlama: { label: 'Terlama',     orderBy: 'r.id ASC' },
@@ -10,7 +9,6 @@ const REQUEST_SORTS = {
   status:  { label: 'Status',      orderBy: 'r.status ASC, r.id DESC' },
 };
 
-// Helper: Resolve logged-in user name to employee ID.
 async function resolveEmployeeId(userId) {
   try {
     if (userId) {
@@ -32,7 +30,6 @@ async function resolveEmployeeId(userId) {
   return null;
 }
 
-// Helper: Generate sequential request number (PRQ-YYYYMMDD-XXXX)
 async function generateRequestNumber() {
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -59,7 +56,6 @@ async function generateRequestNumber() {
   return `${prefix}${seqStr}`;
 }
 
-// GET /procurement -> index (daftar)
 const index = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -69,7 +65,6 @@ const index = async (req, res, next) => {
 
     const employeeId = await resolveEmployeeId(req.session.userId);
 
-    // Cari berdasarkan nomor pengajuan atau nama barang detail
     let query = `
       SELECT r.*,
              COALESCE(NULLIF(r.title, ''), CONCAT(
@@ -99,7 +94,6 @@ const index = async (req, res, next) => {
 
     const [procurements] = await db.query(query, queryParams);
 
-    // Get total count for pagination
     let countQuery = `
       SELECT COUNT(*) as total 
       FROM inventory_requests r 
@@ -134,7 +128,6 @@ const index = async (req, res, next) => {
   }
 };
 
-// GET /procurement/create -> form buat
 const create = async (req, res, next) => {
   try {
     res.render('inventory-procurement/create', {
@@ -147,13 +140,12 @@ const create = async (req, res, next) => {
   }
 };
 
-// POST /procurement/create -> simpan
 const store = async (req, res, next) => {
   const { item_name, quantity } = req.body;
   const title = (req.body.title || '').trim() || null;
   const employeeId = await resolveEmployeeId(req.session.userId);
 
-  // Check if items exist
+
   const items = [];
   if (Array.isArray(item_name)) {
     for (let i = 0; i < item_name.length; i++) {
@@ -191,11 +183,10 @@ const store = async (req, res, next) => {
   }
 
   const requestNumber = await generateRequestNumber();
-  const requestDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const requestDate = new Date().toISOString().slice(0, 10); 
   const approvedById = 0;
-  const status = 'pending'; // Status HARUS 'pending' (bukan submitted/draft)
+  const status = 'pending'; 
 
-  // Transaction
   try {
     await db.query('START TRANSACTION');
 
@@ -223,7 +214,6 @@ const store = async (req, res, next) => {
   }
 };
 
-// GET /procurement/:id -> detail
 const detail = async (req, res, next) => {
   const { id } = req.params;
   const employeeId = await resolveEmployeeId(req.session.userId);
@@ -268,7 +258,6 @@ const detail = async (req, res, next) => {
       }
     }
 
-    // Alasan penolakan (bila ditolak) -> dari catatan persetujuan Wakil Dekan.
     let rejectionNote = null;
     if (procurement.status === 'rejected') {
       const [noteRows] = await db.query(
@@ -293,7 +282,6 @@ const detail = async (req, res, next) => {
   }
 };
 
-// POST /procurement/:id/edit -> update draf/pending (modal)
 const update = async (req, res, next) => {
   const { id } = req.params;
   const { item_name, quantity } = req.body;
@@ -305,7 +293,6 @@ const update = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
     }
 
-    // Hanya status pending yang boleh diubah
     if (rows[0].status !== 'pending') {
       return res.status(400).json({ success: false, message: 'Hanya permintaan dengan status Pending yang dapat diubah.' });
     }
@@ -334,7 +321,6 @@ const update = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Minimal harus menambahkan 1 barang permintaan.' });
     }
 
-    // Process Update
     await db.query('START TRANSACTION');
 
     await db.query(
@@ -342,10 +328,8 @@ const update = async (req, res, next) => {
       [id]
     );
 
-    // Remove old items
     await db.query('DELETE FROM inventory_request_details WHERE inventory_request_id = ?', [id]);
 
-    // Insert new items
     for (const item of items) {
       await db.query(
         `INSERT INTO inventory_request_details (inventory_request_id, item_id, item_name, specification, quantity, created_at, updated_at)
@@ -362,7 +346,6 @@ const update = async (req, res, next) => {
   }
 };
 
-// POST /procurement/:id/delete -> hapus draf/pending (modal)
 const destroy = async (req, res, next) => {
   const { id } = req.params;
   const employeeId = await resolveEmployeeId(req.session.userId);
@@ -389,12 +372,10 @@ const destroy = async (req, res, next) => {
   }
 };
 
-// POST /procurement/:id/submit -> kirim ke Wadir (no-op sekarang karena langsung pending)
 const submit = async (req, res, next) => {
   res.json({ success: true, message: 'Permintaan sudah otomatis terkirim dengan status pending.' });
 };
 
-// GET /procurement/:id/export -> download PDF
 const exportPDF = async (req, res, next) => {
   const { id } = req.params;
   const employeeId = await resolveEmployeeId(req.session.userId);
@@ -421,19 +402,16 @@ const exportPDF = async (req, res, next) => {
       [id]
     );
 
-    // Set virtual title
     procurement.title = items.length
       ? (items[0].item_name + (items.length > 1 ? ` +${items.length - 1} lainnya` : ''))
       : 'Permintaan Barang';
 
-    // Initialize PDFKit
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=Request-${procurement.request_number}.pdf`);
 
     const doc = new PDFDocument({ margin: 50 });
     doc.pipe(res);
 
-    // Document Header
     doc
       .fontSize(20)
       .font('Helvetica-Bold')
@@ -445,11 +423,9 @@ const exportPDF = async (req, res, next) => {
       .text('Fakultas Teknologi Informasi - Universitas Andalas', { align: 'center' });
     doc.moveDown(1.5);
 
-    // Horizontal line
     doc.moveTo(50, 110).lineTo(562, 110).stroke();
     doc.moveDown(1.5);
 
-    // Info Requisition
     doc.font('Helvetica-Bold').fontSize(11).text('Informasi Permintaan:');
     doc.moveDown(0.5);
 
@@ -467,11 +443,9 @@ const exportPDF = async (req, res, next) => {
     doc.text(`Status             : ${procurement.status.toUpperCase()}`);
     doc.moveDown(2);
 
-    // Items table header
     doc.font('Helvetica-Bold').text('Daftar Barang Permintaan:');
     doc.moveDown(0.5);
 
-    // Draw Table Header
     const tableTop = 260;
     doc.rect(50, tableTop, 512, 20).fill('#f1f5f9');
     doc.fillColor('#0f172a').font('Helvetica-Bold');
@@ -482,9 +456,7 @@ const exportPDF = async (req, res, next) => {
     let currentY = tableTop + 20;
     doc.font('Helvetica').fillColor('#334155');
 
-    // Draw Table Items
     items.forEach((item, index) => {
-      // Row borders
       doc.rect(50, currentY, 512, 20).stroke('#e2e8f0');
       doc.text(String(index + 1), 60, currentY + 5, { width: 30 });
       doc.text(item.item_name, 110, currentY + 5, { width: 300 });
@@ -494,7 +466,6 @@ const exportPDF = async (req, res, next) => {
 
     doc.moveDown(3);
 
-    // Signature Area
     const sigY = doc.y + 40;
     doc.fontSize(10);
     doc.text('Pemohon,', 70, sigY);
@@ -511,7 +482,6 @@ const exportPDF = async (req, res, next) => {
   }
 };
 
-// GET /api/procurement -> REST API JSON
 const apiList = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;

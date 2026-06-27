@@ -1,6 +1,4 @@
 <%
-  // Robust terhadap pemanggil yang berbeda (acl, errorHandler, controller):
-  // ada yang kirim error={} atau tanpa status/stack.
   var st = (typeof error !== 'undefined' && error && error.status) ? error.status : 500;
   var msg = (typeof message !== 'undefined' && message) ? message : 'Terjadi kesalahan tak terduga.';
   var stk = (typeof error !== 'undefined' && error && error.stack) ? error.stack : '';

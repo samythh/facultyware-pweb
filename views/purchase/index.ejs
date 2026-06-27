@@ -7,7 +7,6 @@
   <div class="p-4 md:p-6 xl:p-12">
     <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
       
-      <!-- Top Title and Create Button -->
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Purchase Order</h1>
@@ -22,7 +21,6 @@
         </a>
       </div>
 
-      <!-- Search & Sort Card -->
       <div class="card p-4 bg-card rounded-xl border shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-4">
           <form method="get" action="/purchase" class="flex gap-2" style="flex:1 1 260px;" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
@@ -43,7 +41,6 @@
         </div>
       </div>
 
-      <!-- Table Card -->
       <div class="card card--table bg-card rounded-xl border shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
@@ -82,7 +79,6 @@
           </table>
         </div>
 
-        <!-- Pagination -->
         <% if (totalPages > 1) { %>
           <div class="p-4 border-t flex items-center justify-between gap-4">
             <span class="text-xs text-muted-foreground">Halaman <%= currentPage %> dari <%= totalPages %></span>

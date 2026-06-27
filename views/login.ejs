@@ -23,14 +23,12 @@
             background: #fff;
         }
 
-        /* ============ WRAPPER ============ */
         .page {
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* ============ PANEL KIRI ============ */
         .panel-left {
             display: none;
             flex-direction: column;
@@ -109,7 +107,6 @@
             line-height: 1.5;
         }
 
-        /* ============ PANEL KANAN ============ */
         .panel-right {
             flex: 1;
             display: flex;
@@ -126,7 +123,6 @@
             max-width: 420px;
         }
 
-        /* Header logo */
         .brand-header {
             display: flex;
             align-items: center;
@@ -154,7 +150,6 @@
             line-height: 1.25;
         }
 
-        /* Greeting */
         .greeting {
             margin-bottom: 1.75rem;
         }
@@ -171,7 +166,6 @@
             color: #6b7280;
         }
 
-        /* Form card */
         .form-card {
             background: #fff;
             border: 1px solid #e5e7eb;
@@ -180,7 +174,6 @@
             box-shadow: 0 1px 4px rgba(0,0,0,0.06);
         }
 
-        /* Error alert */
         .alert {
             display: flex;
             align-items: center;
@@ -199,7 +192,6 @@
             flex-shrink: 0;
         }
 
-        /* Field group */
         .field {
             margin-bottom: 1.125rem;
         }
@@ -229,7 +221,6 @@
 
         .forgot:hover { text-decoration: underline; }
 
-        /* Input dengan ikon */
         .input-wrap {
             position: relative;
             display: flex;
@@ -280,7 +271,6 @@
             box-shadow: 0 0 0 3px rgba(0,73,33,0.1);
         }
 
-        /* Remember */
         .remember {
             display: flex;
             align-items: center;
@@ -289,7 +279,6 @@
             margin-top: 0.25rem;
         }
 
-        /* Tombol show/hide password */
         #password { padding-right: 2.75rem; }
         .toggle-pass {
             position: absolute;
@@ -327,7 +316,6 @@
             cursor: pointer;
         }
 
-        /* Submit button */
         .btn-submit {
             display: flex;
             align-items: center;
@@ -355,7 +343,6 @@
             font-size: 1.1rem;
         }
 
-        /* Divider */
         .or-divider {
             position: relative;
             text-align: center;
@@ -383,7 +370,6 @@
             letter-spacing: 0.12em;
         }
 
-        /* Google button */
         .btn-google {
             display: flex;
             align-items: center;
@@ -409,7 +395,6 @@
             height: 16px;
         }
 
-        /* Footer */
         .form-footer {
             display: flex;
             justify-content: center;
@@ -448,7 +433,6 @@
 
 <div class="page">
 
-    <!-- ===== PANEL KIRI ===== -->
     <aside class="panel-left">
         <div class="panel-left-content">
             <h1>Kelola Pengadaan Jadi Lebih Mudah.</h1>
@@ -459,11 +443,9 @@
         </div>
     </aside>
 
-    <!-- ===== PANEL KANAN ===== -->
     <main class="panel-right">
         <div class="form-container">
 
-            <!-- Brand header -->
             <div class="brand-header">
                 <img src="/img/logo-unand.png" alt="Logo Universitas Andalas"
                     onerror="this.style.display='none'">
@@ -472,13 +454,11 @@
                 </div>
             </div>
 
-            <!-- Greeting -->
             <div class="greeting">
                 <h3>Selamat Datang</h3>
                 <p>Silakan masuk dengan akun resmi SIP Anda.</p>
             </div>
 
-            <!-- Form card -->
             <div class="form-card">
 
                 <% if (typeof error !== 'undefined' && error) { %>
@@ -528,7 +508,6 @@
 
             </div>
 
-            <!-- Footer -->
             <div class="form-footer">
                 <p>&copy; 2026 Kelompok B9 PWEB</p>
             </div>

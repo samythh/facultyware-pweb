@@ -4,7 +4,6 @@ const indexController = require("../controllers/indexController");
 const authController = require("../controllers/authController");
 const { isAuthenticated } = require("../middlewares/auth");
 
-/* GET home page. */
 router.get("/", indexController.index);
 
 router.get("/home", isAuthenticated, indexController.home);

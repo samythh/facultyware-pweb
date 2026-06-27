@@ -7,7 +7,6 @@
   <div class="p-4 md:p-6 xl:p-12">
     <div class="max-w-screen-lg mx-auto">
 
-      <!-- Breadcrumb & Back Link -->
       <div class="mb-6 flex flex-col gap-2">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
           <a href="/procurement" class="hover:text-foreground">Permintaan Barang</a>
@@ -37,7 +36,6 @@
       </div>
 
   <style>
-    /* Premium Responsive Stepper */
     .stepper-container {
       display: flex;
       flex-direction: column;
@@ -69,7 +67,6 @@
       }
     }
 
-    /* Step Badge styles */
     .step-badge {
       display: flex;
       align-items: center;
@@ -110,7 +107,6 @@
       box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
     }
 
-    /* Connectors */
     @media (min-width: 768px) {
       .stepper-step:not(:last-child)::after {
         content: '';
@@ -188,22 +184,22 @@
     if (procurement.status === 'pending') {
       currentStage = 1;
     } else if (procurement.status === 'rejected') {
-      currentStage = 2; // Stays at 2 with error
+      currentStage = 2; 
     } else if (procurement.status === 'approved') {
       if (!procurement.inventory_procurement_id) {
-        currentStage = 3; // Passed Stage 2, waiting for consolidation
+        currentStage = 3; 
       } else {
         if (!hasPo) {
-          currentStage = 4; // Consolidated, waiting for PO creation
+          currentStage = 4; 
         } else {
           if (poStatus === 'pending') {
-            currentStage = 5; // PO created, waiting for PO approval
+            currentStage = 5; 
           } else if (poStatus === 'approved') {
-            currentStage = 6; // PO approved, waiting for receipt of goods
+            currentStage = 6; 
           } else if (poStatus === 'rejected') {
-            currentStage = 5; // PO rejected, stays at 5 with error
+            currentStage = 5; 
           } else if (poStatus === 'completed') {
-            currentStage = 6; // Goods received, completed
+            currentStage = 6; 
           }
         }
       }
@@ -263,7 +259,6 @@
     ];
   %>
 
-  <!-- Tracking Status Timeline Stepper -->
   <div class="card p-6 bg-card rounded-xl border shadow-sm mb-6">
     <h3 class="text-sm font-semibold text-center text-muted-foreground uppercase tracking-wider mb-6">Status Perkembangan Pengajuan</h3>
     
@@ -288,7 +283,6 @@
     </div>
   </div>
 
-  <!-- Info Pengajuan -->
   <div class="card mb-6">
     <section class="po-info">
       <div class="po-head">
@@ -319,7 +313,6 @@
     </section>
   </div>
 
-  <!-- Alasan Penolakan (muncul bila permintaan ditolak) -->
   <% if (procurement.status === 'rejected') { %>
   <div class="card p-6 bg-card rounded-xl border border-red-500/40 bg-red-50/40 mb-6 space-y-1">
     <h3 class="text-base font-semibold text-red-700">Alasan Penolakan</h3>
@@ -327,7 +320,6 @@
   </div>
   <% } %>
 
-  <!-- Daftar Barang Permintaan -->
   <div class="card p-6 bg-card rounded-xl border shadow-sm mb-6 space-y-4">
     <h3 class="text-base font-semibold">Daftar Barang Permintaan</h3>
     <div class="overflow-x-auto">
@@ -355,7 +347,6 @@
     </div>
   </div>
 
-  <!-- EDIT MODAL -->
   <dialog id="edit-modal" class="dialog">
     <div class="w-full max-w-lg space-y-4">
       <header>
@@ -391,7 +382,6 @@
     </div>
   </dialog>
 
-  <!-- DELETE CONFIRMATION MODAL -->
   <dialog id="delete-modal" class="dialog">
     <div class="w-full max-w-sm space-y-4">
       <header>
@@ -407,7 +397,6 @@
 
   <script>
     (() => {
-      // Modal Delete logic
       window.openDeleteModal = function() {
         const modal = document.getElementById('delete-modal');
         if (modal) {
@@ -453,7 +442,6 @@
         }
       };
 
-      // Modal Edit logic
       let editRowCount = 0;
       
       window.openEditModal = function() {
@@ -461,7 +449,6 @@
         if (!modal) return;
         modal.showModal();
 
-        // Populate items table
         const tbody = document.getElementById('edit-items-tbody');
         tbody.innerHTML = '';
         editRowCount = 0;

@@ -1,7 +1,4 @@
 <%
-  // Badge status seragam. Sertakan via include dengan data { status: x }
-  // atau dengan label kustom { status: x, label: 'Teks' }.
-  // Dari view di subfolder, gunakan path '../partials/status-badge'.
   const _s = (typeof status !== 'undefined' && status) ? String(status).toLowerCase() : '';
   const _map = {
     draft:     { t: 'Draf',                 bg: '#fef9c3', fg: '#854d0e' },

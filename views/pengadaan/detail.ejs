@@ -7,7 +7,6 @@
   <div class="p-4 md:p-6 xl:p-12">
     <div class="max-w-screen-lg mx-auto flex flex-col gap-6">
 
-      <!-- Breadcrumb & Actions -->
       <div class="flex flex-col gap-2">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
           <a href="/pengadaan" class="hover:text-foreground">Pengadaan Barang</a>
@@ -31,7 +30,6 @@
         </div>
       </div>
 
-      <!-- Info Pengadaan -->
       <div class="card">
         <section class="po-info">
           <div class="po-head">
@@ -62,7 +60,6 @@
         </section>
       </div>
 
-      <!-- Permintaan yang Digabung -->
       <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
         <h3 class="text-base font-semibold">Permintaan yang Digabung</h3>
         <div class="overflow-x-auto">
@@ -89,7 +86,6 @@
         </div>
       </div>
 
-      <!-- Rincian Barang per Permintaan -->
       <div class="flex flex-col gap-4">
         <h3 class="text-base font-semibold px-1">Rincian Barang per Permintaan</h3>
         <% requests.forEach(function (r) { %>

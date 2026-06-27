@@ -16,12 +16,9 @@ const loginPage = (req, res) => {
 };
 
 const login = async (req, res, next) => {
-  // Tabel users (skema Laravel) memakai email sebagai identitas unik;
-  // tidak ada kolom username. Terima nilai dari field email/username apa pun.
   const identifier = (req.body.email || req.body.username || "").trim();
   const password = req.body.password || "";
 
-  // Hindari query dengan parameter kosong/undefined (bisa menyebabkan error).
   if (!identifier || !password) {
     return res.render("login", {
       title: "Login",
@@ -42,7 +39,6 @@ const login = async (req, res, next) => {
     }
 
     const user = rows[0];
-    // Attempt bcrypt compare, fallback to plain text compare if not hashed
     const isMatch = await bcrypt.compare(password, user.password).catch(() => false);
 
     if (!isMatch && password !== user.password) {
@@ -52,11 +48,9 @@ const login = async (req, res, next) => {
       });
     }
 
-    // Set session
     req.session.userId = user.id;
-    req.session.username = user.name; // kolom username tidak ada, pakai name
+    req.session.username = user.name; 
 
-    // Muat permission user ke session (RBAC)
     const permQuery = `
       SELECT DISTINCT p.name
       FROM permissions p

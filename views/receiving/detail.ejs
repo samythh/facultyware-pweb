@@ -5,16 +5,13 @@
   <%- include('../partials/navbar') %>
 
     <style>
-      /* Gaya khusus halaman detail penerimaan (warna memakai token tema). */
       .justify-end { justify-content: flex-end; }
 
-      /* Pil status: latar solid berwarna + ikon */
       .status-pill { display: inline-flex; align-items: center; gap: .4rem; padding: .28rem .8rem; border-radius: 9999px; font-size: .78rem; font-weight: 600; line-height: 1.2; color: oklch(99% 0.01 150); white-space: nowrap; }
       .status-pill svg { width: .95rem; height: .95rem; flex: none; }
       .status-draft { background: oklch(70% 0.15 70); }
       .status-done { background: oklch(55% 0.14 150); }
 
-      /* Header informasi PO */
       .po-info { display: flex; flex-direction: column; gap: 1.25rem; }
       .po-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--color-border); }
       .po-eyebrow { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted-foreground); margin-bottom: .3rem; }
@@ -24,18 +21,15 @@
       .info-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted-foreground); margin-bottom: .35rem; }
       .info-value { font-size: 1.1rem; font-weight: 600; color: var(--color-foreground); }
 
-      /* Tabel angka */
       .num { text-align: right; font-variant-numeric: tabular-nums; }
       .totals-row td { font-weight: 700; border-top: 2px solid var(--color-border); }
 
-      /* Pil kondisi hasil verifikasi */
       .cond-pill { display: inline-flex; align-items: center; gap: .3rem; padding: .15rem .55rem; border-radius: 9999px; font-size: .72rem; font-weight: 600; line-height: 1.3; }
       .cond-baik { background: color-mix(in oklab, oklch(55% 0.14 150) 16%, transparent); color: oklch(45% 0.13 150); }
       .cond-cacat { background: color-mix(in oklab, oklch(60% 0.2 25) 16%, transparent); color: oklch(50% 0.19 25); }
       .cond-empty { color: var(--color-muted-foreground); font-size: .8rem; }
       .item-note { display: block; margin-top: .2rem; font-size: .72rem; color: var(--color-muted-foreground); }
 
-      /* Galeri bukti penerimaan */
       .proof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .85rem; }
       .proof-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--color-border); border-radius: .65rem; background: var(--color-background); transition: border-color .15s ease; }
       .proof-card:hover { border-color: var(--color-primary); }
@@ -46,12 +40,10 @@
       .proof-name { display: block; font-weight: 500; color: var(--color-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .proof-date { color: var(--color-muted-foreground); font-size: .68rem; }
 
-      /* Accordion: tombol panah di kanan kartu untuk melipat/membuka isi */
       .accordion-toggle { grid-column: 2; grid-row: 1 / span 2; align-self: start; justify-self: end; display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border: 0; border-radius: .5rem; background: transparent; color: var(--color-muted-foreground); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
       .accordion-toggle:hover { background: var(--color-muted); color: var(--color-foreground); }
       .accordion-toggle svg { width: 1.15rem; height: 1.15rem; transition: transform .22s var(--ease-out, ease); }
       .card.is-collapsed .accordion-toggle svg { transform: rotate(-90deg); }
-      /* Animasi lipat/buka: tinggi via grid-template-rows (0fr <-> 1fr) + fade */
       .accordion-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .28s var(--ease-out, ease); }
       .accordion-body > * { min-height: 0; transition: opacity .2s ease; }
       .card.is-collapsed .accordion-body { grid-template-rows: 0fr; }
@@ -75,7 +67,6 @@
             </a>
           </header>
 
-          <!-- Info PO -->
           <div class="card">
             <section class="po-info">
               <div class="po-head">
@@ -115,7 +106,6 @@
             </section>
           </div>
 
-          <!-- Tabel qty dipesan vs diterima -->
           <div class="card">
             <header>
               <h2>Rincian Barang</h2>
@@ -197,7 +187,6 @@
             </section>
           </div>
 
-          <!-- Bukti Penerimaan -->
           <% if (typeof attachments !== 'undefined' && attachments.length > 0) { %>
           <div class="card">
             <header>
@@ -229,7 +218,6 @@
           </div>
           <% } %>
 
-          <!-- Riwayat Retur -->
           <% if (typeof returns !== 'undefined' && returns.length > 0) { %>
           <div class="card">
             <header>
@@ -269,7 +257,6 @@
           </div>
           <% } %>
 
-          <!-- Riwayat Barang Ganti -->
           <% if (typeof replacements !== 'undefined' && replacements.length > 0) { %>
           <div class="card">
             <header>
@@ -312,7 +299,6 @@
       </div>
     </main>
 
-    <!-- Modal: Konfirmasi Final -->
     <dialog id="dialog-confirm" class="dialog" aria-labelledby="dialog-confirm-title">
       <article>
         <header>
@@ -331,7 +317,6 @@
       </article>
     </dialog>
 
-    <!-- Modal: Catat Retur -->
     <dialog id="dialog-retur" class="dialog" aria-labelledby="dialog-retur-title">
       <article>
         <header>
@@ -381,7 +366,6 @@
       </article>
     </dialog>
 
-    <!-- Modal: Catat Barang Ganti -->
     <dialog id="dialog-replacement" class="dialog" aria-labelledby="dialog-replacement-title">
       <article>
         <header>
@@ -432,7 +416,6 @@
         });
       })();
 
-      // Validasi jumlah retur: tidak boleh melebihi jumlah yang dimiliki.
       (() => {
         const form = document.querySelector('#dialog-retur form');
         const sel = document.getElementById('retur-item');

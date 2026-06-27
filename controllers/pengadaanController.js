@@ -1,7 +1,6 @@
 const db = require('../lib/db');
 const { resolveSort, toSelectOptions } = require('../lib/sort');
 
-// Opsi urutan daftar pengadaan (whitelist aman untuk ORDER BY).
 const PENGADAAN_SORTS = {
   terbaru: { label: 'Terbaru',      orderBy: 'p.id DESC' },
   terlama: { label: 'Terlama',      orderBy: 'p.id ASC' },
@@ -9,7 +8,6 @@ const PENGADAAN_SORTS = {
   status:  { label: 'Status',       orderBy: 'p.status ASC, p.id DESC' },
 };
 
-// Helper: Resolve logged-in user name to employee ID.
 async function resolveEmployeeId(userId) {
   try {
     if (userId) {
@@ -31,8 +29,6 @@ async function resolveEmployeeId(userId) {
   return null;
 }
 
-// Nomor pengadaan sendiri (PGD-YYYYMMDD-XXXX). Pengadaan kini bisa menggabungkan
-// banyak permintaan, jadi tidak lagi memakai request_number salah satu permintaan.
 async function generateProcurementNumber() {
   const now = new Date();
   const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
@@ -49,7 +45,6 @@ async function generateProcurementNumber() {
   return `${prefix}${String(seq).padStart(4, '0')}`;
 }
 
-// GET /pengadaan -> daftar pengadaan (+ jumlah permintaan yang digabung)
 exports.index = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -98,8 +93,6 @@ exports.index = async (req, res, next) => {
   }
 };
 
-// GET /pengadaan/create -> daftar permintaan approved yang BELUM dikonsolidasi,
-// lengkap dengan barangnya, untuk dipilih (multi) dan digabung jadi satu pengadaan.
 exports.create = async (req, res, next) => {
   try {
     const requests = await getConsolidatableRequests();
@@ -114,7 +107,6 @@ exports.create = async (req, res, next) => {
   }
 };
 
-// Ambil permintaan approved yang belum tergabung ke pengadaan mana pun + barangnya.
 async function getConsolidatableRequests() {
   const [requests] = await db.query(
     `SELECT r.id, r.request_number, r.title, r.request_date, e.name AS requester_name
@@ -133,10 +125,8 @@ async function getConsolidatableRequests() {
   return requests;
 }
 
-// POST /pengadaan/create -> buat SATU pengadaan dari BANYAK permintaan terpilih.
 exports.store = async (req, res, next) => {
   const title = (req.body.title || '').trim();
-  // Checkbox dengan nama sama: bisa string (1 dipilih) atau array (banyak).
   let selected = req.body.request_number || [];
   if (!Array.isArray(selected)) selected = [selected];
   selected = selected.filter(Boolean);
@@ -160,9 +150,6 @@ exports.store = async (req, res, next) => {
   try {
     await conn.beginTransaction();
 
-    // Pengadaan = konsolidasi murni (tanpa gerbang approval tersendiri). Dibuat
-    // langsung 'approved' sehingga siap dijadikan sumber PO. Persetujuan ada di
-    // tahap Permintaan (kebutuhan) dan tahap PO (belanja/harga).
     const procNumber = await generateProcurementNumber();
     const [procResult] = await conn.execute(
       `INSERT INTO inventory_procurements (request_number, title, status, created_by, employee_id, created_at, updated_at)
@@ -173,7 +160,6 @@ exports.store = async (req, res, next) => {
 
     let totalItems = 0;
     for (const reqNumber of selected) {
-      // Pastikan permintaan approved & belum dikonsolidasi (kunci baris).
       const [reqRows] = await conn.execute(
         `SELECT id FROM inventory_requests
           WHERE request_number = ? AND status = 'approved' AND inventory_procurement_id IS NULL
@@ -185,13 +171,11 @@ exports.store = async (req, res, next) => {
       }
       const reqId = reqRows[0].id;
 
-      // Tandai permintaan tergabung ke pengadaan ini.
       await conn.execute(
         'UPDATE inventory_requests SET inventory_procurement_id = ?, updated_at = NOW() WHERE id = ?',
         [procurementId, reqId]
       );
 
-      // Salin barang permintaan ke item pengadaan.
       const [itemRows] = await conn.execute(
         'SELECT item_id, item_name, quantity FROM inventory_request_details WHERE inventory_request_id = ?',
         [reqId]
@@ -221,7 +205,6 @@ exports.store = async (req, res, next) => {
   }
 };
 
-// GET /pengadaan/:id -> detail pengadaan + permintaan yang digabung + barang
 exports.detail = async (req, res, next) => {
   const { id } = req.params;
   try {
@@ -249,8 +232,6 @@ exports.detail = async (req, res, next) => {
       [id]
     );
 
-    // Barang per permintaan -> diambil langsung dari sumbernya (request_details),
-    // sehingga jelas barang mana berasal dari permintaan mana.
     if (requests.length > 0) {
       const reqIds = requests.map((r) => r.id);
       const [details] = await db.query(
@@ -278,7 +259,6 @@ exports.detail = async (req, res, next) => {
   }
 };
 
-// GET /pengadaan/api/request/:requestNumber/items -> AJAX lookup (dipertahankan)
 exports.requestItems = async (req, res, next) => {
   try {
     const { requestNumber } = req.params;

@@ -1,7 +1,6 @@
 const Supplier = require("../models/supplier");
 const { resolveSort, toSelectOptions } = require("../lib/sort");
 
-// Opsi urutan daftar supplier (whitelist aman untuk ORDER BY).
 const SUPPLIER_SORTS = {
   nama:      { label: "Nama (A-Z)", orderBy: "name ASC" },
   nama_desc: { label: "Nama (Z-A)", orderBy: "name DESC" },
@@ -9,10 +8,6 @@ const SUPPLIER_SORTS = {
   terbaru:   { label: "Terbaru",    orderBy: "id DESC" },
 };
 
-/**
- * GET /supplier
- * Menampilkan daftar supplier dengan filter pencarian dan paginasi.
- */
 exports.index = async (req, res, next) => {
   try {
     const search = (req.query.search || "").trim();
@@ -21,10 +16,8 @@ exports.index = async (req, res, next) => {
     const offset = (page - 1) * limit;
     const sort = resolveSort(req.query.sort, SUPPLIER_SORTS, "nama");
 
-    // Ambil data dengan filter + urutan
     const allSuppliers = await Supplier.findAll(search, sort.orderBy);
 
-    // Manual pagination (simpel dan aman)
     const totalItems = allSuppliers.length;
     const totalPages = Math.ceil(totalItems / limit) || 1;
     const paginatedSuppliers = allSuppliers.slice(offset, offset + limit);
@@ -45,11 +38,6 @@ exports.index = async (req, res, next) => {
   }
 };
 
-/**
- * GET /supplier/api/list
- * RestAPI: daftar supplier dalam format JSON (pencarian + pagination).
- * Dilindungi permission 'manage_vendor' (lihat routes/supplier.js).
- */
 exports.apiList = async (req, res) => {
   try {
     const search = (req.query.search || "").trim();
@@ -76,10 +64,6 @@ exports.apiList = async (req, res) => {
   }
 };
 
-/**
- * GET /supplier/create
- * Menampilkan form tambah supplier baru.
- */
 exports.create = async (req, res, next) => {
   try {
     res.render("supplier/create", {
@@ -93,10 +77,6 @@ exports.create = async (req, res, next) => {
   }
 };
 
-/**
- * POST /supplier/create
- * Menyimpan data supplier baru ke database.
- */
 exports.store = async (req, res, next) => {
   const { name, code, email, phone, address } = req.body;
 
@@ -120,7 +100,6 @@ exports.store = async (req, res, next) => {
   }
 
   try {
-    // Validasi keunikan kode
     const codeExists = await Supplier.codeExists(code.trim());
     if (codeExists) {
       return res.render("supplier/create", {
@@ -145,10 +124,6 @@ exports.store = async (req, res, next) => {
   }
 };
 
-/**
- * GET /supplier/:id/edit
- * Menampilkan form edit supplier.
- */
 exports.edit = async (req, res, next) => {
   const { id } = req.params;
 
@@ -172,15 +147,10 @@ exports.edit = async (req, res, next) => {
   }
 };
 
-/**
- * POST /supplier/:id/edit
- * Memperbarui data supplier yang sudah ada.
- */
 exports.update = async (req, res, next) => {
   const { id } = req.params;
   const { name, code, email, phone, address } = req.body;
 
-  // Validasi dasar
   if (!name || name.trim() === "") {
     return res.render("supplier/edit", {
       title: "Edit Supplier",
@@ -208,7 +178,6 @@ exports.update = async (req, res, next) => {
       });
     }
 
-    // Validasi keunikan kode
     const codeExists = await Supplier.codeExists(code.trim(), id);
     if (codeExists) {
       return res.render("supplier/edit", {
@@ -233,10 +202,6 @@ exports.update = async (req, res, next) => {
   }
 };
 
-/**
- * POST /supplier/:id/delete
- * Menghapus data supplier. Mendukung AJAX JSON response maupun standard Form Post redirect.
- */
 exports.destroy = async (req, res, next) => {
   const { id } = req.params;
   const isAjax = req.xhr || (req.headers.accept && req.headers.accept.includes("application/json"));
@@ -250,7 +215,6 @@ exports.destroy = async (req, res, next) => {
       return res.redirect("/supplier");
     }
 
-    // Cek relasi ke PO
     const referenced = await Supplier.isReferenced(id);
     if (referenced) {
       const msg = "Supplier tidak dapat dihapus karena sudah memiliki kaitan dengan transaksi Purchase Order.";

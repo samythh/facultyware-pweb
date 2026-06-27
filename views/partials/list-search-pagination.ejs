@@ -1,9 +1,4 @@
 <script>
-  // Pencarian + pagination sisi-klien untuk daftar persetujuan.
-  // Memfilter baris `tbody tr.cursor-pointer` berdasarkan isi teksnya, lalu
-  // memaginasi hasil yang cocok (10 baris/halaman). Membutuhkan elemen:
-  //   #search-input, #page-info, #pagination-buttons, #btn-prev/#btn-next, #page-numbers
-  // Dibungkus block-scope {} agar aman bila dieksekusi ulang oleh hx-boost/Turbo.
   {
     const initListSearchPagination = () => {
       const allRows = Array.from(document.querySelectorAll('tbody tr.cursor-pointer'));

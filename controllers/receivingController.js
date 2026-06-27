@@ -1,22 +1,9 @@
-// Controller Modul Penerimaan Barang (Penerimaan / Receiving)
-// Oleh: Mikail (2411523016) - Kelompok B09
-//
-// Aturan:
-// - Native mysql2 (TANPA ORM). pool sudah berupa pool.promise() dari lib/db.js.
-// - Selalu pakai prepared statement: pool.query(sql, [params]).
-// - Tabel yang dipakai:
-//   inventory_purchases, inventory_purchase_items, inventory_transactions,
-//   inventories, items, inventory_receiving_attachments.
-//   (inventory_receiving_attachments + kolom verifikasi per item ditambahkan
-//    via scripts/migrate_receiving_schema.js, dengan izin perubahan skema.)
-
 const pool = require("../lib/db");
 const PDFDocument = require("pdfkit");
 const { resolveSort, toSelectOptions } = require("../lib/sort");
 
 const PAGE_SIZE = 10;
 
-// Opsi urutan daftar penerimaan (whitelist aman untuk ORDER BY).
 const RECEIVING_SORTS = {
   terbaru:  { label: "Terbaru",        orderBy: "purchase_date DESC, id DESC" },
   terlama:  { label: "Terlama",        orderBy: "purchase_date ASC, id ASC" },
@@ -24,9 +11,6 @@ const RECEIVING_SORTS = {
   status:   { label: "Status",         orderBy: "status ASC, id DESC" },
 };
 
-// Label status PO ke bahasa tampilan. Alur 2-gerbang: PO 'pending' (menunggu
-// persetujuan Wadir) -> 'approved' (siap diterima) -> 'completed' (selesai).
-// Hanya PO 'approved' yang boleh diverifikasi & dikonfirmasi di modul ini.
 const STATUS_LABEL = {
   draft: "Draf",
   pending: "Menunggu Persetujuan",
@@ -35,7 +19,6 @@ const STATUS_LABEL = {
   completed: "Selesai",
 };
 
-// Format tanggal (DATE) ke dd-mm-yyyy berdasarkan waktu lokal (hindari geser UTC).
 function fmtDate(value) {
   if (!value) return "-";
   const d = new Date(value);
@@ -45,12 +28,10 @@ function fmtDate(value) {
   return `${dd}-${mm}-${d.getFullYear()}`;
 }
 
-// Format angka ke Rupiah (mis. 55000 -> "Rp 55.000").
 function fmtRp(n) {
   return "Rp " + Number(n || 0).toLocaleString("id-ID");
 }
 
-// Bangun klausa pencarian opsional (purchase_number / supplier).
 function buildSearch(q) {
   const term = (q || "").trim();
   if (!term) return { where: "", params: [] };
@@ -60,10 +41,6 @@ function buildSearch(q) {
   };
 }
 
-/**
- * GET /receiving
- * Daftar penerimaan barang (list PO) + pencarian + pagination.
- */
 const index = async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
@@ -71,8 +48,6 @@ const index = async (req, res, next) => {
     const search = (req.query.q || "").trim();
     const { where, params } = buildSearch(search);
 
-    // Hanya PO yang relevan untuk penerimaan: sudah disetujui (siap diterima)
-    // atau sudah selesai. PO 'pending'/'draft'/'rejected' tidak ditampilkan.
     const statusClause = where
       ? `${where} AND status IN ('approved','completed')`
       : `WHERE status IN ('approved','completed')`;
@@ -113,10 +88,6 @@ const index = async (req, res, next) => {
   }
 };
 
-/**
- * GET /receiving/:po_id/verify
- * Form verifikasi kecocokan fisik barang dengan dokumen PO.
- */
 const verifyForm = async (req, res, next) => {
   try {
     const poId = req.params.po_id;
@@ -134,8 +105,6 @@ const verifyForm = async (req, res, next) => {
         }
       : null;
 
-    // Hanya PO yang sudah disetujui (approved) yang boleh diverifikasi.
-    // Yang sudah 'completed' -> ke detail; selain 'approved' -> kembali ke daftar.
     if (po && po.status === "completed") {
       return res.redirect(`/receiving/${poId}/detail`);
     }
@@ -173,8 +142,6 @@ const verifyForm = async (req, res, next) => {
   }
 };
 
-// Ambil nilai field array dari form (mis. name="received_qty[12]").
-// Tahan untuk dua bentuk hasil parser: nested object atau key flat.
 function pickField(body, group, id) {
   const nested = body[group];
   if (nested && typeof nested === "object" && nested[id] != null) {
@@ -183,18 +150,12 @@ function pickField(body, group, id) {
   return body[`${group}[${id}]`];
 }
 
-/**
- * POST /receiving/:po_id/verify
- * Simpan hasil verifikasi (qty diterima, kondisi, keterangan) per item
- * + simpan path tiap bukti (req.files dari upload.array).
- */
 const verifyStore = async (req, res, next) => {
   const poId = req.params.po_id;
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
 
-    // Pastikan PO ada (dan ambil daftar item miliknya).
     const [poRows] = await conn.query(
       "SELECT id, status FROM inventory_purchases WHERE id = ?",
       [poId]
@@ -207,9 +168,6 @@ const verifyStore = async (req, res, next) => {
       });
     }
 
-    // Tolak verifikasi bila PO sudah dikonfirmasi (completed): transaksi
-    // ledger sudah terbentuk, mengubah angka verifikasi akan membuat
-    // verifikasi vs buku besar tidak konsisten.
     if (poRows[0].status === "completed") {
       await conn.rollback();
       return res.status(409).render("error", {
@@ -217,7 +175,7 @@ const verifyStore = async (req, res, next) => {
         error: { status: 409, stack: "" },
       });
     }
-    // Hanya PO yang sudah disetujui Wadir yang boleh diverifikasi.
+
     if (poRows[0].status !== "approved") {
       await conn.rollback();
       return res.status(409).render("error", {
@@ -231,7 +189,6 @@ const verifyStore = async (req, res, next) => {
       [poId]
     );
 
-    // Simpan hasil verifikasi per item: pisah jumlah BAIK & CACAT.
     for (const item of items) {
       let goodQty = parseInt(pickField(req.body, "good_qty", item.id), 10);
       if (!Number.isInteger(goodQty) || goodQty < 0) {
@@ -253,7 +210,6 @@ const verifyStore = async (req, res, next) => {
       );
     }
 
-    // Simpan tiap berkas bukti (jika ada).
     const files = Array.isArray(req.files) ? req.files : [];
     for (const f of files) {
       await conn.query(
@@ -274,17 +230,12 @@ const verifyStore = async (req, res, next) => {
   }
 };
 
-/**
- * POST /receiving/:po_id/confirm
- * Konfirmasi penerimaan final -> auto-update stok.
- */
 const confirm = async (req, res, next) => {
   const id = req.params.po_id;
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
 
-    // Kunci baris PO selama transaksi.
     const [poRows] = await conn.query(
       "SELECT id, purchase_number, status FROM inventory_purchases WHERE id = ? FOR UPDATE",
       [id]
@@ -298,12 +249,10 @@ const confirm = async (req, res, next) => {
     }
     const po = poRows[0];
 
-    // Idempoten: kalau sudah 'completed', jangan tambah stok dua kali.
     if (po.status === "completed") {
       await conn.rollback();
       return res.redirect(`/receiving/${id}/detail`);
     }
-    // Hanya PO yang sudah disetujui Wadir yang boleh dikonfirmasi diterima.
     if (po.status !== "approved") {
       await conn.rollback();
       return res.status(409).render("error", {
@@ -312,9 +261,7 @@ const confirm = async (req, res, next) => {
       });
     }
 
-    // Model buku besar: semua barang FISIK yang datang (baik + cacat) masuk stok.
-    // Barang cacat yang dikirim balik nanti dikeluarkan lewat retur, sehingga
-    // stok selalu = Σmasuk − Σkeluar. Jika belum diverifikasi, pakai jumlah dipesan.
+
     const [rawItems] = await conn.query(
       `SELECT item_id, quantity, received_quantity, received_defective
          FROM inventory_purchase_items
@@ -333,9 +280,7 @@ const confirm = async (req, res, next) => {
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
     for (const it of items) {
-      // Catat transaksi barang masuk (type='in'), referensi = No PO.
-      // CATATAN: modul Penerimaan (B9) HANYA mencatat transaksi; pembaruan
-      // angka stok (tabel inventories) adalah tanggung jawab modul Stok Opname (B11).
+
       await conn.query(
         `INSERT INTO inventory_transactions
            (item_id, type, quantity, transaction_date, reference, notes, created_at, updated_at)
@@ -344,16 +289,12 @@ const confirm = async (req, res, next) => {
       );
     }
 
-    // Tandai PO selesai.
     await conn.query(
       "UPDATE inventory_purchases SET status = 'completed', updated_at = NOW() WHERE id = ?",
       [id]
     );
 
-    // Tutup loop: tandai SEMUA permintaan yang tergabung pada pengadaan PO ini
-    // sebagai 'fulfilled'. Satu pengadaan bisa mengkonsolidasi banyak permintaan
-    // (inventory_requests.inventory_procurement_id), jadi many->one.
-    // Tidak menyentuh tabel inventories (milik B11).
+
     const [poInfo] = await conn.query(
       "SELECT inventory_procurement_id FROM inventory_purchases WHERE id = ?",
       [id]
@@ -376,11 +317,6 @@ const confirm = async (req, res, next) => {
   }
 };
 
-/**
- * POST /receiving/retur
- * Catat retur barang ke vendor.
- */
-// Label alasan retur (value dropdown -> teks tampilan).
 const RETUR_REASON_LABEL = {
   cacat: "Barang cacat / rusak",
   salah_kirim: "Salah kirim / tidak sesuai spesifikasi",
@@ -396,7 +332,6 @@ const retur = async (req, res, next) => {
   const reasonLabel = RETUR_REASON_LABEL[req.body.reason] || "Lainnya";
   const detail = (req.body.notes || "").trim();
 
-  // Validasi dasar.
   if (!poId || !itemId || !Number.isInteger(qty) || qty <= 0) {
     return res.status(400).render("error", {
       message: "Data retur tidak valid (item & jumlah wajib diisi).",
@@ -419,7 +354,6 @@ const retur = async (req, res, next) => {
         error: { status: 404, stack: "" },
       });
     }
-    // Penerimaan yang sudah final (completed) terkunci: tidak bisa retur lagi.
     if (poRows[0].status === "completed") {
       await conn.rollback();
       return res.status(409).render("error", {
@@ -429,9 +363,6 @@ const retur = async (req, res, next) => {
     }
     const purchaseNumber = poRows[0].purchase_number;
 
-    // Validasi jumlah: tidak boleh meretur lebih dari yang benar-benar dimiliki.
-    // "Dimiliki" = jumlah diterima saat verifikasi (baik + cacat), atau jumlah
-    // dipesan bila belum diverifikasi; dikurangi jumlah yang sudah diretur.
     const [itemRows] = await conn.query(
       `SELECT quantity, received_quantity, received_defective
          FROM inventory_purchase_items
@@ -465,7 +396,6 @@ const retur = async (req, res, next) => {
       });
     }
 
-    // Catat transaksi keluar (retur ke vendor).
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
     const notes = detail ? `${reasonLabel} - ${detail}` : reasonLabel;
@@ -477,7 +407,6 @@ const retur = async (req, res, next) => {
       [itemId, qty, today, purchaseNumber, notes]
     );
 
-    // Pembaruan angka stok (inventories) diserahkan ke modul Stok Opname (B11).
 
     await conn.commit();
     res.redirect(`/receiving/${poId}/detail`);
@@ -489,11 +418,6 @@ const retur = async (req, res, next) => {
   }
 };
 
-/**
- * POST /receiving/replacement
- * Catat barang ganti (replacement) dari vendor saat tiba -> tambah stok.
- * Reuse inventory_transactions type 'in' dengan referensi No PO yang sama.
- */
 const replacement = async (req, res, next) => {
   const poId = req.body.po_id;
   const itemId = req.body.item_id;
@@ -522,7 +446,6 @@ const replacement = async (req, res, next) => {
         error: { status: 404, stack: "" },
       });
     }
-    // Penerimaan yang sudah final (completed) terkunci: tidak bisa catat ganti lagi.
     if (poRows[0].status === "completed") {
       await conn.rollback();
       return res.status(409).render("error", {
@@ -534,7 +457,6 @@ const replacement = async (req, res, next) => {
 
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-    // Awalan "Barang ganti" dipakai untuk membedakan dari transaksi konfirmasi.
     const notes = detail ? `Barang ganti - ${detail}` : "Barang ganti dari vendor";
 
     await conn.query(
@@ -544,7 +466,6 @@ const replacement = async (req, res, next) => {
       [itemId, qty, today, purchaseNumber, notes]
     );
 
-    // Pembaruan angka stok (inventories) diserahkan ke modul Stok Opname (B11).
 
     await conn.commit();
     res.redirect(`/receiving/${poId}/detail`);
@@ -556,10 +477,6 @@ const replacement = async (req, res, next) => {
   }
 };
 
-/**
- * GET /receiving/:id/detail
- * Detail penerimaan: PO + qty dipesan vs qty diterima.
- */
 const detail = async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -577,7 +494,6 @@ const detail = async (req, res, next) => {
         }
       : null;
 
-    // Qty diterima dihitung dari transaksi masuk (type='in') yang mereferensikan No PO.
     const [items] = await pool.query(
       `SELECT ipi.id, it.id AS item_id, it.name, it.unit,
               ipi.quantity AS ordered_qty,
@@ -600,7 +516,7 @@ const detail = async (req, res, next) => {
       [id]
     );
 
-    // Jumlah barang ganti per item (untuk mengoreksi tampilan cacat -> baik).
+  
     const replacedByItem = {};
     if (po) {
       const [repRows] = await pool.query(
@@ -613,8 +529,7 @@ const detail = async (req, res, next) => {
       repRows.forEach((r) => { replacedByItem[r.item_id] = Number(r.replaced) || 0; });
     }
 
-    // Jumlah yang SUDAH diretur per item (transaksi keluar 'out' referensi No PO ini).
-    // Dipakai untuk menghitung sisa yang masih boleh diretur (available_return).
+
     const returnedByItem = {};
     if (po) {
       const [retRows] = await pool.query(
@@ -636,14 +551,10 @@ const detail = async (req, res, next) => {
       i.received_qty = Number(i.received_qty);
       i.price = Number(i.price) || 0;
 
-      // Hasil verifikasi (bisa null bila item belum diverifikasi).
       i.verified_good = i.verified_good == null ? null : Number(i.verified_good);
       i.verified_defective = i.verified_defective == null ? null : Number(i.verified_defective);
       i.is_verified = i.verified_good != null || i.verified_defective != null;
 
-      // Koreksi barang ganti: unit cacat yang sudah diganti vendor dianggap beres,
-      // dipindah dari "Cacat" ke "Baik" (maksimal sebanyak jumlah cacat). Dengan
-      // begitu, bila semua cacat sudah diganti -> Cacat 0 & Baik penuh.
       const goodRaw = i.verified_good || 0;
       const defectiveRaw = i.verified_defective || 0;
       const applied = Math.min(replacedByItem[i.item_id] || 0, defectiveRaw);
@@ -657,8 +568,7 @@ const detail = async (req, res, next) => {
       i.total_received = good + defective; // total fisik yang datang
       i.diff = i.is_verified ? i.total_received - i.ordered_qty : null;
 
-      // Sisa yang masih boleh diretur = total dimiliki − yang sudah diretur.
-      // Bila belum diverifikasi, pakai jumlah dipesan sebagai acuan sementara.
+
       const ownedQty = i.is_verified ? i.total_received : i.ordered_qty;
       i.available_return = Math.max(0, ownedQty - (returnedByItem[i.item_id] || 0));
 
@@ -681,7 +591,6 @@ const detail = async (req, res, next) => {
       totalValue_label: fmtRp(totalValue),
     };
 
-    // Riwayat retur (transaksi keluar 'out' yang mereferensikan No PO ini).
     let returns = [];
     if (po) {
       const [rows] = await pool.query(
@@ -698,7 +607,6 @@ const detail = async (req, res, next) => {
       }));
     }
 
-    // Riwayat barang ganti (transaksi 'in' bertanda "Barang ganti", referensi No PO ini).
     let replacements = [];
     if (po) {
       const [rows] = await pool.query(
@@ -715,7 +623,6 @@ const detail = async (req, res, next) => {
       }));
     }
 
-    // Bukti penerimaan yang diunggah saat verifikasi.
     const [attRows] = await pool.query(
       `SELECT id, file_path, original_name, mime_type, created_at
          FROM inventory_receiving_attachments
@@ -745,10 +652,6 @@ const detail = async (req, res, next) => {
   }
 };
 
-/**
- * GET /receiving/:id/export
- * Generate Laporan Penerimaan Barang (PDF) dengan pdfkit.
- */
 const exportPDF = async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -766,9 +669,6 @@ const exportPDF = async (req, res, next) => {
     }
     const po = poRows[0];
 
-    // "Diterima" pada laporan = barang yang diterima saat PENERIMAAN AWAL
-    // (baik + cacat dari verifikasi), BUKAN penjumlahan semua transaksi masuk
-    // (barang ganti yang datang belakangan tidak ikut dihitung di sini).
     const [items] = await pool.query(
       `SELECT it.name, it.unit,
               ipi.quantity AS ordered_qty,
@@ -790,13 +690,11 @@ const exportPDF = async (req, res, next) => {
     );
     doc.pipe(res);
 
-    // Judul
     doc.font("Helvetica-Bold").fontSize(16).text("Laporan Penerimaan Barang", { align: "center" });
     doc.font("Helvetica").fontSize(10).fillColor("#666")
       .text("FacultyWare - Sistem Informasi Pengadaan Barang Fakultas", { align: "center" });
     doc.fillColor("#000").moveDown(1.2);
 
-    // Info PO
     const infoY = doc.y;
     doc.fontSize(10).font("Helvetica-Bold").text("No PO", 50, infoY);
     doc.font("Helvetica").text(`: ${po.purchase_number}`, 140, infoY);
@@ -808,7 +706,6 @@ const exportPDF = async (req, res, next) => {
     doc.font("Helvetica").text(`: ${STATUS_LABEL[po.status] || po.status}`, 140, infoY + 48);
     doc.moveDown(4);
 
-    // Tabel
     const colX = { no: 50, name: 80, ordered: 285, received: 350, price: 415, subtotal: 490 };
     const drawRow = (y, c, opts = {}) => {
       doc.font(opts.bold ? "Helvetica-Bold" : "Helvetica").fontSize(9);
@@ -829,8 +726,6 @@ const exportPDF = async (req, res, next) => {
     let totalValue = 0;
     items.forEach((it, idx) => {
       const ordered = Number(it.ordered_qty);
-      // Diterima awal = baik + cacat (hasil verifikasi). Bila belum diverifikasi,
-      // anggap diterima penuh sesuai jumlah dipesan.
       const verified = it.received_quantity != null || it.received_defective != null;
       const received = verified
         ? Number(it.received_quantity || 0) + Number(it.received_defective || 0)
@@ -871,10 +766,6 @@ const exportPDF = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/receiving
- * REST API list penerimaan barang (JSON) dengan pagination.
- */
 const apiList = async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);

@@ -4,7 +4,6 @@ const db = require('../lib/db');
 const { checkPermission } = require('../middlewares/acl');
 const { resolveSort, toSelectOptions } = require('../lib/sort');
 
-// Opsi urutan (whitelist aman untuk ORDER BY) per halaman persetujuan.
 const INBOX_SORTS = {
   terbaru: { label: 'Terbaru',       orderBy: 'p.created_at DESC, p.id DESC' },
   terlama: { label: 'Terlama',       orderBy: 'p.created_at ASC, p.id ASC' },
@@ -29,15 +28,12 @@ const PO_ARCHIVE_SORTS = {
   status:       { label: 'Status',          orderBy: 'pur.status ASC, pur.id DESC' },
 };
 
-// Menerapkan middleware untuk semua route di bawah ini
 router.use(checkPermission('manage_approval'));
 
-// 1. Redirect kalau user cuma ngetik /approval
 router.get('/', (req, res) => {
     res.redirect('/approval/inbox');
 });
 
-// Fungsi bantuan untuk menghitung statistik Dashboard Wadir
 async function getStats() {
     const query = `
         SELECT 
@@ -54,7 +50,6 @@ async function getStats() {
     };
 }
 
-// 2. Route untuk nampilin UI Inbox (Hanya yang berstatus 'pending')
 router.get('/inbox', async (req, res) => {
     try {
         const stats = await getStats();
@@ -93,7 +88,6 @@ router.get('/inbox', async (req, res) => {
     }
 });
 
-// 3. Route untuk nampilin UI Archive / History (Hanya 'approved' & 'rejected')
 router.get('/history', async (req, res) => {
     try {
         const stats = await getStats();
@@ -132,9 +126,6 @@ router.get('/history', async (req, res) => {
     }
 });
 
-// 3b. Inbox PO (GERBANG KE-2, sadar-harga) — terpisah dari persetujuan permintaan.
-// Menampilkan Purchase Order berstatus 'pending' beserta total harga supaya
-// Wakil Dekan bisa menimbang anggaran sebelum menyetujui belanja.
 router.get('/po', async (req, res) => {
     try {
         const sort = resolveSort(req.query.sort, PO_SORTS, 'terbaru');
@@ -168,8 +159,6 @@ router.get('/po', async (req, res) => {
     }
 });
 
-// 3c. Arsip PO (GERBANG KE-2) — riwayat keputusan persetujuan Purchase Order.
-// Menampilkan PO yang sudah disetujui/ditolak (termasuk yang sudah selesai diterima).
 router.get('/po/archive', async (req, res) => {
     try {
         const sort = resolveSort(req.query.sort, PO_ARCHIVE_SORTS, 'terbaru');
@@ -205,11 +194,9 @@ router.get('/po/archive', async (req, res) => {
     }
 });
 
-// 4. Route untuk Export PDF/Excel
 router.get('/rekap/export', async (req, res) => {
     const format = req.query.format;
     try {
-        // Ambil data riwayat
         const query = `
             SELECT p.request_number, p.status, p.created_at, e.name AS pemohon_name, a.notes
             FROM inventory_requests p
@@ -230,12 +217,10 @@ router.get('/rekap/export', async (req, res) => {
             
             doc.pipe(res);
             
-            // Header PDF
             doc.fontSize(20).font('Helvetica-Bold').text('Laporan Riwayat Persetujuan', { align: 'center' });
             doc.fontSize(12).font('Helvetica').text('Sistem Informasi Pengadaan (FacultyWare)', { align: 'center' });
             doc.moveDown(2);
             
-            // Konten Data
             historyProcurements.forEach((proc, index) => {
                 doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. No. Pengajuan: ${proc.request_number}`);
                 doc.fontSize(11).font('Helvetica').text(`Pemohon: ${proc.pemohon_name}`);
@@ -263,7 +248,6 @@ router.get('/rekap/export', async (req, res) => {
                 { header: 'Catatan', key: 'notes', width: 35 }
             ];
 
-            // Styling header
             worksheet.getRow(1).font = { bold: true };
             worksheet.getRow(1).alignment = { horizontal: 'center' };
 
@@ -292,21 +276,13 @@ router.get('/rekap/export', async (req, res) => {
     }
 });
 
-// ==========================================
-// RUTE EKSEKUSI (POST) - URL Format: /approval/901/approve
-// ==========================================
-
-// 5. Route untuk mengeksekusi APPROVE
 router.post('/:id/approve', async (req, res) => {
-    // Pakai satu koneksi khusus agar transaksi atomik (db adalah pool,
-    // START/COMMIT terpisah bisa kena koneksi berbeda).
     const conn = await db.getConnection();
     try {
         const currentId = req.params.id;
         const approverId = req.session.userId;
 
         await conn.beginTransaction();
-        // employee_id di tabel approvals NOT NULL -> ambil pemohon dari request.
         const [reqRows] = await conn.execute('SELECT employee_id FROM inventory_requests WHERE id = ?', [currentId]);
         const requesterId = reqRows[0] ? reqRows[0].employee_id : approverId;
 
@@ -317,7 +293,6 @@ router.post('/:id/approve', async (req, res) => {
         );
         await conn.commit();
 
-        // Kembali ke halaman Inbox
         res.redirect('/approval/inbox');
     } catch (error) {
         await conn.rollback();
@@ -328,9 +303,7 @@ router.post('/:id/approve', async (req, res) => {
     }
 });
 
-// 6. Route untuk mengeksekusi REJECT
 router.post('/:id/reject', async (req, res) => {
-    // Pakai satu koneksi khusus agar transaksi atomik (lihat catatan di /approve).
     const conn = await db.getConnection();
     try {
         const currentId = req.params.id;
@@ -338,7 +311,6 @@ router.post('/:id/reject', async (req, res) => {
         const approverId = req.session.userId;
 
         await conn.beginTransaction();
-        // employee_id di tabel approvals NOT NULL -> ambil pemohon dari request.
         const [reqRows] = await conn.execute('SELECT employee_id FROM inventory_requests WHERE id = ?', [currentId]);
         const requesterId = reqRows[0] ? reqRows[0].employee_id : approverId;
 
@@ -349,7 +321,6 @@ router.post('/:id/reject', async (req, res) => {
         );
         await conn.commit();
 
-        // Kembali ke halaman Inbox
         res.redirect('/approval/inbox');
     } catch (error) {
         await conn.rollback();
@@ -360,16 +331,10 @@ router.post('/:id/reject', async (req, res) => {
     }
 });
 
-// ==========================================
-// RUTE WILDCARD (WAJIB PALING BAWAH)
-// ==========================================
-
-// 7. Route untuk nampilin UI Detail
 router.get('/:id', async (req, res) => {
     try {
         const currentId = req.params.id;
 
-        // Ambil data utama pengadaan
         const queryProcurement = `
             SELECT p.*, e.name AS pemohon_name, a.notes,
                    COALESCE(NULLIF(p.title, ''), CONCAT(
@@ -389,7 +354,6 @@ router.get('/:id', async (req, res) => {
             return res.status(404).send("Data permintaan tidak ditemukan.");
         }
 
-        // Ambil daftar barang (items) untuk pengadaan ini
         const queryItems = `
             SELECT item_name, quantity
             FROM inventory_request_details

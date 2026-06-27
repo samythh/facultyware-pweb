@@ -7,7 +7,6 @@
   <div class="p-4 md:p-6 xl:p-12">
     <div class="max-w-screen-md mx-auto">
       
-      <!-- Breadcrumb & Title -->
       <div class="mb-6 flex flex-col gap-2">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
           <a href="/supplier" class="hover:text-foreground">Kelola Supplier</a>
@@ -18,7 +17,6 @@
         <p class="text-sm text-muted-foreground">Ubah informasi detail dari supplier terpilih.</p>
       </div>
 
-      <!-- Error Alert -->
       <% if (error) { %>
         <div class="bg-destructive/15 text-destructive text-sm p-4 rounded-xl border border-destructive/20 mb-6 flex items-start gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0">
@@ -33,7 +31,6 @@
         </div>
       <% } %>
 
-      <!-- Form Card -->
       <form action="/supplier/<%= supplier.id %>/edit" method="POST" class="card p-6 bg-card rounded-xl border shadow-sm space-y-6">
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -63,7 +60,6 @@
           <textarea name="address" id="address" placeholder="Tuliskan alamat lengkap supplier..." class="input w-full" rows="4" ><%= supplier.address || '' %></textarea>
         </div>
 
-        <!-- Action Buttons -->
         <div class="flex justify-end gap-3 border-t pt-4">
           <a href="/supplier" class="btn-outline" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">Batal</a>
           <button type="submit" class="btn">Simpan Perubahan</button>
@@ -76,7 +72,6 @@
 
 
 <style>
-  /* Mirror exact Basecoat .input styling for textarea */
   textarea.input {
     display: block;
     width: 100%;

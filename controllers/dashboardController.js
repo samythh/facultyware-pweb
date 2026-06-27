@@ -1,18 +1,5 @@
-/**
- * Dashboard Controller — Facultyware
- *
- * Menyediakan data statistik untuk Dasbor Admin dan Wakil Dekan.
- * Semua kueri hanya MEMBACA tabel yang sudah ada (tanpa perubahan skema).
- *
- * Tabel yang dipakai:
- *   inventory_purchases, inventory_purchase_items, inventory_request_details,
- *   inventory_transactions, suppliers, inventory_requests, inventory_procurements,
- *   inventory_request_approvals, employees, items.
- */
-
 const db = require('../lib/db');
 
-// ─── Helper: kueri aman (kembalikan default bila gagal/tabel tak ada) ───────
 async function safeCount(sql, params = []) {
   try {
     const [rows] = await db.query(sql, params);
@@ -43,18 +30,12 @@ async function safeRows(sql, params = []) {
   }
 }
 
-// ─── Nama bulan Bahasa Indonesia ───────────────────────────────────────────
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-// ─── Format Rupiah ─────────────────────────────────────────────────────────
 function fmtRp(n) {
   return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
 }
 
-// ═════════════════════════════════════════════════════════════════════════
-// Helper: kumpulkan aktivitas dari berbagai tabel.
-// limit = jumlah maksimum baris (0 = tanpa batas, untuk halaman penuh).
-// ═════════════════════════════════════════════════════════════════════════
 async function collectActivities(req, limit = 0) {
   const can = (p) => Array.isArray(req.session.permissions) && req.session.permissions.includes(p);
   const isApprover = can('manage_approval');
@@ -132,18 +113,12 @@ async function collectActivities(req, limit = 0) {
     });
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Fungsi internal: kumpulkan seluruh data statistik dashboard.
-// Dipakai bersama oleh getDashboardPage (SSR) dan getStats (REST API).
-// ═══════════════════════════════════════════════════════════════════════════
 async function collectStats(req) {
   const can = (p) => Array.isArray(req.session.permissions) && req.session.permissions.includes(p);
   const isApprover = can('manage_approval');
   const isOps = can('manage_procurement') || can('manage_po') || can('manage_receiving');
 
-  // ── 1. KPI UMUM & FINANSIAL ──────────────────────────────────────────
 
-  // 1a. Total nilai belanja (PO approved + completed)
   const totalBelanja = await safeVal(`
     SELECT COALESCE(SUM(pi.price * pi.quantity), 0) AS val
     FROM inventory_purchase_items pi
@@ -151,7 +126,6 @@ async function collectStats(req) {
     WHERE p.status IN ('approved', 'completed')
   `);
 
-  // 1b. Total belanja bulan berjalan
   const belanjaBulanIni = await safeVal(`
     SELECT COALESCE(SUM(pi.price * pi.quantity), 0) AS val
     FROM inventory_purchase_items pi
@@ -160,16 +134,13 @@ async function collectStats(req) {
       AND p.created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')
   `);
 
-  // 1c. Jumlah PO approved+completed (untuk rata-rata)
   const jumlahPOApproved = await safeCount(`
     SELECT COUNT(*) AS cnt FROM inventory_purchases
     WHERE status IN ('approved', 'completed')
   `);
 
-  // 1d. Rata-rata nilai per PO
   const rataRataPO = jumlahPOApproved > 0 ? Math.round(totalBelanja / jumlahPOApproved) : 0;
 
-  // ── 2. STATISTIK STATUS PO ───────────────────────────────────────────
 
   const statusPO = { pending: 0, approved: 0, completed: 0, rejected: 0 };
   const statusRows = await safeRows(`
@@ -181,21 +152,16 @@ async function collectStats(req) {
     if (statusPO.hasOwnProperty(r.status)) statusPO[r.status] = Number(r.cnt) || 0;
   });
 
-  // 2a. PO disetujui tapi belum selesai (menunggu penerimaan)
   const poMenungguPenerimaan = statusPO.approved;
 
-  // 2b. Akumulasi barang cacat
   const totalBarangCacat = await safeVal(`
     SELECT COALESCE(SUM(received_defective), 0) AS val
     FROM inventory_purchase_items
   `);
 
-  // ── 3. STATISTIK SUPPLIER & PENGADAAN ────────────────────────────────
 
-  // 3a. Total supplier terdaftar
   const totalSupplier = await safeCount(`SELECT COUNT(*) AS cnt FROM suppliers`);
 
-  // 3b. Supplier paling aktif (5 teratas berdasarkan jumlah PO)
   const topSuppliers = await safeRows(`
     SELECT supplier AS nama, COUNT(*) AS jumlah_po,
            COALESCE(SUM(sub.total), 0) AS total_nilai
@@ -211,7 +177,6 @@ async function collectStats(req) {
     LIMIT 5
   `);
 
-  // 3c. Pengadaan approved yang belum diproses menjadi PO
   const pengadaanBelumPO = await safeCount(`
     SELECT COUNT(*) AS cnt
     FROM inventory_procurements
@@ -223,7 +188,6 @@ async function collectStats(req) {
       )
   `);
 
-  // ── 4. STATISTIK STATUS PERMINTAAN ───────────────────────────────────
 
   const statusPermintaan = { pending: 0, approved: 0, rejected: 0, fulfilled: 0 };
   const reqStatusRows = await safeRows(`
@@ -236,14 +200,12 @@ async function collectStats(req) {
   });
   const totalPermintaan = Object.values(statusPermintaan).reduce((a, b) => a + b, 0);
 
-  // ── 5. STATISTIK KHUSUS ROLE ─────────────────────────────────────────
 
   let wakilDekanStats = null;
   if (isApprover) {
     const permintaanPending = statusPermintaan.pending;
     const poPending = statusPO.pending;
 
-    // Total nominal PO pending
     const nominalPOPending = await safeVal(`
       SELECT COALESCE(SUM(pi.price * pi.quantity), 0) AS val
       FROM inventory_purchase_items pi
@@ -251,7 +213,6 @@ async function collectStats(req) {
       WHERE p.status = 'pending'
     `);
 
-    // Daftar PO yang menunggu persetujuan (untuk tabel ringkas)
     const daftarPOPending = await safeRows(`
       SELECT p.id, p.purchase_number, p.supplier, p.purchase_date,
              COALESCE(SUM(pi.price * pi.quantity), 0) AS total
@@ -263,7 +224,6 @@ async function collectStats(req) {
       LIMIT 10
     `);
 
-    // Belanja bulan ini yang disetujui vs ditolak
     const belanjaDisetujuiBulanIni = await safeVal(`
       SELECT COALESCE(SUM(pi.price * pi.quantity), 0) AS val
       FROM inventory_purchase_items pi
@@ -295,7 +255,6 @@ async function collectStats(req) {
 
   let adminStats = null;
   if (isOps) {
-    // PO yang memerlukan tindak lanjut (approved tapi belum completed)
     const poPerluTindakan = await safeRows(`
       SELECT p.id, p.purchase_number, p.supplier, p.purchase_date, p.status,
              COALESCE(SUM(pi.price * pi.quantity), 0) AS total
@@ -307,7 +266,6 @@ async function collectStats(req) {
       LIMIT 10
     `);
 
-    // Permintaan yang menunggu persetujuan
     const permintaanMenunggu = await safeRows(`
       SELECT r.id, r.request_number, r.title, r.created_at, e.name AS pemohon_name
       FROM inventory_requests r
@@ -317,7 +275,6 @@ async function collectStats(req) {
       LIMIT 10
     `);
 
-    // PO pending (menunggu persetujuan Wadir)
     const poMenungguPersetujuan = await safeRows(`
       SELECT p.id, p.purchase_number, p.supplier,
              COALESCE(SUM(pi.price * pi.quantity), 0) AS total
@@ -337,16 +294,14 @@ async function collectStats(req) {
     };
   }
 
-  // ── 6. DATA VISUALISASI GRAFIK ───────────────────────────────────────
 
-  // 6a. Donut/Pie chart — distribusi status PO
   const donutData = {
     labels: ['Menunggu Persetujuan', 'Disetujui', 'Selesai', 'Ditolak'],
     data: [statusPO.pending, statusPO.approved, statusPO.completed, statusPO.rejected],
     colors: ['#3b82f6', '#22c55e', '#06b6d4', '#ef4444']
   };
 
-  // 6b. Bar chart — tren nilai belanja per bulan (6 bulan terakhir)
+
   const trendLabels = [];
   const trendData = [];
   try {
@@ -372,7 +327,7 @@ async function collectStats(req) {
     console.warn(`[dashboard] tren dilewati (${err.code || err.message})`);
   }
 
-  // 6c. 5 barang paling banyak diminta
+
   const topBarang = await safeRows(`
     SELECT item_name AS nama, SUM(quantity) AS total_qty
     FROM inventory_request_details
@@ -382,10 +337,8 @@ async function collectStats(req) {
     LIMIT 5
   `);
 
-  // ── 7. AKTIVITAS TERBARU ─────────────────────────────────────────────
   const activities = await collectActivities(req, 8);
 
-  // ── 8. JUMLAH TOTAL PO ───────────────────────────────────────────────
   const totalPO = statusPO.pending + statusPO.approved + statusPO.completed + statusPO.rejected;
 
   return {
@@ -420,11 +373,6 @@ async function collectStats(req) {
   };
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// PAGE RENDER: GET /dashboard
-// Render halaman dashboard dengan SELURUH data statistik (server-side).
-// Chart.js diinisialisasi dari data JSON yang di-embed langsung di EJS.
-// ═══════════════════════════════════════════════════════════════════════════
 exports.getDashboardPage = async (req, res, next) => {
   try {
     const stats = await collectStats(req);
@@ -432,9 +380,7 @@ exports.getDashboardPage = async (req, res, next) => {
     res.render('dashboard', {
       title: 'Dashboard',
       user: req.session.username,
-      // Spread seluruh data statistik ke variabel EJS
       ...stats,
-      // Helper format Rupiah di EJS
       fmtRp
     });
   } catch (err) {
@@ -442,10 +388,6 @@ exports.getDashboardPage = async (req, res, next) => {
   }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// REST API: GET /api/dashboard/stats
-// Mengembalikan semua data statistik dalam satu respons JSON.
-// ═══════════════════════════════════════════════════════════════════════════
 exports.getStats = async (req, res, next) => {
   try {
     const stats = await collectStats(req);
@@ -455,17 +397,13 @@ exports.getStats = async (req, res, next) => {
   }
 };
 
-// ═════════════════════════════════════════════════════════════════════════
-// PAGE RENDER: GET /dashboard/activity
-// Halaman riwayat aktivitas lengkap dengan pagination sederhana.
-// ═════════════════════════════════════════════════════════════════════════
 exports.getActivityPage = async (req, res, next) => {
   try {
     const PAGE_SIZE = 20;
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const offset = (page - 1) * PAGE_SIZE;
 
-    const all = await collectActivities(req, 0); // ambil semua
+    const all = await collectActivities(req, 0); 
     const totalItems = all.length;
     const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
     const activities = all.slice(offset, offset + PAGE_SIZE);

@@ -1,12 +1,5 @@
 const db = require("../lib/db");
 
-/**
- * ACL Middleware to check if a user has the required permission(s).
- * 
- * @param {string|string[]} requiredPermissions - A single permission or an array of permissions.
- * If an array is provided, the user must have at least one of the permissions.
- */
-
 const checkPermission = (requiredPermissions) => {
   return async (req, res, next) => {
     if (process.env.NODE_ENV !== 'production' && process.env.DEV_NO_AUTH === '1') {
@@ -28,7 +21,6 @@ const checkPermission = (requiredPermissions) => {
       : [requiredPermissions];
 
     try {
-      // Query to check if the user has a role that contains any of the required permissions
       const query = `
         SELECT DISTINCT p.name 
         FROM permissions p
@@ -45,7 +37,6 @@ const checkPermission = (requiredPermissions) => {
         return next();
       }
 
-      // If no matching permission found, return Forbidden
       if (isApi) {
         return res.status(403).json({ message: "Forbidden" });
       } else {

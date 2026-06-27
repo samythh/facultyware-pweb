@@ -1,11 +1,4 @@
 <%
-  /* Kontrol "Urutkan berdasarkan" yang dipakai bersama oleh halaman daftar.
-     Locals yang diharapkan:
-       - action : URL tujuan form (mis. '/purchase')
-       - current: kunci sort aktif
-       - opts   : array { v, l } (value & label opsi)
-       - keep   : objek field tersembunyi yang dipertahankan (mis. { search: '...' })
-     Pakai GET biasa; saat opsi diganti, form langsung dikirim. */
   const _keep = (typeof keep !== 'undefined' && keep) ? keep : {};
 %>
 <form method="get" action="<%= action %>" class="flex items-center gap-2 shrink-0">

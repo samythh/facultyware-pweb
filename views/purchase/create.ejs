@@ -7,7 +7,6 @@
   <div class="p-4 md:p-6 xl:p-12">
     <div class="max-w-screen-lg mx-auto">
       
-      <!-- Breadcrumb & Title -->
       <div class="mb-6 flex flex-col gap-2">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground" hx-boost="true" hx-select="#content" hx-target="#content" hx-swap="outerHTML">
           <a href="/purchase" class="hover:text-foreground">Purchase Order</a>
@@ -34,7 +33,6 @@
 
       <form method="post" action="/purchase/create" class="space-y-6">
         
-        <!-- Main Form Card -->
         <div class="card p-6 bg-card rounded-xl border shadow-sm space-y-4">
           <h3 class="text-base font-semibold">Informasi Purchase Order</h3>
           
@@ -65,14 +63,12 @@
           </div>
         </div>
 
-        <!-- Dynamic Items Container -->
         <div id="procurement_items">
           <div class="card p-6 bg-card rounded-xl border shadow-sm text-center py-8 text-muted-foreground text-sm">
             Silakan pilih nomor permintaan di atas untuk memuat daftar barang.
           </div>
         </div>
 
-        <!-- Summary & Actions Card -->
         <div class="card p-6 bg-card rounded-xl border shadow-sm flex flex-col items-end gap-4">
           <div class="flex items-center gap-2 flex-wrap justify-end" style="max-width:100%;">
             <span class="text-sm text-muted-foreground font-medium">Total Estimasi Nilai PO:</span>
@@ -123,8 +119,6 @@
       
       const table = document.createElement('table');
       table.className = 'w-full text-left text-sm border-collapse';
-      // table-layout:fixed + colgroup → lebar kolom tetap; angka besar membungkus
-      // ke bawah (word-break) dan TIDAK lagi menggeser kolom di sebelahnya.
       table.style.tableLayout = 'fixed';
       table.innerHTML = `
         <colgroup>
